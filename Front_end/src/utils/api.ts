@@ -119,7 +119,27 @@ export async function changePassword(userId: string, oldPassword: string, newPas
     }
 }
 
-export async function updateProfile(userId: string, profile: { name?: string; email?: string; phone?: string; dob?: string }): Promise<void> {
+export interface ProfileUpdatePayload {
+    name?: string;
+    email?: string;
+    phone?: string;
+    dob?: string;
+    avatar?: string;
+    cccdFront?: string;
+    cccdBack?: string;
+    cvFile?: string;
+    cvFileName?: string;
+}
+
+export interface ProfileUpdateResponse {
+    message: string;
+    avatar?: string;
+    cccdFront?: string;
+    cccdBack?: string;
+    cvFile?: string;
+}
+
+export async function updateProfile(userId: string, profile: ProfileUpdatePayload): Promise<ProfileUpdateResponse> {
     const response = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -128,5 +148,30 @@ export async function updateProfile(userId: string, profile: { name?: string; em
     if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { message?: string } | null;
         throw new Error(data?.message || "Không thể cập nhật hồ sơ.");
+    }
+    return response.json();
+}
+
+export async function saveAdminNotes(userId: string, notes: string): Promise<void> {
+    const response = await fetch("/api/admin/notes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, notes }),
+    });
+    if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message || "Không thể lưu ghi chú.");
+    }
+}
+
+export async function toggleAccountStatus(userId: string, status: "active" | "disabled"): Promise<void> {
+    const response = await fetch(`/api/users/${encodeURIComponent(userId)}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+    });
+    if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message || "Không thể cập nhật trạng thái tài khoản.");
     }
 }

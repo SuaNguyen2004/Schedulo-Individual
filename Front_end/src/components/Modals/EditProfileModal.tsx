@@ -7,6 +7,7 @@ interface EditProfileModalProps {
   user: UserAccount;
   onClose: () => void;
   onSave: (updatedData: Partial<UserAccount>) => void;
+  onShowToast?: (msg: string) => void;
 }
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -14,6 +15,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   user,
   onClose,
   onSave,
+  onShowToast,
 }) => {
   const [name, setName] = useState(user.name);
   const [dob, setDob] = useState(user.dob || "");
@@ -41,6 +43,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     try {
       await updateProfile(user.id, { name, email, phone, dob });
       onSave({ name, email, phone, dob });
+      if (onShowToast) onShowToast("Đã cập nhật thông tin hồ sơ cá nhân.");
       onClose();
     } catch (err: any) {
       setErrorMsg(err.message || "Không thể cập nhật hồ sơ.");

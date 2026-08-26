@@ -69,7 +69,13 @@ app.post("/api/auth/login", async (req, res) => {
         const userStatus = user ? String(user.status).toLowerCase() : "";
         const userRole = user ? String(user.role).toLowerCase() : "";
 
-        if (!user || !passwordMatches || (userStatus !== "active" && userStatus !== "pending")) {
+        if (!user || !passwordMatches) {
+            return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
+        }
+        if (userStatus === "disabled") {
+            return res.status(403).json({ message: "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ Admin để được hỗ trợ.", disabled: true });
+        }
+        if (userStatus !== "active" && userStatus !== "pending") {
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
         }
 
@@ -218,7 +224,7 @@ app.patch("/api/auth/change-password", async (req, res) => {
 });
 
 app.patch("/api/profile", async (req, res) => {
-    const { userId, name, email, phone, dob } = req.body || {};
+    const { userId, name, email, phone, dob, avatar, cccdFront, cccdBack, cvFile, cvFileName } = req.body || {};
     if (!userId) {
         return res.status(400).json({ message: "Thiếu thông tin người dùng." });
     }
@@ -232,17 +238,89 @@ app.patch("/api/profile", async (req, res) => {
                     [email.trim(), String(userId)],
                 );
             }
-            await connection.execute(
-                `INSERT INTO user_profiles (user_id, full_name, phone, date_of_birth)
-                 VALUES (?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE
-                    full_name = VALUES(full_name),
-                    phone = VALUES(phone),
-                    date_of_birth = VALUES(date_of_birth)`,
-                [String(userId), name || "", phone || "", parseDate(dob) || null],
-            );
+
+            const userName = name || "";
+            const fileUpdates = {};
+            if (avatar !== undefined) {
+                if (avatar) {
+                    const result = await saveAttachment({ fileType: "AVATAR", fileName: "avatar", filePath: avatar }, userName);
+                    fileUpdates.avatar_url = result.filePath;
+                } else {
+                    fileUpdates.avatar_url = "";
+                }
+            }
+            if (cccdFront !== undefined) {
+                if (cccdFront) {
+                    const result = await saveAttachment({ fileType: "ID_CARD_FRONT", fileName: "cccd-front", filePath: cccdFront }, userName);
+                    fileUpdates.id_card_front_url = result.filePath;
+                } else {
+                    fileUpdates.id_card_front_url = "";
+                }
+            }
+            if (cccdBack !== undefined) {
+                if (cccdBack) {
+                    const result = await saveAttachment({ fileType: "ID_CARD_BACK", fileName: "cccd-back", filePath: cccdBack }, userName);
+                    fileUpdates.id_card_back_url = result.filePath;
+                } else {
+                    fileUpdates.id_card_back_url = "";
+                }
+            }
+            if (cvFile !== undefined) {
+                if (cvFile) {
+                    const result = await saveAttachment({ fileType: "CV", fileName: cvFileName || "cv", filePath: cvFile }, userName);
+                    fileUpdates.cv_url = result.filePath;
+                } else {
+                    fileUpdates.cv_url = "";
+                }
+            }
+
+            const setClauses = [];
+            const onDupVals = [];
+
+            if (name !== undefined) { setClauses.push("full_name = ?"); onDupVals.push(name || ""); }
+            if (phone !== undefined) { setClauses.push("phone = ?"); onDupVals.push(phone || ""); }
+            if (dob !== undefined) { setClauses.push("date_of_birth = ?"); onDupVals.push(parseDate(dob) || null); }
+
+            if (fileUpdates.avatar_url !== undefined) { setClauses.push("avatar_url = ?"); onDupVals.push(fileUpdates.avatar_url); }
+            if (fileUpdates.id_card_front_url !== undefined) { setClauses.push("id_card_front_url = ?"); onDupVals.push(fileUpdates.id_card_front_url); }
+            if (fileUpdates.id_card_back_url !== undefined) { setClauses.push("id_card_back_url = ?"); onDupVals.push(fileUpdates.id_card_back_url); }
+            if (fileUpdates.cv_url !== undefined) { setClauses.push("cv_url = ?"); onDupVals.push(fileUpdates.cv_url); }
+
+            if (setClauses.length > 0) {
+                const hasTextFields = name !== undefined || phone !== undefined || dob !== undefined;
+                if (hasTextFields) {
+                    const insertCols = ["user_id", "full_name", "phone", "date_of_birth"];
+                    const insertVals = [String(userId), name || "", phone || "", parseDate(dob) || null];
+                    const fileInsertCols = [];
+                    const fileInsertVals = [];
+                    if (fileUpdates.avatar_url !== undefined) { fileInsertCols.push("avatar_url"); fileInsertVals.push(fileUpdates.avatar_url); }
+                    if (fileUpdates.id_card_front_url !== undefined) { fileInsertCols.push("id_card_front_url"); fileInsertVals.push(fileUpdates.id_card_front_url); }
+                    if (fileUpdates.id_card_back_url !== undefined) { fileInsertCols.push("id_card_back_url"); fileInsertVals.push(fileUpdates.id_card_back_url); }
+                    if (fileUpdates.cv_url !== undefined) { fileInsertCols.push("cv_url"); fileInsertVals.push(fileUpdates.cv_url); }
+                    const allCols = [...insertCols, ...fileInsertCols];
+                    const allVals = [...insertVals, ...fileInsertVals];
+                    const placeholders = allCols.map(() => "?").join(", ");
+                    await connection.execute(
+                        `INSERT INTO user_profiles (${allCols.join(", ")}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${setClauses.join(", ")}`,
+                        [...allVals, ...onDupVals],
+                    );
+                } else {
+                    await connection.execute(
+                        `UPDATE user_profiles SET ${setClauses.join(", ")} WHERE user_id = ?`,
+                        [...onDupVals, String(userId)],
+                    );
+                }
+            }
+
             await connection.commit();
-            return res.json({ message: "Cập nhật hồ sơ thành công." });
+
+            const returnedFiles = {};
+            if (fileUpdates.avatar_url !== undefined) returnedFiles.avatar = fileUpdates.avatar_url;
+            if (fileUpdates.id_card_front_url !== undefined) returnedFiles.cccdFront = fileUpdates.id_card_front_url;
+            if (fileUpdates.id_card_back_url !== undefined) returnedFiles.cccdBack = fileUpdates.id_card_back_url;
+            if (fileUpdates.cv_url !== undefined) returnedFiles.cvFile = fileUpdates.cv_url;
+
+            return res.json({ message: "Cập nhật hồ sơ thành công.", ...returnedFiles });
         } catch (err) {
             await connection.rollback();
             throw err;
@@ -251,6 +329,61 @@ app.patch("/api/profile", async (req, res) => {
         }
     } catch (error) {
         return res.status(500).json({ message: "Không thể cập nhật hồ sơ.", detail: error.message });
+    }
+});
+
+app.patch("/api/admin/notes", async (req, res) => {
+    const { userId, notes } = req.body || {};
+    if (!userId) {
+        return res.status(400).json({ message: "Thiếu userId." });
+    }
+    try {
+        await pool.execute(
+            "UPDATE users SET admin_note = ?, updated_at = NOW() WHERE id = ?",
+            [notes || null, String(userId)],
+        );
+        return res.json({ message: "Đã lưu ghi chú." });
+    } catch (error) {
+        return res.status(500).json({ message: "Không thể lưu ghi chú.", detail: error.message });
+    }
+});
+
+app.patch("/api/users/:id/status", async (req, res) => {
+    const userId = Number(req.params.id);
+    const { status } = req.body || {};
+    if (!Number.isInteger(userId) || !["active", "disabled"].includes(status)) {
+        return res.status(400).json({ message: "Dữ liệu không hợp lệ." });
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const [result] = await connection.execute(
+            "UPDATE users SET status = ?, updated_at = NOW() WHERE id = ? AND role = 'collaborator'",
+            [status, userId],
+        );
+        if (result.affectedRows === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: "Không tìm thấy tài khoản Collaborator." });
+        }
+
+        if (status === "disabled") {
+            await promoteElapsedSchedulesToHistory(connection, userId);
+            const today = startOfLocalDay(new Date());
+            await connection.execute(
+                "DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?",
+                [userId, toIsoDate(today)],
+            );
+        }
+
+        await connection.commit();
+        return res.json({ id: String(userId), status });
+    } catch (error) {
+        try { await connection.rollback(); } catch (_) {}
+        return res.status(500).json({ message: "Không thể cập nhật trạng thái.", detail: error.message });
+    } finally {
+        connection.release();
     }
 });
 
@@ -523,12 +656,12 @@ function parseDate(value) {
 }
 
 async function saveAttachment(attachment, userName) {
-    const isImage = attachment.fileType === "ID_CARD_FRONT" || attachment.fileType === "ID_CARD_BACK";
+    const isImage = attachment.fileType === "ID_CARD_FRONT" || attachment.fileType === "ID_CARD_BACK" || attachment.fileType === "AVATAR";
     const directory = isImage ? imageDirectory : cvDirectory;
     const extension = isImage ? ".jpg" : path.extname(attachment.fileName || "").toLowerCase() || ".pdf";
     const safeUserName = sanitizeFileName(userName);
     const safeOriginalName = sanitizeFileName(path.basename(attachment.fileName || "cv"));
-    const prefix = attachment.fileType === "ID_CARD_FRONT" ? "id-card-front" : "id-card-back";
+    const prefix = attachment.fileType === "ID_CARD_FRONT" ? "id-card-front" : attachment.fileType === "ID_CARD_BACK" ? "id-card-back" : attachment.fileType === "AVATAR" ? "avatar" : "";
     const fileName = isImage ? `${prefix}-${safeUserName}${extension}` : safeOriginalName;
     const filePath = path.join(directory, fileName);
     const data = decodeDataUrl(attachment.filePath);

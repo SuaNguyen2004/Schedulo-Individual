@@ -4,6 +4,7 @@ import { getAssignedCTVsForDate } from "../../utils/scheduleSelectors";
 
 interface SummaryScheduleScreenProps {
     shifts: ShiftSlot[];
+    history?: ShiftSlot[];
     accounts: UserAccount[];
     onViewAccountDetail?: (account: UserAccount) => void;
     onShowToast?: (msg: string) => void;
@@ -51,6 +52,7 @@ const WEEKDAYS = [
 
 export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
     shifts,
+    history = [],
     accounts,
     onViewAccountDetail,
     onShowToast,
@@ -138,6 +140,9 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
 
     const getAssignedCTVs = (workDate: string, type: "morning" | "afternoon") =>
         getAssignedCTVsForDate(shifts, accounts, workDate, type);
+
+    const getHistoryCTVs = (workDate: string, type: "morning" | "afternoon") =>
+        getAssignedCTVsForDate(history, accounts, workDate, type);
 
     // Calculate Month Calendar Weeks & Days (Mon-Fri)
     const calendarWeeks = useMemo(() => {
@@ -267,9 +272,10 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
         dateFormatted: string,
         shiftName: "Ca Sáng" | "Ca Chiều",
         workDate: string,
+        useHistory = false,
     ) => {
         setDetailSearchQuery("");
-        const rawList = getAssignedCTVs(workDate, shiftName === "Ca Sáng" ? "morning" : "afternoon");
+        const rawList = (useHistory ? getHistoryCTVs : getAssignedCTVs)(workDate, shiftName === "Ca Sáng" ? "morning" : "afternoon");
 
         // Enrich CTVs with account details
         const enrichedList = rawList.map((ctv) => {
@@ -422,8 +428,8 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     ? "bg-blue-700 text-white shadow-sm"
                                     : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                             }`}>
-                            <span className="material-symbols-outlined text-[17px]">calendar_month</span>
-                            <span>Lịch tháng</span>
+                            <span className="material-symbols-outlined text-[17px]">history</span>
+                            <span>Lịch sử làm việc</span>
                         </button>
                     </div>
 
@@ -567,14 +573,14 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                         <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
                             <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-blue-700 dark:text-blue-300 text-[22px]">
-                                    calendar_month
+                                    history
                                 </span>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    Lịch Tháng tổng thể - {monthNames[selectedMonth]}, {selectedYear}
+                                    Lịch sử làm việc - {monthNames[selectedMonth]}, {selectedYear}
                                 </h3>
                             </div>
                             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                Bấm vào từng ca để xem chi tiết
+                                Dữ liệu từ bảng work_history
                             </span>
                         </div>
 
@@ -606,8 +612,8 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                     );
                                                 }
 
-                                                const morningCTVs = getAssignedCTVs(cell.dateISO, "morning");
-                                                const afternoonCTVs = getAssignedCTVs(cell.dateISO, "afternoon");
+                                                const morningCTVs = getHistoryCTVs(cell.dateISO, "morning");
+                                                const afternoonCTVs = getHistoryCTVs(cell.dateISO, "afternoon");
 
                                                 return (
                                                     <div
@@ -641,6 +647,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                             cell.dateFormatted,
                                                                             "Ca Sáng",
                                                                             cell.dateISO,
+                                                                            true,
                                                                         )
                                                                     }
                                                                     className="w-full px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-950/80 border border-amber-200/80 dark:border-amber-900/40 flex items-center justify-between text-left transition-all cursor-pointer group"
@@ -668,6 +675,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                             cell.dateFormatted,
                                                                             "Ca Chiều",
                                                                             cell.dateISO,
+                                                                            true,
                                                                         )
                                                                     }
                                                                     className="w-full px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-950/80 border border-purple-200/80 dark:border-purple-900/40 flex items-center justify-between text-left transition-all cursor-pointer group"
