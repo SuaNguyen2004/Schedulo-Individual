@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
+import { changePassword } from '../../utils/api';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
+  userId: string;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   isOpen,
+  userId,
   onClose,
   onSuccess
 }) => {
@@ -15,10 +18,11 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!oldPassword) {
       setErrorMsg('Vui lòng nhập mật khẩu hiện tại');
@@ -33,11 +37,19 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       return;
     }
     setErrorMsg('');
-    onSuccess();
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    onClose();
+    setLoading(true);
+    try {
+      await changePassword(userId, oldPassword, newPassword);
+      onSuccess();
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      onClose();
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Đổi mật khẩu thất bại.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -113,9 +125,10 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-accent hover:opacity-90 text-white rounded text-xs font-semibold transition-colors cursor-pointer"
+              disabled={loading}
+              className="px-4 py-2 bg-accent hover:opacity-90 text-white rounded text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Đổi mật khẩu
+              {loading ? 'Đang xử lý...' : 'Đổi mật khẩu'}
             </button>
           </div>
         </form>

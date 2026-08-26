@@ -516,9 +516,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                     aria-hidden="true">
                                                                     wb_sunny
                                                                 </span>
-                                                                <span className="text-amber-900 dark:text-amber-100 truncate">
-                                                                    Ca Sáng
-                                                                </span>
                                                             </div>
                                                             <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-200/90 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200 transition-transform group-hover:scale-105">
                                                                 {morningCTVs.length} CTV
@@ -547,9 +544,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                     className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400 shrink-0"
                                                                     aria-hidden="true">
                                                                     wb_twilight
-                                                                </span>
-                                                                <span className="text-purple-900 dark:text-purple-100 truncate">
-                                                                    Ca Chiều
                                                                 </span>
                                                             </div>
                                                             <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-200/90 text-purple-900 dark:bg-purple-900/80 dark:text-purple-200 transition-transform group-hover:scale-105">
@@ -722,9 +716,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                         {selectedShiftDetail.shiftName} - {selectedShiftDetail.dayName} (
                                         {selectedShiftDetail.dateFormatted})
                                     </span>
-                                    <span className="text-xs px-2.5 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-bold">
-                                        {selectedShiftDetail.shiftTimeLabel}
-                                    </span>
                                 </h3>
                             </div>
                             <button
@@ -784,7 +775,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                     <th className="py-3.5 px-4">Họ tên CTV</th>
                                                     <th className="py-3.5 px-4">Số điện thoại</th>
                                                     <th className="py-3.5 px-4">Email</th>
-                                                    <th className="py-3.5 px-4 text-right">Thao tác</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
@@ -842,22 +832,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                 {ctv.email || "—"}
                                                             </span>
                                                         </td>
-
-                                                        {/* Thao tác */}
-                                                        <td className="py-3.5 px-4 text-right">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    handleCTVClick(ctv);
-                                                                    setSelectedShiftDetail(null);
-                                                                }}
-                                                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold text-xs transition-colors cursor-pointer border border-blue-200 dark:border-blue-800">
-                                                                <span className="material-symbols-outlined text-[15px]">
-                                                                    person
-                                                                </span>
-                                                                <span>Hồ sơ</span>
-                                                            </button>
-                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -865,16 +839,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     </div>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="p-4 bg-slate-50 dark:bg-[#1f2023] border-t border-slate-200 dark:border-slate-800 flex justify-end shrink-0">
-                            <button
-                                type="button"
-                                onClick={() => setSelectedShiftDetail(null)}
-                                className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer">
-                                Đóng
-                            </button>
                         </div>
                     </div>
                 </div>

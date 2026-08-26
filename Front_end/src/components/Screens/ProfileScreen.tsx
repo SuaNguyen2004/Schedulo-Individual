@@ -33,13 +33,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     side: "avatar" | "front" | "back";
   } | null>(null);
 
-  const [previewDocModal, setPreviewDocModal] = useState<{
-    fileName: string;
-    fileSize?: string;
-    fileUrl?: string;
-    isPdf: boolean;
-  } | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cccdFrontInputRef = useRef<HTMLInputElement>(null);
   const cccdBackInputRef = useRef<HTMLInputElement>(null);
@@ -129,12 +122,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     e.target.value = "";
   };
 
-  const handleDeleteCvFile = () => {
-    if (onUpdateCvFile) {
-      onUpdateCvFile(null);
-    }
-  };
-
   const cvDisplayName =
     user.cvFileName ||
     (user.cvFile
@@ -148,51 +135,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     cvDisplayName.toLowerCase().endsWith(".pdf") ||
     (!cvDisplayName.toLowerCase().endsWith(".doc") &&
       !cvDisplayName.toLowerCase().endsWith(".docx"));
-
-  const handleDownloadCv = () => {
-    if (user.cvFile) {
-      const a = document.createElement("a");
-      a.href = user.cvFile;
-      a.download = cvDisplayName || "CV_HoSo.pdf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } else {
-      const content = `=========================================
-HỒ SƠ ỨNG TUYỂN CỘNG TÁC VIÊN (CV)
-=========================================
-Họ và tên: ${user.name}
-Mã CTV: ${user.cctvCode || "N/A"}
-Email: ${user.email}
-Số điện thoại: ${user.phone}
-Ngày sinh: ${user.dob || "N/A"}
-Giới tính: ${user.gender || "N/A"}
-Địa chỉ: ${user.address || "N/A"}
-
-PHÒNG LÀM VIỆC ĐƯỢC CHỈ ĐỊNH:
-- Phòng / Buồng: ${user.room || user.workRoom || "Buồng 1"}
-
-KỸ NĂNG & CHUYÊN MÔN:
-- ${user.skills && user.skills.length > 0 ? user.skills.join("\n- ") : "Kỹ năng chuyên môn, giao tiếp tốt"}
-
-LỊCH SỬ HOẠT ĐỘNG:
-- Ngày đăng ký: ${user.registerDate || "N/A"}
-- Ngày gia nhập: ${user.joinDate || user.registerDate || "N/A"}
-- Số ca hoàn thành: ${user.shiftsCompleted || 0} ca
-- Đánh giá trung bình: ${user.rating || 5.0} / 5.0 ⭐
-- Trạng thái tài khoản: ${user.status}
-`;
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = cvDisplayName || "CV_HoSo.txt";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
 
   return (
     <div className="space-y-5">
@@ -518,23 +460,18 @@ LỊCH SỬ HOẠT ĐỘNG:
                       </div>
                     </div>
 
-                    {/* Action Buttons: Xem & Thay đổi & Xóa */}
+                    {/* Action Buttons: Xem & Thay đổi */}
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
-                        onClick={() =>
-                          setPreviewDocModal({
-                            fileName: cvDisplayName,
-                            fileSize: cvDisplaySize,
-                            fileUrl: user.cvFile,
-                            isPdf,
-                          })
-                        }
+                        onClick={() => {
+                          if (user.cvFile) window.open(user.cvFile, "_blank");
+                        }}
                         className="px-3 py-1.5 bg-white hover:bg-slate-100 dark:bg-[#25262b] dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                        title="Xem trước tài liệu"
+                        title="Xem CV trong tab mới"
                       >
                         <span className="material-symbols-outlined text-[16px] text-blue-600">
-                          visibility
+                          open_in_new
                         </span>
                         <span>Xem</span>
                       </button>
@@ -548,17 +485,6 @@ LỊCH SỬ HOẠT ĐỘNG:
                         <span className="material-symbols-outlined text-[16px]">upload_file</span>
                         <span>Thay đổi</span>
                       </button>
-
-                      {user.cvFile && (
-                        <button
-                          type="button"
-                          onClick={handleDeleteCvFile}
-                          className="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900 rounded-lg transition-colors cursor-pointer"
-                          title="Xóa file CV đã tải lên"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">delete</span>
-                        </button>
-                      )}
                     </div>
                   </div>
                 ) : (
@@ -663,161 +589,6 @@ LỊCH SỬ HOẠT ĐỘNG:
         </div>
       )}
 
-      {/* CV Document Preview Lightbox Modal */}
-      {previewDocModal && (
-        <div
-          className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setPreviewDocModal(null)}
-        >
-          <div
-            className="bg-white dark:bg-[#25262b] rounded-2xl max-w-3xl w-full p-5 border border-slate-200 dark:border-slate-700 shadow-2xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    previewDocModal.isPdf
-                      ? "bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/50 dark:text-red-300"
-                      : "bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {previewDocModal.isPdf ? "picture_as_pdf" : "description"}
-                  </span>
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {previewDocModal.fileName}
-                  </h3>
-                  {previewDocModal.fileSize && (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {previewDocModal.fileSize}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => setPreviewDocModal(null)}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
-
-            {/* Document Preview Area */}
-            <div className="rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-slate-700/60 p-4 max-h-[60vh] overflow-y-auto">
-              {previewDocModal.fileUrl &&
-              previewDocModal.fileUrl.startsWith("data:application/pdf") ? (
-                <iframe
-                  src={previewDocModal.fileUrl}
-                  title={previewDocModal.fileName}
-                  className="w-full h-[50vh] rounded-lg border border-slate-200 dark:border-slate-700"
-                />
-              ) : (
-                <div className="bg-white dark:bg-[#1e1f23] p-6 rounded-lg border border-slate-200 dark:border-slate-700 text-left font-mono text-xs text-slate-800 dark:text-slate-200 space-y-4 whitespace-pre-wrap leading-relaxed">
-                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3 font-sans">
-                    <div>
-                      <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                        {user.name}
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Ứng viên Cộng tác viên
-                      </p>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-                      Hồ sơ đã xác thực
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-sans text-xs pt-1">
-                    <div>
-                      <p className="text-slate-500 dark:text-slate-400 font-medium">
-                        Email liên hệ:
-                      </p>
-                      <p className="font-semibold text-slate-900 dark:text-white">{user.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500 dark:text-slate-400 font-medium">
-                        Số điện thoại:
-                      </p>
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {formatPhoneNumber(user.phone)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500 dark:text-slate-400 font-medium">Ngày sinh:</p>
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {user.dob || "15/08/1990"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500 dark:text-slate-400 font-medium">Địa chỉ:</p>
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {user.address || "TP. Hồ Chí Minh"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-700 font-sans">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
-                      Kỹ năng & Chuyên môn
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(user.skills && user.skills.length > 0
-                        ? user.skills
-                        : [
-                            "An ninh cơ bản",
-                            "Sơ cấp cứu",
-                            "Giao tiếp khách hàng",
-                            "Tin học văn phòng",
-                          ]
-                      ).map((sk, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                        >
-                          {sk}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Bottom Actions */}
-            <div className="flex items-center justify-between gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-700 mt-3">
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                File đính kèm hồ sơ CTV
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPreviewDocModal(null);
-                    cvFileInputRef.current?.click();
-                  }}
-                  className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">upload_file</span>
-                  <span>Thay đổi file</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleDownloadCv}
-                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                >
-                  <span className="material-symbols-outlined text-[16px]">download</span>
-                  <span>Tải về</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

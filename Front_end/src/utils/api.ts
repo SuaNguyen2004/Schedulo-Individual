@@ -3,7 +3,10 @@ import type { MeetingItem, RegistrationRequest, ShiftSlot, UserAccount, WorkRoom
 export interface BootstrapData {
     accounts: UserAccount[];
     requests: RegistrationRequest[];
+    /** Registered plan, drives the "Lịch tuần" grid. Rewritten on every registration. */
     shifts: ShiftSlot[];
+    /** Elapsed shifts frozen server-side, drives "Lịch sử làm việc". Never rewritten. */
+    history: ShiftSlot[];
     meetings: MeetingItem[];
     rooms: WorkRoom[];
 }
@@ -44,7 +47,12 @@ export interface RegistrationPayload {
     attachments: Array<{ fileType: string; fileName: string; filePath: string; fileSize?: number }>;
 }
 
-export async function registerWithDatabase(payload: RegistrationPayload): Promise<void> {
+export interface CreatedRegistration {
+    id: string;
+    status: string;
+}
+
+export async function registerWithDatabase(payload: RegistrationPayload): Promise<CreatedRegistration> {
     const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,10 +62,13 @@ export async function registerWithDatabase(payload: RegistrationPayload): Promis
         const data = (await response.json().catch(() => null)) as { message?: string } | null;
         throw new Error(data?.message || "Không thể gửi yêu cầu đăng ký.");
     }
+    return response.json() as Promise<CreatedRegistration>;
 }
 
 export interface ShiftRegistrationPayload {
     userId: string;
+    startDate?: string;
+    endDate?: string;
     registrations: Array<{
         dayOfWeek: number;
         shiftType: "morning" | "afternoon";
@@ -94,4 +105,28 @@ export function approveRegistrationRequest(id: string, adminId: string): Promise
 
 export function rejectRegistrationRequest(id: string, adminId: string): Promise<void> {
     return reviewRegistrationRequest(id, adminId, "reject");
+}
+
+export async function changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
+    const response = await fetch("/api/auth/change-password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, oldPassword, newPassword }),
+    });
+    if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message || "Không thể đổi mật khẩu.");
+    }
+}
+
+export async function updateProfile(userId: string, profile: { name?: string; email?: string; phone?: string; dob?: string }): Promise<void> {
+    const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, ...profile }),
+    });
+    if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message || "Không thể cập nhật hồ sơ.");
+    }
 }

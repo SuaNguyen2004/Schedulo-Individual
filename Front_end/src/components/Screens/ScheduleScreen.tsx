@@ -4,6 +4,8 @@ import { CTVScheduleWorkspace } from "./CTVScheduleWorkspace";
 
 interface ScheduleScreenProps {
     shifts: ShiftSlot[];
+    /** Elapsed shifts, frozen server-side. Only the history view reads this. */
+    history?: ShiftSlot[];
     accounts: UserAccount[];
     onUpdateShifts: (updatedShifts: ShiftSlot[]) => void;
     onShowToast: (msg: string) => void;
@@ -16,6 +18,7 @@ type ViewMode = "my_schedule" | "grid" | "ctv";
 
 export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
     shifts,
+    history = [],
     accounts,
     onUpdateShifts,
     onShowToast,
@@ -413,6 +416,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
         return (
             <CTVScheduleWorkspace
                 shifts={shifts}
+                history={history}
                 currentUser={ctvUser}
                 onUpdateShifts={onUpdateShifts}
                 onShowToast={onShowToast}

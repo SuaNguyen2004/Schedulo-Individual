@@ -197,7 +197,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         }
 
         const newRequest: RegistrationRequest = {
-            id: `req-${Date.now()}`,
+            id: "",
             stt: 1,
             name: regName.trim(),
             email: regEmail.trim(),
@@ -256,9 +256,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             password: regPassword,
             attachments: registrationAttachments,
         })
-            .then(() => {
+            .then((created) => {
                 if (onRequestRegister) {
-                    onRequestRegister(newRequest);
+                    onRequestRegister({ ...newRequest, id: created.id });
                 }
                 setMode("register_success");
             })

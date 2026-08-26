@@ -34,6 +34,7 @@ import { approveRegistrationRequest, rejectRegistrationRequest, AuthenticatedUse
 const SHIFTS_STORAGE_KEY = "schedulo_shifts";
 const AUTH_STORAGE_KEY = "schedulo_authenticated";
 const AUTH_USER_EMAIL_KEY = "schedulo_authenticated_email";
+const AUTH_USER_ID_KEY = "schedulo_authenticated_id";
 const EMPTY_USER: UserAccount = {
     id: "current-user",
     stt: 0,
@@ -86,6 +87,10 @@ export const App: React.FC = () => {
     const [accounts, setAccounts] = useState<UserAccount[]>([]);
     const [requests, setRequests] = useState<RegistrationRequest[]>([]);
     const [shifts, setShifts] = useState<ShiftSlot[]>(loadStoredShifts);
+    // Elapsed shifts, served frozen by the API. Deliberately not persisted to
+    // localStorage: history must always come from the server so a stale local copy can
+    // never contradict it.
+    const [history, setHistory] = useState<ShiftSlot[]>([]);
     const [meetings, setMeetings] = useState<MeetingItem[]>([]);
     const [rooms, setRooms] = useState<WorkRoom[]>([]);
 
@@ -145,6 +150,7 @@ export const App: React.FC = () => {
                 setAccounts(data.accounts);
                 setRequests(data.requests);
                 setShifts(data.shifts);
+                setHistory(data.history || []);
                 setMeetings(data.meetings);
                 setRooms(data.rooms);
                 const authenticatedEmail = window.localStorage.getItem(AUTH_USER_EMAIL_KEY);
@@ -174,6 +180,7 @@ export const App: React.FC = () => {
         setIsLoggedIn(true);
         window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
         window.localStorage.setItem(AUTH_USER_EMAIL_KEY, user.email);
+        window.localStorage.setItem(AUTH_USER_ID_KEY, user.id);
         const account = accounts.find((item) => item.id === user.id || item.email === user.email);
         if (account) {
             setCurrentUser(account);
@@ -196,6 +203,7 @@ export const App: React.FC = () => {
         setIsLoggedIn(false);
         window.localStorage.removeItem(AUTH_STORAGE_KEY);
         window.localStorage.removeItem(AUTH_USER_EMAIL_KEY);
+        window.localStorage.removeItem(AUTH_USER_ID_KEY);
         window.localStorage.removeItem("schedulo_weekly_pattern");
         showToast("Đã đăng xuất khỏi hệ thống");
     };
@@ -372,13 +380,26 @@ export const App: React.FC = () => {
         showToast(`Đã kết thúc lịch làm việc của ${accName} từ ${endDate}. Các ca sau ngày này đã được hủy bỏ.`);
     };
 
+    // The backend only accepts numeric database ids for the request and the reviewing admin.
+    const requireAdminId = (requestId: string): string => {
+        if (!/^[0-9]+$/.test(requestId)) {
+            throw new Error("Hồ sơ này chưa được đồng bộ với database. Vui lòng tải lại trang rồi duyệt lại.");
+        }
+        const storedAdminId = window.localStorage.getItem(AUTH_USER_ID_KEY) || "";
+        const adminId = [currentUser.id, storedAdminId].find((value) => /^[0-9]+$/.test(value));
+        if (!adminId) {
+            throw new Error("Không xác định được quản trị viên đang đăng nhập. Vui lòng đăng nhập lại.");
+        }
+        return adminId;
+    };
+
     // Request Operations
     const handleApproveRequest = async (id: string) => {
         const req = requests.find((r) => r.id === id);
         if (!req) return;
 
         try {
-            await approveRegistrationRequest(id, currentUser.id);
+            await approveRegistrationRequest(id, requireAdminId(id));
             setRequests((prev) => prev.filter((r) => r.id !== id));
             showToast(`Đã phê duyệt hồ sơ của ${req.name} và lưu vào database`);
         } catch (error) {
@@ -391,7 +412,7 @@ export const App: React.FC = () => {
         if (!req) return;
 
         try {
-            await rejectRegistrationRequest(id, currentUser.id);
+            await rejectRegistrationRequest(id, requireAdminId(id));
             setRequests((prev) => prev.filter((r) => r.id !== id));
             if (selectedRequest?.id === id) {
                 setSelectedRequest(null);
@@ -432,7 +453,13 @@ export const App: React.FC = () => {
     };
 
     const handleSaveProfile = (updated: Partial<UserAccount>) => {
-        setCurrentUser({ ...currentUser, ...updated });
+        setCurrentUser((prev) => {
+            const next = { ...prev, ...updated };
+            setAccounts((prevAccounts) =>
+                prevAccounts.map((acc) => (acc.id === next.id ? { ...acc, ...updated } : acc)),
+            );
+            return next;
+        });
         showToast("Đã cập nhật thông tin hồ sơ cá nhân.");
     };
 
@@ -453,7 +480,7 @@ export const App: React.FC = () => {
         <div className={`h-screen flex overflow-hidden bg-[#faf9fd] text-[#1a1b1e] ${isDarkMode ? "dark" : ""}`}>
             {/* Toast Notification Banner */}
             {toastMessage && (
-                <div className="fixed bottom-6 right-6 z-50 bg-[#002046] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-xl flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200">
+                <div className="fixed bottom-6 right-6 z-[100] bg-[#002046] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-xl flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200">
                     <span className="material-symbols-outlined text-[18px] text-[#16A34A]">check_circle</span>
                     <span>{toastMessage}</span>
                 </div>
@@ -548,6 +575,7 @@ export const App: React.FC = () => {
                         {currentTab === "schedule" && (
                             <ScheduleScreen
                                 shifts={shifts}
+                                history={history}
                                 accounts={accounts}
                                 onUpdateShifts={setShifts}
                                 onShowToast={showToast}
@@ -637,6 +665,7 @@ export const App: React.FC = () => {
             <ViewAccountDetailModal
                 account={selectedAccountDetail}
                 shifts={shifts}
+                history={history}
                 onClose={() => setSelectedAccountDetail(null)}
                 onToggleStatus={handleToggleAccountStatus}
                 onSaveNotes={handleSaveAccountNotes}
@@ -653,6 +682,7 @@ export const App: React.FC = () => {
 
             <ChangePasswordModal
                 isOpen={isChangePasswordOpen}
+                userId={currentUser.id}
                 onClose={() => setIsChangePasswordOpen(false)}
                 onSuccess={() => showToast("Đổi mật khẩu thành công!")}
             />

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserAccount } from "../../types";
+import { updateProfile } from "../../utils/api";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -15,21 +16,37 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onSave,
 }) => {
   const [name, setName] = useState(user.name);
-  const [dob, setDob] = useState(user.dob || "15/08/1990");
+  const [dob, setDob] = useState(user.dob || "");
   const [email, setEmail] = useState(user.email || "");
   const [phone, setPhone] = useState(user.phone);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setName(user.name);
+      setDob(user.dob || "");
+      setEmail(user.email || "");
+      setPhone(user.phone);
+      setErrorMsg("");
+    }
+  }, [isOpen, user]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      name,
-      dob,
-      email,
-      phone,
-    });
-    onClose();
+    setErrorMsg("");
+    setLoading(true);
+    try {
+      await updateProfile(user.id, { name, email, phone, dob });
+      onSave({ name, email, phone, dob });
+      onClose();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Không thể cập nhật hồ sơ.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,6 +65,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          {errorMsg && (
+            <div className="p-2.5 bg-[#ffdad6] text-[#ba1a1a] text-xs font-semibold rounded flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">error</span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
@@ -114,9 +137,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-accent hover:opacity-90 text-white rounded text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+              disabled={loading}
+              className="px-4 py-2 bg-accent hover:opacity-90 text-white rounded text-xs font-semibold transition-colors cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Lưu thay đổi
+              {loading ? "Đang lưu..." : "Lưu thay đổi"}
             </button>
           </div>
         </form>

@@ -3,7 +3,10 @@ import { AssignedCTV, ShiftSlot, UserAccount } from "../../types";
 import { saveShiftRegistrations } from "../../utils/api";
 
 interface CTVScheduleWorkspaceProps {
+    /** Registered plan. Drives "Lịch tuần", including days of the current week that already passed. */
     shifts: ShiftSlot[];
+    /** Elapsed shifts frozen server-side. Drives "Lịch sử làm việc" and is never derived from `shifts`. */
+    history: ShiftSlot[];
     currentUser: UserAccount;
     onUpdateShifts: (updatedShifts: ShiftSlot[]) => void;
     onShowToast: (message: string) => void;
@@ -46,13 +49,7 @@ const SHIFT_OPTIONS: Array<{
     },
 ];
 
-const DEFAULT_PATTERN: WeeklyPattern = {
-    0: [],
-    1: [],
-    2: [],
-    3: [],
-    4: [],
-};
+const createEmptyPattern = (): WeeklyPattern => ({ 0: [], 1: [], 2: [], 3: [], 4: [] });
 
 const startOfDay = (date: Date) => {
     const result = new Date(date);
@@ -103,6 +100,7 @@ const getDayIndex = (date: Date) => (date.getDay() + 6) % 7;
 
 export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     shifts,
+    history,
     currentUser,
     onUpdateShifts,
     onShowToast,
@@ -119,42 +117,18 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
     const [startDate, setStartDate] = useState(todayISO);
     const [endDate, setEndDate] = useState(toISODate(addDays(today, DEFAULT_REGISTRATION_DAYS)));
-    const [weeklyPattern, setWeeklyPattern] = useState<WeeklyPattern>(() => {
-        try {
-            const stored = localStorage.getItem("schedulo_weekly_pattern");
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                if (parsed && typeof parsed === "object") return parsed;
-            }
-        } catch {}
-        return DEFAULT_PATTERN;
-    });
+    // The weekly pattern is only the state of the registration dialog. It must never
+    // be persisted, otherwise a stale pattern from a previous session/user would be
+    // rendered as shifts that do not exist in the database.
+    const [weeklyPattern, setWeeklyPattern] = useState<WeeklyPattern>(createEmptyPattern);
 
     // Temporary pattern for modal selections - only committed when "Đăng ký lịch" is clicked
-    const [tempWeeklyPattern, setTempWeeklyPattern] = useState<WeeklyPattern>(DEFAULT_PATTERN);
+    const [tempWeeklyPattern, setTempWeeklyPattern] = useState<WeeklyPattern>(createEmptyPattern);
 
+    // Drop any dialog state left over from a previous account.
     useEffect(() => {
-        try {
-            localStorage.setItem("schedulo_weekly_pattern", JSON.stringify(weeklyPattern));
-        } catch {}
-    }, [weeklyPattern]);
-
-    // Reset pattern when user changes (logout/login)
-    useEffect(() => {
-        try {
-            const stored = localStorage.getItem("schedulo_weekly_pattern_user_id");
-            if (stored !== currentUser.id) {
-                // User changed, reset pattern to empty
-                setWeeklyPattern({
-                    0: [],
-                    1: [],
-                    2: [],
-                    3: [],
-                    4: [],
-                });
-                localStorage.setItem("schedulo_weekly_pattern_user_id", currentUser.id);
-            }
-        } catch {}
+        setWeeklyPattern(createEmptyPattern());
+        setTempWeeklyPattern(createEmptyPattern());
     }, [currentUser.id]);
 
     const [workContent, setWorkContent] = useState(
@@ -197,41 +171,31 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         return myShifts.find((shift) => shift.workDate === dateISO && shift.shiftType === shiftType);
     };
 
+    // "Lịch sử làm việc" reads the frozen history feed, never `shifts`. That is what
+    // lets a pattern registered today cover an already-elapsed day of this week (it
+    // appears in the week grid) without rewriting what that day's history says.
+    const myHistory = useMemo(
+        () =>
+            history.filter(
+                (shift) =>
+                    Boolean(shift.workDate) &&
+                    (shift.shiftType === "morning" || shift.shiftType === "afternoon") &&
+                    isAssignedToCurrentUser(shift),
+            ),
+        [history, currentUser.id, currentUser.name],
+    );
+
+    const getHistoryShift = (date: Date, shiftType: ShiftType) => {
+        const dateISO = toISODate(date);
+        return myHistory.find((shift) => shift.workDate === dateISO && shift.shiftType === shiftType) || null;
+    };
+
+    // Only shifts that actually exist in the database are rendered. Previously this
+    // also synthesised shifts from `weeklyPattern`, which produced phantom entries
+    // in both the week grid and the monthly history.
     const getVisibleShift = (date: Date, shiftType: ShiftType) => {
         const existing = getMyShift(date, shiftType);
-        if (existing && isAssignedToCurrentUser(existing)) {
-            return existing;
-        }
-
-        const dayIndex = getDayIndex(date);
-        const isPatternActive = (weeklyPattern[dayIndex] || []).includes(shiftType);
-
-        if (isPatternActive) {
-            return {
-                id: `pattern-${toISODate(date)}-${shiftType}`,
-                workDate: toISODate(date),
-                dayIndex,
-                dayName: WEEKDAYS[dayIndex]?.label || "Thứ",
-                dateStr: formatShortDate(date),
-                shiftType,
-                shiftTimeLabel: shiftType === "morning" ? "Ca sáng" : "Ca chiều",
-                status: "Đã đăng ký",
-                allowRegister: true,
-                assignedCTVs: [
-                    {
-                        id: currentUser.id,
-                        name: currentUser.name,
-                        avatar: currentUser.avatar,
-                        initials: currentUser.initials || currentUser.name.slice(0, 2).toUpperCase(),
-                        phone: currentUser.phone,
-                        cctvCode: currentUser.cctvCode,
-                        status: "Đã duyệt",
-                    },
-                ],
-            } as ShiftSlot;
-        }
-
-        return null;
+        return existing && isAssignedToCurrentUser(existing) ? existing : null;
     };
 
     const weekStart = startOfWeek(calendarDate);
@@ -260,71 +224,51 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     const todayShifts = myShifts.filter((shift) => shift.workDate === todayISO);
 
     const openRegistration = () => {
-        const registeredShifts = myShifts.filter((shift) => shift.workDate && shift.registrationId);
+        // Derive the dialog state from the shifts that really exist in the database
+        // (upcoming ones only). The old implementation keyed off `registrationId`,
+        // which the API never returns, so the dialog never reflected saved data.
+        const upcomingShifts = myShifts.filter((shift) => shift.workDate && shift.workDate >= todayISO);
+
+        const restoredPattern = createEmptyPattern();
+        for (const shift of upcomingShifts) {
+            if (!shift.workDate) continue;
+            const dayIndex = getDayIndex(parseISODate(shift.workDate));
+            const shiftType = shift.shiftType as ShiftType;
+            if (dayIndex < 0 || dayIndex > 4) continue;
+            if (shiftType !== "morning" && shiftType !== "afternoon") continue;
+            if (!restoredPattern[dayIndex].includes(shiftType)) {
+                restoredPattern[dayIndex].push(shiftType);
+            }
+        }
+
         const registrationIds = Array.from(
-            new Set(registeredShifts.map((shift) => shift.registrationId as string)),
+            new Set(upcomingShifts.map((shift) => shift.registrationId).filter(Boolean) as string[]),
         ).sort();
-        const latestRegistrationId = registrationIds[registrationIds.length - 1];
-        const latestRegistrationShifts = latestRegistrationId
-            ? registeredShifts.filter((shift) => shift.registrationId === latestRegistrationId)
-            : [];
+        setEditingRegistrationId(registrationIds[registrationIds.length - 1] || null);
 
-        setEditingRegistrationId(latestRegistrationId || null);
-
-        if (latestRegistrationShifts.length > 0) {
-            const restoredPattern: WeeklyPattern = {
-                0: [],
-                1: [],
-                2: [],
-                3: [],
-                4: [],
-            };
-
-            latestRegistrationShifts.forEach((shift) => {
-                if (!shift.workDate) return;
-                const dayIndex = getDayIndex(parseISODate(shift.workDate));
-                const shiftType = shift.shiftType as ShiftType;
-                if (!restoredPattern[dayIndex].includes(shiftType)) {
-                    restoredPattern[dayIndex].push(shiftType);
-                }
-            });
-
-            const firstShift = latestRegistrationShifts[0];
-            const restoredStartDate = latestRegistrationShifts.reduce(
-                (earliest, shift) =>
-                    (shift.registrationStartDate || shift.workDate || earliest) < earliest
-                        ? shift.registrationStartDate || (shift.workDate as string)
-                        : earliest,
-                firstShift.registrationStartDate || (firstShift.workDate as string),
-            );
-            const restoredEndDate = latestRegistrationShifts.reduce(
-                (latest, shift) =>
-                    (shift.registrationEndDate || shift.workDate || latest) > latest
-                        ? shift.registrationEndDate || (shift.workDate as string)
-                        : latest,
-                firstShift.registrationEndDate || (firstShift.workDate as string),
-            );
-
-            setStartDate(restoredStartDate);
-            setEndDate(restoredEndDate);
-            setCalendarDate(parseISODate(restoredStartDate));
-            setWeeklyPattern(restoredPattern);
-            // Copy pattern to temp for modal selections
-            setTempWeeklyPattern(JSON.parse(JSON.stringify(restoredPattern)));
+        if (upcomingShifts.length > 0) {
+            const workDates = upcomingShifts.map((shift) => shift.workDate as string).sort();
+            // Always start from today, never from the first upcoming shift. Seeding
+            // `startDate` with that date let the window drift forward every time the
+            // dialog was reopened, so the remaining days of the current week were never
+            // registered and the week grid kept losing them.
+            setStartDate(todayISO);
+            setEndDate(workDates[workDates.length - 1]);
+            setCalendarDate(today);
             setWorkContent(
-                firstShift.workContent ||
-                    firstShift.title ||
+                upcomingShifts[0].workContent ||
+                    upcomingShifts[0].title ||
                     "Hỗ trợ điều phối lịch, kiểm tra dữ liệu và cập nhật tiến độ công việc trong ca.",
             );
         } else {
             setStartDate(todayISO);
             setEndDate(toISODate(addDays(today, DEFAULT_REGISTRATION_DAYS)));
             setCalendarDate(today);
-            setWeeklyPattern(DEFAULT_PATTERN);
             setWorkContent("Hỗ trợ điều phối lịch, kiểm tra dữ liệu và cập nhật tiến độ công việc trong ca.");
         }
-        // Copy current weeklyPattern to temp for modal selections
-        setTempWeeklyPattern(JSON.parse(JSON.stringify(weeklyPattern)));
+
+        setWeeklyPattern(restoredPattern);
+        setTempWeeklyPattern(JSON.parse(JSON.stringify(restoredPattern)));
         setIsRegistrationOpen(true);
     };
 
@@ -351,7 +295,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     const closeRegistrationModal = () => {
         // Discard temporary selections when closing without saving
         setIsRegistrationOpen(false);
-        setTempWeeklyPattern(DEFAULT_PATTERN);
+        setTempWeeklyPattern(createEmptyPattern());
     };
 
     const getFirstRegistrationDate = (dayIndex: number) => {
@@ -385,7 +329,13 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
             return;
         }
 
-        if ((rangeEnd.getTime() - rangeStart.getTime()) / DAY_MS > 180) {
+        // Mirror the backend, which snaps the window back to the Monday of the week
+        // containing startDate. Without this the optimistic update below skipped the
+        // already-elapsed days of the current week (register on Wednesday → Mon/Tue were
+        // written server-side but only showed up in the week grid after a page reload).
+        const materializeStart = startOfWeek(rangeStart);
+
+        if ((rangeEnd.getTime() - materializeStart.getTime()) / DAY_MS > 180) {
             onShowToast("Mỗi lần đăng ký tối đa 180 ngày.");
             return;
         }
@@ -397,7 +347,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
             shiftType: ShiftType;
         }> = [];
 
-        for (let cursor = rangeStart; cursor <= rangeEnd; cursor = addDays(cursor, 1)) {
+        for (let cursor = materializeStart; cursor <= rangeEnd; cursor = addDays(cursor, 1)) {
             const dayIndex = getDayIndex(cursor);
             const selectedShiftTypes = tempWeeklyPattern[dayIndex] || [];
 
@@ -421,11 +371,16 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         const desiredShiftKeys = new Set(
             selectedOccurrences.map(({ workDate, shiftType }) => `${workDate}:${shiftType}`),
         );
+        // Same rule as the backend's "DELETE ... WHERE user_id = ? AND work_date >= ?":
+        // every shift of this CTV from the window start onwards that the new pattern no
+        // longer contains is dropped. Keying this off `registrationId` never worked —
+        // rows loaded from the API do not carry one — so unchecking a day also needed a
+        // reload before the week grid caught up.
+        const windowStartISO = toISODate(materializeStart);
         const updatedShifts = shifts.map((shift) => {
             if (
-                !editingRegistrationId ||
-                shift.registrationId !== editingRegistrationId ||
                 !shift.workDate ||
+                shift.workDate < windowStartISO ||
                 !isAssignedToCurrentUser(shift) ||
                 desiredShiftKeys.has(`${shift.workDate}:${shift.shiftType}`)
             ) {
@@ -493,6 +448,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
         saveShiftRegistrations({
             userId: currentUser.id,
+            startDate,
+            endDate,
             registrations: selectedOccurrences.map(({ dayIndex, shiftType }) => ({
                 dayOfWeek: dayIndex,
                 shiftType,
@@ -507,7 +464,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                 setCalendarView("week");
                 setIsRegistrationOpen(false);
                 onShowToast(
-                    `${editingRegistrationId ? "Đã cập nhật" : "Đã đăng ký"} ${selectedOccurrences.length} ca và đã lưu vào CSDL.`,
+                    "Bạn đã đăng ký ca làm việc thành công.",
                 );
             })
             .catch((error: unknown) => {
@@ -945,9 +902,9 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                 const dateISO = toISODate(date);
                                                 const isToday = dateISO === todayISO;
                                                 const isPast = dateISO < todayISO;
-                                                const morningShift = isPast ? getVisibleShift(date, "morning") : null;
+                                                const morningShift = isPast ? getHistoryShift(date, "morning") : null;
                                                 const afternoonShift = isPast
-                                                    ? getVisibleShift(date, "afternoon")
+                                                    ? getHistoryShift(date, "afternoon")
                                                     : null;
 
                                                 return (
