@@ -181,30 +181,7 @@ export const App: React.FC = () => {
                     setCurrentUser(authenticatedAccount);
                     setCurrentTab(authenticatedAccount.role === "Admin" ? "accounts" : "schedule");
                 } else if (authenticatedEmail) {
-                    // Check pending requests list (user registered but not yet approved)
-                    const pendingRequest = data.requests.find((req) => req.email === authenticatedEmail);
-                    if (pendingRequest) {
-                        setCurrentUser({
-                            ...EMPTY_USER,
-                            id: pendingRequest.id,
-                            name: pendingRequest.name,
-                            email: pendingRequest.email,
-                            phone: pendingRequest.phone || "",
-                            dob: pendingRequest.dob || "",
-                            role: "Cộng tác viên",
-                            status: "Chờ duyệt",
-                            registerDate: pendingRequest.submittedAt
-                                ? formatDateOnly(pendingRequest.submittedAt)
-                                : "",
-                            cccdFront: pendingRequest.cccdFront,
-                            cccdBack: pendingRequest.cccdBack,
-                            cvFile: pendingRequest.cvFile,
-                            cvFileName: pendingRequest.cvFileName,
-                        });
-                        setCurrentTab("schedule");
-                    } else {
-                        clearAuthState("Phiên đăng nhập không còn hiệu lực. Vui lòng đăng nhập lại.");
-                    }
+                    clearAuthState();
                 }
                 return data;
             })
@@ -246,23 +223,13 @@ export const App: React.FC = () => {
             setCurrentUser(account);
             setCurrentTab(account.role === "Admin" ? "accounts" : "schedule");
         } else {
-            const pendingRequest = (bootstrapData?.requests || requests).find((req) => req.email === user.email);
             setCurrentUser({
                 ...EMPTY_USER,
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                phone: pendingRequest?.phone || "",
-                dob: pendingRequest?.dob || "",
                 role: user.role === "ADMIN" ? "Admin" : "Cộng tác viên",
-                status: user.status === "PENDING" ? "Chờ duyệt" : "Kích hoạt",
-                registerDate: pendingRequest?.submittedAt
-                    ? formatDateOnly(pendingRequest.submittedAt)
-                    : "",
-                cccdFront: pendingRequest?.cccdFront,
-                cccdBack: pendingRequest?.cccdBack,
-                cvFile: pendingRequest?.cvFile,
-                cvFileName: pendingRequest?.cvFileName,
+                status: "Kích hoạt",
             });
             setCurrentTab(user.role === "ADMIN" ? "accounts" : "schedule");
         }

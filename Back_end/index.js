@@ -80,7 +80,15 @@ app.post("/api/auth/login", async (req, res) => {
                     disabled: true,
                 });
         }
-        if (userStatus !== "active" && userStatus !== "pending") {
+        if (userStatus === "pending") {
+            return res
+                .status(403)
+                .json({
+                    message: "Tài khoản của bạn đang chờ xét duyệt. Vui lòng liên hệ Admin để được hỗ trợ.",
+                    pending: true,
+                });
+        }
+        if (userStatus !== "active") {
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
         }
 
@@ -89,7 +97,7 @@ app.post("/api/auth/login", async (req, res) => {
             name: user.full_name || "",
             email: user.email,
             role: userRole === "admin" ? "ADMIN" : "CTV",
-            status: userStatus === "active" ? "ACTIVE" : "PENDING",
+            status: "ACTIVE",
         });
     } catch (error) {
         return res.status(500).json({ message: "Không thể xác thực tài khoản.", detail: error.message });
@@ -127,6 +135,13 @@ app.post("/api/auth/register", async (req, res) => {
         // duplicate — that is what previously raised ER_DUP_ENTRY and surfaced as
         // "Email hoặc số điện thoại đã được sử dụng". Reusing the same row also releases
         // the old phone number, since the profile is overwritten in place.
+        const [existingUsers] = await connection.execute(
+            "SELECT id, status FROM users WHERE email = ? FOR UPDATE",
+            [normalizedEmail],
+        );
+        const existingUser = existingUsers[0];
+        const rejectedUser = existingUser && existingUser.status === "rejected" ? existingUser : null;
+
         if (existingUser && !rejectedUser) {
             await connection.rollback();
             return res.status(409).json({ message: "Email này đã được sử dụng." });
