@@ -26,8 +26,8 @@ const accentMap: Record<AccentColorOption, { primary: string; hover: string; lig
 const translations: Record<LanguageOption, Record<string, string>> = {
     "Tiếng Việt": {
         system_name: "Hệ thống Quản lý CTV",
-        admin_view: "Giao diện Quản trị viên",
-        ctv_view: "Giao diện Cộng tác viên",
+        // admin_view: "Giao diện Quản trị viên",
+        // ctv_view: "Giao diện Cộng tác viên",
         nav_accounts: "Quản lý tài khoản",
         nav_requests: "Yêu cầu đăng ký",
         nav_schedule: "Lịch làm việc",
@@ -65,8 +65,8 @@ const translations: Record<LanguageOption, Record<string, string>> = {
     },
     "Tiếng Anh": {
         system_name: "Contributor Mgmt",
-        admin_view: "Administrator View",
-        ctv_view: "Contributor View",
+        // admin_view: "Administrator View",
+        // ctv_view: "Contributor View",
         nav_accounts: "Account List",
         nav_requests: "Registration Requests",
         nav_schedule: "Shift Registration",

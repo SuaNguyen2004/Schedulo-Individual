@@ -17,8 +17,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onSave,
   onShowToast,
 }) => {
+  const parseDobParts = (dobStr: string) => {
+    const match = dobStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return { day: match ? match[1] : "", month: match ? match[2] : "", year: match ? match[3] : "" };
+  };
+
+  const initialDob = parseDobParts(user.dob || "");
+  const [dobDay, setDobDay] = useState(initialDob.day);
+  const [dobMonth, setDobMonth] = useState(initialDob.month);
+  const [dobYear, setDobYear] = useState(initialDob.year);
   const [name, setName] = useState(user.name);
-  const [dob, setDob] = useState(user.dob || "");
   const [email, setEmail] = useState(user.email || "");
   const [phone, setPhone] = useState(user.phone);
   const [errorMsg, setErrorMsg] = useState("");
@@ -27,7 +35,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setName(user.name);
-      setDob(user.dob || "");
+      const parts = parseDobParts(user.dob || "");
+      setDobDay(parts.day);
+      setDobMonth(parts.month);
+      setDobYear(parts.year);
       setEmail(user.email || "");
       setPhone(user.phone);
       setErrorMsg("");
@@ -41,6 +52,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     setErrorMsg("");
     setLoading(true);
     try {
+      if (!/^[0-9]{10}$/.test(phone.trim())) {
+        setErrorMsg("Số điện thoại phải đúng 10 chữ số!");
+        setLoading(false);
+        return;
+      }
+      const dob = dobDay && dobMonth && dobYear ? `${dobDay}/${dobMonth}/${dobYear}` : "";
       await updateProfile(user.id, { name, email, phone, dob });
       onSave({ name, email, phone, dob });
       if (onShowToast) onShowToast("Đã cập nhật thông tin hồ sơ cá nhân.");
@@ -92,13 +109,47 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
                 Ngày sinh
               </label>
-              <input
-                type="text"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-                placeholder="15/08/1990"
-                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
-              />
+              <div className="grid grid-cols-3 gap-2">
+                <select
+                  value={dobDay}
+                  onChange={(e) => setDobDay(e.target.value)}
+                  className="px-2 py-1.5 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-xs text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px]"
+                >
+                  <option value="">Ngày</option>
+                  {Array.from({ length: 31 }, (_, i) => {
+                    const d = String(i + 1).padStart(2, "0");
+                    return (
+                      <option key={d} value={d}>{d}</option>
+                    );
+                  })}
+                </select>
+                <select
+                  value={dobMonth}
+                  onChange={(e) => setDobMonth(e.target.value)}
+                  className="px-2 py-1.5 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-xs text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px]"
+                >
+                  <option value="">Tháng</option>
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const m = String(i + 1).padStart(2, "0");
+                    return (
+                      <option key={m} value={m}>{m}</option>
+                    );
+                  })}
+                </select>
+                <select
+                  value={dobYear}
+                  onChange={(e) => setDobYear(e.target.value)}
+                  className="px-2 py-1.5 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-xs text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px]"
+                >
+                  <option value="">Năm</option>
+                  {Array.from({ length: 55 }, (_, i) => {
+                    const y = String(1970 + i);
+                    return (
+                      <option key={y} value={y}>{y}</option>
+                    );
+                  })}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -121,10 +172,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 Số điện thoại
               </label>
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]{10}"
                 required
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                 className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
               />
             </div>

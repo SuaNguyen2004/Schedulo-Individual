@@ -85,3 +85,32 @@ test("does not fabricate assignments for empty dates or special weekdays", () =>
     1,
   );
 });
+
+test("synchronizes avatar and initials from accounts into shift assignments", () => {
+  const accountsWithAvatar: UserAccount[] = [
+    {
+      id: "ctv-avatar",
+      stt: 1,
+      name: "Nguyen Van A",
+      email: "nva@gmail.com",
+      phone: "1234567890",
+      role: "Cộng tác viên",
+      status: "Kích hoạt",
+      registerDate: "17/08/2026",
+      avatar: "data:image/jpeg;base64,sampleavatar",
+      initials: "NA",
+    },
+  ];
+
+  const shift = createShift({
+    id: "shift-avatar",
+    workDate: "2026-08-18",
+    shiftType: "morning",
+    assignedCTVs: [{ id: "ctv-avatar", name: "Nguyen Van A", status: "Đã duyệt" }],
+  });
+
+  const result = getAssignedCTVsForDate([shift], accountsWithAvatar, "2026-08-18", "morning");
+  assert.equal(result.length, 1);
+  assert.equal(result[0].avatar, "data:image/jpeg;base64,sampleavatar");
+  assert.equal(result[0].initials, "NA");
+});

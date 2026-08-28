@@ -225,12 +225,15 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
     const openRegistration = () => {
         // Derive the dialog state from the shifts that really exist in the database
-        // (upcoming ones only). The old implementation keyed off `registrationId`,
-        // which the API never returns, so the dialog never reflected saved data.
-        const upcomingShifts = myShifts.filter((shift) => shift.workDate && shift.workDate >= todayISO);
+        // (including the current active week).
+        const currentWeekMonday = startOfWeek(today);
+        const currentWeekMondayISO = toISODate(currentWeekMonday);
+        const activeShifts = myShifts.filter(
+            (shift) => shift.workDate && shift.workDate >= currentWeekMondayISO,
+        );
 
         const restoredPattern = createEmptyPattern();
-        for (const shift of upcomingShifts) {
+        for (const shift of activeShifts) {
             if (!shift.workDate) continue;
             const dayIndex = getDayIndex(parseISODate(shift.workDate));
             const shiftType = shift.shiftType as ShiftType;
@@ -242,22 +245,18 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         }
 
         const registrationIds = Array.from(
-            new Set(upcomingShifts.map((shift) => shift.registrationId).filter(Boolean) as string[]),
+            new Set(activeShifts.map((shift) => shift.registrationId).filter(Boolean) as string[]),
         ).sort();
         setEditingRegistrationId(registrationIds[registrationIds.length - 1] || null);
 
-        if (upcomingShifts.length > 0) {
-            const workDates = upcomingShifts.map((shift) => shift.workDate as string).sort();
-            // Always start from today, never from the first upcoming shift. Seeding
-            // `startDate` with that date let the window drift forward every time the
-            // dialog was reopened, so the remaining days of the current week were never
-            // registered and the week grid kept losing them.
+        if (activeShifts.length > 0) {
+            const workDates = activeShifts.map((shift) => shift.workDate as string).sort();
             setStartDate(todayISO);
             setEndDate(workDates[workDates.length - 1]);
             setCalendarDate(today);
             setWorkContent(
-                upcomingShifts[0].workContent ||
-                    upcomingShifts[0].title ||
+                activeShifts[0].workContent ||
+                    activeShifts[0].title ||
                     "Hỗ trợ điều phối lịch, kiểm tra dữ liệu và cập nhật tiến độ công việc trong ca.",
             );
         } else {
@@ -361,8 +360,39 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
             });
         }
 
+        const windowStartISO = toISODate(materializeStart);
+
         if (selectedOccurrences.length === 0) {
-            onShowToast("Vui lòng chọn ít nhất một ca trong tuần.");
+            const updatedShifts = shifts.map((shift) => {
+                if (
+                    !shift.workDate ||
+                    shift.workDate < windowStartISO ||
+                    !isAssignedToCurrentUser(shift)
+                ) {
+                    return shift;
+                }
+
+                return removeCurrentUserFromShift(shift);
+            });
+
+            saveShiftRegistrations({
+                userId: currentUser.id,
+                startDate: windowStartISO,
+                endDate,
+                registrations: [],
+            })
+                .then(() => {
+                    onUpdateShifts(updatedShifts);
+                    setWeeklyPattern(createEmptyPattern());
+                    setTempWeeklyPattern(createEmptyPattern());
+                    setEditingRegistrationId(null);
+                    setIsRegistrationOpen(false);
+                    onShowToast("Đã hủy và xóa toàn bộ lịch đăng ký.");
+                })
+                .catch((error: unknown) => {
+                    const message = error instanceof Error ? error.message : "Không thể hủy lịch làm việc.";
+                    onShowToast(message);
+                });
             return;
         }
 
@@ -373,10 +403,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         );
         // Same rule as the backend's "DELETE ... WHERE user_id = ? AND work_date >= ?":
         // every shift of this CTV from the window start onwards that the new pattern no
-        // longer contains is dropped. Keying this off `registrationId` never worked —
-        // rows loaded from the API do not carry one — so unchecking a day also needed a
-        // reload before the week grid caught up.
-        const windowStartISO = toISODate(materializeStart);
+        // longer contains is dropped.
         const updatedShifts = shifts.map((shift) => {
             if (
                 !shift.workDate ||
@@ -1070,20 +1097,37 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 </fieldset>
                             </div>
 
-                            <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white/95 p-4 backdrop-blur sm:flex-row sm:justify-end dark:border-slate-700 dark:bg-[#25262b]/95">
+                            <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white/95 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-end dark:border-slate-700 dark:bg-[#25262b]/95">
+                                {Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0) && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setTempWeeklyPattern(createEmptyPattern())}
+                                        className="min-h-11 rounded-xl px-4 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30 transition-colors flex items-center justify-center gap-1.5 sm:mr-auto cursor-pointer">
+                                        <span className="material-symbols-outlined text-[16px]">clear_all</span>
+                                        <span>Bỏ chọn tất cả</span>
+                                    </button>
+                                )}
                                 <button
                                     type="button"
                                     onClick={() => closeRegistrationModal()}
-                                    className="min-h-11 rounded-xl px-5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-300 dark:hover:bg-slate-800">
+                                    className="min-h-11 rounded-xl px-5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer">
                                     Đóng
                                 </button>
                                 <button
                                     type="submit"
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900">
+                                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer ${
+                                        Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0)
+                                            ? "bg-blue-700 hover:bg-blue-800 focus-visible:ring-blue-600"
+                                            : "bg-amber-600 hover:bg-amber-700 focus-visible:ring-amber-500"
+                                    }`}>
                                     <span className="material-symbols-outlined text-[19px]" aria-hidden="true">
-                                        event_available
+                                        {Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0)
+                                            ? "event_available"
+                                            : "event_busy"}
                                     </span>
-                                    Đăng ký lịch
+                                    {Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0)
+                                        ? "Đăng ký lịch"
+                                        : "Lưu thay đổi (Hủy toàn bộ lịch)"}
                                 </button>
                             </div>
                         </form>

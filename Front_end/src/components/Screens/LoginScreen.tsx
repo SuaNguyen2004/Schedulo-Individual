@@ -21,9 +21,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
     // Register form state
     const [regName, setRegName] = useState("");
-    const [regDay, setRegDay] = useState("01");
-    const [regMonth, setRegMonth] = useState("01");
-    const [regYear, setRegYear] = useState("1998");
+    const [regDay, setRegDay] = useState("");
+    const [regMonth, setRegMonth] = useState("");
+    const [regYear, setRegYear] = useState("");
     const [regEmail, setRegEmail] = useState("");
     const [regPhone, setRegPhone] = useState("");
     const [regPassword, setRegPassword] = useState("");
@@ -182,8 +182,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         const errors: { [key: string]: string } = {};
 
         if (!regName.trim()) errors.regName = "Vui lòng nhập họ và tên!";
+        if (!regDay || !regMonth || !regYear) errors.regDob = "Vui lòng chọn ngày sinh!";
         if (!regEmail.trim()) errors.regEmail = "Vui lòng nhập email!";
         if (!regPhone.trim()) errors.regPhone = "Vui lòng nhập số điện thoại!";
+        else if (!/^[0-9]{10}$/.test(regPhone.trim())) errors.regPhone = "Số điện thoại phải đúng 10 chữ số!";
+        if (!cccdFront) errors.cccdFront = "Vui lòng tải ảnh CCCD mặt trước!";
+        if (!cccdBack) errors.cccdBack = "Vui lòng tải ảnh CCCD mặt sau!";
+        if (!cvFile) errors.cvFile = "Vui lòng tải file CV lên!";
         if (!regPassword) errors.regPassword = "Vui lòng nhập mật khẩu!";
         if (!regConfirmPassword) errors.regConfirmPassword = "Vui lòng nhập lại mật khẩu!";
 
@@ -263,7 +268,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 setMode("register_success");
             })
             .catch((error: unknown) => {
-                setRegErrors({ regEmail: error instanceof Error ? error.message : "Không thể gửi yêu cầu đăng ký." });
+                const message = error instanceof Error ? error.message : "Không thể gửi yêu cầu đăng ký.";
+                const lower = message.toLowerCase();
+                if (lower.includes("số điện thoại") || lower.includes("sđt") || lower.includes("phone")) {
+                    setRegErrors({ regPhone: message });
+                } else if (lower.includes("email")) {
+                    setRegErrors({ regEmail: message });
+                } else {
+                    setRegErrors({ regEmail: message });
+                }
             })
             .finally(() => setIsProcessing(false));
     };
@@ -377,7 +390,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     type="text"
                                     value={regName}
                                     onChange={(e) => setRegName(e.target.value)}
-                                    placeholder="Nguyễn Văn A"
                                     className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                         regErrors.regName ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                     }`}
@@ -389,17 +401,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
                             {/* Ngày sinh (3 dropdowns: Ngày, Tháng, Năm) */}
                             <div>
-                                <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">Ngày sinh</label>
+                                <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">
+                                    Ngày sinh <span className="text-[#DC2626]">*</span>
+                                </label>
                                 <div className="grid grid-cols-3 gap-2">
                                     <select
                                         value={regDay}
                                         onChange={(e) => setRegDay(e.target.value)}
-                                        className="px-2 py-1.5 border border-[#c4c6cf] rounded-lg text-xs bg-[#faf9fd] h-[38px]">
+                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] ${
+                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        }`}>
+                                        <option value="">Ngày</option>
                                         {Array.from({ length: 31 }, (_, i) => {
                                             const d = String(i + 1).padStart(2, "0");
                                             return (
                                                 <option key={d} value={d}>
-                                                    Ngày {d}
+                                                    {d}
                                                 </option>
                                             );
                                         })}
@@ -407,12 +424,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <select
                                         value={regMonth}
                                         onChange={(e) => setRegMonth(e.target.value)}
-                                        className="px-2 py-1.5 border border-[#c4c6cf] rounded-lg text-xs bg-[#faf9fd] h-[38px]">
+                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] ${
+                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        }`}>
+                                        <option value="">Tháng</option>
                                         {Array.from({ length: 12 }, (_, i) => {
                                             const m = String(i + 1).padStart(2, "0");
                                             return (
                                                 <option key={m} value={m}>
-                                                    Tháng {m}
+                                                    {m}
                                                 </option>
                                             );
                                         })}
@@ -420,8 +440,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <select
                                         value={regYear}
                                         onChange={(e) => setRegYear(e.target.value)}
-                                        className="px-2 py-1.5 border border-[#c4c6cf] rounded-lg text-xs bg-[#faf9fd] h-[38px]">
-                                        {Array.from({ length: 45 }, (_, i) => {
+                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] ${
+                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        }`}>
+                                        <option value="">Năm</option>
+                                        {Array.from({ length: 55 }, (_, i) => {
                                             const y = String(1970 + i);
                                             return (
                                                 <option key={y} value={y}>
@@ -431,6 +454,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         })}
                                     </select>
                                 </div>
+                                {regErrors.regDob && (
+                                    <p className="text-[11px] text-[#DC2626] mt-1 font-medium">{regErrors.regDob}</p>
+                                )}
                             </div>
 
                             {/* Email & Số điện thoại (Responsive Grid) */}
@@ -444,7 +470,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         type="email"
                                         value={regEmail}
                                         onChange={(e) => setRegEmail(e.target.value)}
-                                        placeholder="nguyenvana@vienkhcn.vn"
                                         className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                             regErrors.regEmail ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                         }`}
@@ -463,9 +488,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     </label>
                                     <input
                                         type="tel"
+                                        inputMode="numeric"
+                                        pattern="[0-9]{10}"
                                         value={regPhone}
-                                        onChange={(e) => setRegPhone(e.target.value)}
-                                        placeholder="0987654321"
+                                        onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                                         className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                             regErrors.regPhone ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                         }`}
@@ -485,7 +511,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         <span className="material-symbols-outlined text-[#1b365d] text-[18px]">
                                             badge
                                         </span>
-                                        <span>Ảnh CCCD (Mặt trước & Mặt sau)</span>
+                                        <span>Ảnh CCCD (Mặt trước & Mặt sau)</span> <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <span className="text-[11px] text-[#74777f]">Định dạng JPG, PNG</span>
                                 </div>
@@ -686,7 +712,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         <span className="material-symbols-outlined text-[#1b365d] text-[18px]">
                                             description
                                         </span>
-                                        <span>CV ứng tuyển (File PDF, Word)</span>
+                                        <span>CV ứng tuyển (File PDF, Word)</span> <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <span className="text-[11px] text-[#74777f]">.pdf, .doc, .docx</span>
                                 </div>
@@ -801,7 +827,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             type={showRegPassword ? "text" : "password"}
                                             value={regPassword}
                                             onChange={(e) => setRegPassword(e.target.value)}
-                                            placeholder="••••••••"
                                             className={`w-full pl-3 pr-9 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                                 regErrors.regPassword ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                             }`}
@@ -832,7 +857,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             type={showRegConfirmPassword ? "text" : "password"}
                                             value={regConfirmPassword}
                                             onChange={(e) => setRegConfirmPassword(e.target.value)}
-                                            placeholder="••••••••"
                                             className={`w-full pl-3 pr-9 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                                 regErrors.regConfirmPassword ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                             }`}

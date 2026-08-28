@@ -59,8 +59,8 @@ export async function registerWithDatabase(payload: RegistrationPayload): Promis
         body: JSON.stringify(payload),
     });
     if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { message?: string } | null;
-        throw new Error(data?.message || "Không thể gửi yêu cầu đăng ký.");
+        const data = (await response.json().catch(() => null)) as { message?: string; detail?: string } | null;
+        throw new Error(data?.detail || data?.message || "Không thể gửi yêu cầu đăng ký.");
     }
     return response.json() as Promise<CreatedRegistration>;
 }
@@ -119,6 +119,18 @@ export async function changePassword(userId: string, oldPassword: string, newPas
     }
 }
 
+export async function resetPassword(userId: string, newPassword: string): Promise<void> {
+    const response = await fetch("/api/auth/reset-password", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, newPassword }),
+    });
+    if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message || "Không thể đặt lại mật khẩu.");
+    }
+}
+
 export interface ProfileUpdatePayload {
     name?: string;
     email?: string;
@@ -173,5 +185,15 @@ export async function toggleAccountStatus(userId: string, status: "active" | "di
     if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { message?: string } | null;
         throw new Error(data?.message || "Không thể cập nhật trạng thái tài khoản.");
+    }
+}
+
+export async function deleteAccount(userId: string): Promise<void> {
+    const response = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+    });
+    if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(data?.message || "Không thể xóa tài khoản.");
     }
 }

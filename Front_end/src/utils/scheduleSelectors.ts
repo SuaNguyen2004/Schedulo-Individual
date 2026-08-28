@@ -61,9 +61,13 @@ export function getAssignedCTVsForDate(
         if (account?.role === "Admin") return;
 
         const key = ctv.id || ctv.name.trim().toLowerCase();
+        const avatar = account?.avatar || ctv.avatar;
+        const initials = account?.initials || ctv.initials;
         if (!uniqueCTVs.has(key)) {
           uniqueCTVs.set(key, {
             ...ctv,
+            ...(avatar ? { avatar } : {}),
+            ...(initials ? { initials } : {}),
             room: ctv.room || shift.room,
             taskContent: ctv.taskContent || shift.workContent,
           });

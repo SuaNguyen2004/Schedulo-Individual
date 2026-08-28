@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
     UserAccount,
     UserRole,
@@ -28,7 +28,8 @@ import { ChangePasswordModal } from "./components/Modals/ChangePasswordModal";
 import { SettingsModal } from "./components/Modals/SettingsModal";
 import { useSystemSettings } from "./context/SystemSettingsContext";
 import { parseStoredShifts } from "./utils/shiftStorage";
-import { fetchBootstrapData, updateProfile, saveAdminNotes, toggleAccountStatus } from "./utils/api";
+import { formatDateOnly } from "./utils/formatters";
+import { fetchBootstrapData, updateProfile, saveAdminNotes, toggleAccountStatus, resetPassword, deleteAccount } from "./utils/api";
 import { approveRegistrationRequest, rejectRegistrationRequest, AuthenticatedUser } from "./utils/api";
 
 const SHIFTS_STORAGE_KEY = "schedulo_shifts";
@@ -135,8 +136,29 @@ export const App: React.FC = () => {
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+    // Store bootstrap promise so handleLoginSuccess can await it
+    const bootstrapRef = useRef<Promise<import("./utils/api").BootstrapData> | null>(null);
+
     // Toast feedback state
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+    const showToast = (msg: string) => {
+        setToastMessage(msg);
+        setTimeout(() => {
+            setToastMessage(null);
+        }, 3000);
+    };
+
+    const clearAuthState = (toastMsg?: string) => {
+        setIsLoggedIn(false);
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+        window.localStorage.removeItem(AUTH_USER_EMAIL_KEY);
+        window.localStorage.removeItem(AUTH_USER_ID_KEY);
+        window.localStorage.removeItem("schedulo_weekly_pattern");
+        if (toastMsg) {
+            showToast(toastMsg);
+        }
+    };
 
     useEffect(() => {
         window.localStorage.setItem(SHIFTS_STORAGE_KEY, JSON.stringify(shifts));
@@ -145,7 +167,7 @@ export const App: React.FC = () => {
     useEffect(() => {
         const controller = new AbortController();
 
-        fetchBootstrapData(controller.signal)
+        const promise = fetchBootstrapData(controller.signal)
             .then((data) => {
                 setAccounts(data.accounts);
                 setRequests(data.requests);
@@ -158,41 +180,89 @@ export const App: React.FC = () => {
                 if (authenticatedAccount) {
                     setCurrentUser(authenticatedAccount);
                     setCurrentTab(authenticatedAccount.role === "Admin" ? "accounts" : "schedule");
+                } else if (authenticatedEmail) {
+                    // Check pending requests list (user registered but not yet approved)
+                    const pendingRequest = data.requests.find((req) => req.email === authenticatedEmail);
+                    if (pendingRequest) {
+                        setCurrentUser({
+                            ...EMPTY_USER,
+                            id: pendingRequest.id,
+                            name: pendingRequest.name,
+                            email: pendingRequest.email,
+                            phone: pendingRequest.phone || "",
+                            dob: pendingRequest.dob || "",
+                            role: "Cộng tác viên",
+                            status: "Chờ duyệt",
+                            registerDate: pendingRequest.submittedAt
+                                ? formatDateOnly(pendingRequest.submittedAt)
+                                : "",
+                            cccdFront: pendingRequest.cccdFront,
+                            cccdBack: pendingRequest.cccdBack,
+                            cvFile: pendingRequest.cvFile,
+                            cvFileName: pendingRequest.cvFileName,
+                        });
+                        setCurrentTab("schedule");
+                    } else {
+                        clearAuthState("Phiên đăng nhập không còn hiệu lực. Vui lòng đăng nhập lại.");
+                    }
                 }
+                return data;
             })
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === "AbortError") return;
                 console.warn("Không thể tải dữ liệu từ Backend, sử dụng dữ liệu cục bộ.", error);
+                
+                // If there's an active session but bootstrap failed (e.g. database offline),
+                // clear auth state and redirect to login screen
+                const authenticatedEmail = window.localStorage.getItem(AUTH_USER_EMAIL_KEY);
+                if (authenticatedEmail) {
+                    clearAuthState("Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra lại!");
+                }
+                throw error;
             });
+
+        bootstrapRef.current = promise;
 
         return () => controller.abort();
     }, []);
 
-    const showToast = (msg: string) => {
-        setToastMessage(msg);
-        setTimeout(() => {
-            setToastMessage(null);
-        }, 3000);
-    };
-
     // Handlers
-    const handleLoginSuccess = (user: AuthenticatedUser) => {
+    const handleLoginSuccess = async (user: AuthenticatedUser) => {
         setIsLoggedIn(true);
         window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
         window.localStorage.setItem(AUTH_USER_EMAIL_KEY, user.email);
         window.localStorage.setItem(AUTH_USER_ID_KEY, user.id);
-        const account = accounts.find((item) => item.id === user.id || item.email === user.email);
+
+        // Wait for bootstrap data to be available so we can look up full profile
+        let bootstrapData: import("./utils/api").BootstrapData | null = null;
+        if (bootstrapRef.current) {
+            try { bootstrapData = await bootstrapRef.current; } catch { /* ignore */ }
+        }
+
+        const account = (bootstrapData?.accounts || accounts).find(
+            (item) => item.id === user.id || item.email === user.email,
+        );
         if (account) {
             setCurrentUser(account);
             setCurrentTab(account.role === "Admin" ? "accounts" : "schedule");
         } else {
+            const pendingRequest = (bootstrapData?.requests || requests).find((req) => req.email === user.email);
             setCurrentUser({
                 ...EMPTY_USER,
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                phone: pendingRequest?.phone || "",
+                dob: pendingRequest?.dob || "",
                 role: user.role === "ADMIN" ? "Admin" : "Cộng tác viên",
                 status: user.status === "PENDING" ? "Chờ duyệt" : "Kích hoạt",
+                registerDate: pendingRequest?.submittedAt
+                    ? formatDateOnly(pendingRequest.submittedAt)
+                    : "",
+                cccdFront: pendingRequest?.cccdFront,
+                cccdBack: pendingRequest?.cccdBack,
+                cvFile: pendingRequest?.cvFile,
+                cvFileName: pendingRequest?.cvFileName,
             });
             setCurrentTab(user.role === "ADMIN" ? "accounts" : "schedule");
         }
@@ -200,12 +270,7 @@ export const App: React.FC = () => {
     };
 
     const handleLogout = () => {
-        setIsLoggedIn(false);
-        window.localStorage.removeItem(AUTH_STORAGE_KEY);
-        window.localStorage.removeItem(AUTH_USER_EMAIL_KEY);
-        window.localStorage.removeItem(AUTH_USER_ID_KEY);
-        window.localStorage.removeItem("schedulo_weekly_pattern");
-        showToast("Đã đăng xuất khỏi hệ thống");
+        clearAuthState("Đã đăng xuất khỏi hệ thống");
     };
 
     // Account Operations
@@ -266,11 +331,34 @@ export const App: React.FC = () => {
         }
     };
 
-    const handleDeleteAccount = (id: string) => {
+    const handleDeleteAccount = async (id: string) => {
         const target = accounts.find((a) => a.id === id);
-        if (target && confirm(`Bạn có chắc chắn muốn xóa tài khoản ${target.name}?`)) {
+        if (!target) return;
+
+        try {
+            await deleteAccount(id);
+
             setAccounts((prev) => prev.filter((a) => a.id !== id));
-            showToast(`Đã xóa tài khoản ${target.name}`);
+
+            setShifts((prevShifts) =>
+                prevShifts.map((shift) => {
+                    if (shift.assignedCTVs && shift.assignedCTVs.some((c) => c.id === id)) {
+                        return {
+                            ...shift,
+                            assignedCTVs: shift.assignedCTVs.filter((c) => c.id !== id),
+                        };
+                    }
+                    return shift;
+                }),
+            );
+
+            if (selectedAccountDetail && selectedAccountDetail.id === id) {
+                setSelectedAccountDetail(null);
+            }
+
+            showToast(`Đã xóa tài khoản ${target.name} và toàn bộ dữ liệu liên quan (lịch, lịch sử, hồ sơ).`);
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : "Không thể xóa tài khoản.");
         }
     };
 
@@ -286,36 +374,42 @@ export const App: React.FC = () => {
         );
     };
 
-    const handleResetPassword = (id: string, newPassword: string, requireChangeOnLogin: boolean) => {
+    const handleResetPassword = async (id: string, newPassword: string, requireChangeOnLogin: boolean) => {
         const target = accounts.find((a) => a.id === id);
         if (!target) return;
 
-        setAccounts((prev) =>
-            prev.map((acc) => {
-                if (acc.id === id) {
-                    return {
-                        ...acc,
-                        password: newPassword,
-                        mustChangePassword: requireChangeOnLogin,
-                    };
-                }
-                return acc;
-            }),
-        );
+        try {
+            await resetPassword(id, newPassword);
 
-        if (selectedAccountDetail && selectedAccountDetail.id === id) {
-            setSelectedAccountDetail((prev) =>
-                prev
-                    ? {
-                          ...prev,
-                          password: newPassword,
-                          mustChangePassword: requireChangeOnLogin,
-                      }
-                    : null,
+            setAccounts((prev) =>
+                prev.map((acc) => {
+                    if (acc.id === id) {
+                        return {
+                            ...acc,
+                            password: newPassword,
+                            mustChangePassword: requireChangeOnLogin,
+                        };
+                    }
+                    return acc;
+                }),
             );
-        }
 
-        showToast(`Đã đặt lại mật khẩu cho ${target.name} thành công. Mật khẩu mới: ${newPassword}`);
+            if (selectedAccountDetail && selectedAccountDetail.id === id) {
+                setSelectedAccountDetail((prev) =>
+                    prev
+                        ? {
+                              ...prev,
+                              password: newPassword,
+                              mustChangePassword: requireChangeOnLogin,
+                          }
+                        : null,
+                );
+            }
+
+            showToast(`Đã đặt lại mật khẩu cho ${target.name} thành công. Mật khẩu mới: ${newPassword}`);
+        } catch (err) {
+            showToast(err instanceof Error ? err.message : "Không thể đặt lại mật khẩu.");
+        }
     };
 
     const handleSaveAccountNotes = async (id: string, notes: string) => {
@@ -607,7 +701,7 @@ export const App: React.FC = () => {
                                 onOpenChangePassword={() => setIsChangePasswordOpen(true)}
                                 onUpdateAvatar={async (newAvatar) => {
                                     try {
-                                        const result = await updateProfile(currentUser.id, { avatar: newAvatar || "" });
+                                        const result = await updateProfile(currentUser.id, { name: currentUser.name, avatar: newAvatar || "" });
                                         const savedUrl = result.avatar ?? newAvatar;
                                         handleSaveProfile({ avatar: savedUrl });
                                         if (!newAvatar) { showToast("Đã xóa ảnh đại diện"); }
@@ -618,7 +712,7 @@ export const App: React.FC = () => {
                                 }}
                                 onUpdateCccdFront={async (url) => {
                                     try {
-                                        const result = await updateProfile(currentUser.id, { cccdFront: url || "" });
+                                        const result = await updateProfile(currentUser.id, { name: currentUser.name, cccdFront: url || "" });
                                         const savedUrl = result.cccdFront ?? url;
                                         handleSaveProfile({ cccdFront: savedUrl });
                                         if (!url) { showToast("Đã xóa ảnh CCCD mặt trước"); }
@@ -629,7 +723,7 @@ export const App: React.FC = () => {
                                 }}
                                 onUpdateCccdBack={async (url) => {
                                     try {
-                                        const result = await updateProfile(currentUser.id, { cccdBack: url || "" });
+                                        const result = await updateProfile(currentUser.id, { name: currentUser.name, cccdBack: url || "" });
                                         const savedUrl = result.cccdBack ?? url;
                                         handleSaveProfile({ cccdBack: savedUrl });
                                         if (!url) { showToast("Đã xóa ảnh CCCD mặt sau"); }
@@ -641,11 +735,11 @@ export const App: React.FC = () => {
                                 onUpdateCvFile={async (cvData) => {
                                     try {
                                         if (!cvData) {
-                                            await updateProfile(currentUser.id, { cvFile: "", cvFileName: "" });
+                                            await updateProfile(currentUser.id, { name: currentUser.name, cvFile: "", cvFileName: "" });
                                             handleSaveProfile({ cvFile: undefined, cvFileName: undefined, cvFileSize: undefined });
                                             showToast("Đã xóa file CV");
                                         } else {
-                                            const result = await updateProfile(currentUser.id, { cvFile: cvData.cvFile, cvFileName: cvData.cvFileName });
+                                            const result = await updateProfile(currentUser.id, { name: currentUser.name, cvFile: cvData.cvFile, cvFileName: cvData.cvFileName });
                                             const savedUrl = result.cvFile ?? cvData.cvFile;
                                             handleSaveProfile({ cvFile: savedUrl, cvFileName: cvData.cvFileName, cvFileSize: cvData.cvFileSize });
                                             showToast(`Đã cập nhật file CV: ${cvData.cvFileName}`);

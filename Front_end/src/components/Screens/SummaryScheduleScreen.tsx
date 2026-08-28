@@ -282,6 +282,8 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
             const acc = accounts.find((a) => a.id === ctv.id || a.name.toLowerCase() === ctv.name.toLowerCase());
             return {
                 ...ctv,
+                ...(acc?.avatar || ctv.avatar ? { avatar: acc?.avatar || ctv.avatar } : {}),
+                ...(acc?.initials || ctv.initials ? { initials: acc?.initials || ctv.initials } : {}),
                 email: acc?.email || "",
                 cctvCode: acc?.cctvCode || ctv.cctvCode || "",
                 phone: acc?.phone || ctv.phone || "",

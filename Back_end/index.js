@@ -32,7 +32,7 @@ const pool = mysql.createPool({
 });
 
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000" }));
-app.use(express.json({ limit: "20mb" }));
+app.use(express.json({ limit: "50mb" }));
 app.use("/image", express.static(imageDirectory));
 app.use("/CV", express.static(cvDirectory));
 
@@ -73,7 +73,12 @@ app.post("/api/auth/login", async (req, res) => {
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
         }
         if (userStatus === "disabled") {
-            return res.status(403).json({ message: "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ Admin để được hỗ trợ.", disabled: true });
+            return res
+                .status(403)
+                .json({
+                    message: "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ Admin để được hỗ trợ.",
+                    disabled: true,
+                });
         }
         if (userStatus !== "active" && userStatus !== "pending") {
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
@@ -96,6 +101,18 @@ app.post("/api/auth/register", async (req, res) => {
     if (![name, email, phone, password].every((value) => typeof value === "string" && value.trim())) {
         return res.status(400).json({ message: "Vui lòng nhập đủ họ tên, email, số điện thoại và mật khẩu." });
     }
+    if (!dob || typeof dob !== "string" || !dob.trim()) {
+        return res.status(400).json({ message: "Vui lòng chọn ngày sinh." });
+    }
+    const hasIdFront = attachments.some((a) => a.fileType === "ID_CARD_FRONT" && a.filePath);
+    const hasIdBack = attachments.some((a) => a.fileType === "ID_CARD_BACK" && a.filePath);
+    const hasCv = attachments.some((a) => a.fileType === "CV" && a.filePath);
+    if (!hasIdFront || !hasIdBack) {
+        return res.status(400).json({ message: "Vui lòng tải ảnh CCCD mặt trước và mặt sau." });
+    }
+    if (!hasCv) {
+        return res.status(400).json({ message: "Vui lòng tải file CV lên." });
+    }
 
     const connection = await pool.getConnection();
     try {
@@ -110,16 +127,26 @@ app.post("/api/auth/register", async (req, res) => {
         // duplicate — that is what previously raised ER_DUP_ENTRY and surfaced as
         // "Email hoặc số điện thoại đã được sử dụng". Reusing the same row also releases
         // the old phone number, since the profile is overwritten in place.
-        const [existingUsers] = await connection.execute(
-            "SELECT id, status FROM users WHERE email = ? FOR UPDATE",
-            [normalizedEmail],
-        );
-        const existingUser = existingUsers[0];
-        const rejectedUser = existingUser && existingUser.status === "rejected" ? existingUser : null;
-
         if (existingUser && !rejectedUser) {
             await connection.rollback();
             return res.status(409).json({ message: "Email này đã được sử dụng." });
+        }
+
+        const [existingPhones] = await connection.execute(
+            `SELECT up.user_id, u.status 
+             FROM user_profiles up
+             JOIN users u ON u.id = up.user_id
+             WHERE up.phone = ? FOR UPDATE`,
+            [normalizedPhone],
+        );
+        const existingPhone = existingPhones[0];
+        const isSameRejectedUser =
+            rejectedUser && existingPhone && String(existingPhone.user_id) === String(rejectedUser.id);
+        const phoneOwnerIsActiveOrPending = existingPhone && existingPhone.status !== "rejected";
+
+        if (existingPhone && !isSameRejectedUser && phoneOwnerIsActiveOrPending) {
+            await connection.rollback();
+            return res.status(409).json({ message: "Số điện thoại này đã được sử dụng." });
         }
 
         const passwordHash = await bcrypt.hash(password, 12);
@@ -197,6 +224,29 @@ app.patch("/api/registration-requests/:id/reject", async (req, res) => {
     return reviewRegistrationRequest(req, res, "REJECTED", "REJECT_REGISTRATION");
 });
 
+app.patch("/api/auth/reset-password", async (req, res) => {
+    const { userId, newPassword } = req.body || {};
+    if (!userId || typeof newPassword !== "string") {
+        return res.status(400).json({ message: "Thiếu thông tin cần thiết." });
+    }
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự." });
+    }
+    try {
+        const newHash = await bcrypt.hash(newPassword, 12);
+        const [result] = await pool.execute("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?", [
+            newHash,
+            String(userId),
+        ]);
+        if (result.affectedRows !== 1) {
+            return res.status(404).json({ message: "Tài khoản không tồn tại." });
+        }
+        return res.json({ message: "Đặt lại mật khẩu thành công." });
+    } catch (error) {
+        return res.status(500).json({ message: "Không thể đặt lại mật khẩu.", detail: error.message });
+    }
+});
+
 app.patch("/api/auth/change-password", async (req, res) => {
     const { userId, oldPassword, newPassword } = req.body || {};
     if (!userId || typeof oldPassword !== "string" || typeof newPassword !== "string") {
@@ -216,7 +266,10 @@ app.patch("/api/auth/change-password", async (req, res) => {
             return res.status(401).json({ message: "Mật khẩu hiện tại không chính xác." });
         }
         const newHash = await bcrypt.hash(newPassword, 12);
-        await pool.execute("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?", [newHash, String(userId)]);
+        await pool.execute("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?", [
+            newHash,
+            String(userId),
+        ]);
         return res.json({ message: "Đổi mật khẩu thành công." });
     } catch (error) {
         return res.status(500).json({ message: "Không thể đổi mật khẩu.", detail: error.message });
@@ -232,18 +285,55 @@ app.patch("/api/profile", async (req, res) => {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
-            if (email && typeof email === "string" && email.trim()) {
-                await connection.execute(
-                    "UPDATE users SET email = ?, updated_at = NOW() WHERE id = ?",
-                    [email.trim(), String(userId)],
+
+            let userName = name || "";
+            if (!userName) {
+                const [existing] = await connection.execute(
+                    "SELECT full_name FROM user_profiles WHERE user_id = ?",
+                    [String(userId)],
                 );
+                if (existing && existing[0] && existing[0].full_name) {
+                    userName = existing[0].full_name;
+                }
             }
 
-            const userName = name || "";
+            if (email && typeof email === "string" && email.trim()) {
+                const [existingEmail] = await connection.execute(
+                    "SELECT id FROM users WHERE email = ? AND id != ?",
+                    [email.trim(), String(userId)],
+                );
+                if (existingEmail.length > 0) {
+                    await connection.rollback();
+                    return res.status(409).json({ message: "Email này đã được tài khoản khác sử dụng." });
+                }
+                await connection.execute("UPDATE users SET email = ?, updated_at = NOW() WHERE id = ?", [
+                    email.trim(),
+                    String(userId),
+                ]);
+            }
+
+            if (phone !== undefined && typeof phone === "string" && phone.trim()) {
+                const [existingPhone] = await connection.execute(
+                    `SELECT up.user_id 
+                     FROM user_profiles up 
+                     JOIN users u ON u.id = up.user_id 
+                     WHERE up.phone = ? AND up.user_id != ? AND u.status != 'rejected'`,
+                    [phone.trim(), String(userId)],
+                );
+                if (existingPhone.length > 0) {
+                    await connection.rollback();
+                    return res.status(409).json({ message: "Số điện thoại này đã được đăng ký bởi tài khoản khác." });
+                }
+            }
+
             const fileUpdates = {};
             if (avatar !== undefined) {
                 if (avatar) {
-                    const result = await saveAttachment({ fileType: "AVATAR", fileName: "avatar", filePath: avatar }, userName);
+                    const result = await saveAttachment(
+                        { fileType: "AVATAR", fileName: "avatar", filePath: avatar },
+                        userName,
+                        String(userId),
+                    );
                     fileUpdates.avatar_url = result.filePath;
                 } else {
                     fileUpdates.avatar_url = "";
@@ -251,7 +341,11 @@ app.patch("/api/profile", async (req, res) => {
             }
             if (cccdFront !== undefined) {
                 if (cccdFront) {
-                    const result = await saveAttachment({ fileType: "ID_CARD_FRONT", fileName: "cccd-front", filePath: cccdFront }, userName);
+                    const result = await saveAttachment(
+                        { fileType: "ID_CARD_FRONT", fileName: "cccd-front", filePath: cccdFront },
+                        userName,
+                        String(userId),
+                    );
                     fileUpdates.id_card_front_url = result.filePath;
                 } else {
                     fileUpdates.id_card_front_url = "";
@@ -259,7 +353,11 @@ app.patch("/api/profile", async (req, res) => {
             }
             if (cccdBack !== undefined) {
                 if (cccdBack) {
-                    const result = await saveAttachment({ fileType: "ID_CARD_BACK", fileName: "cccd-back", filePath: cccdBack }, userName);
+                    const result = await saveAttachment(
+                        { fileType: "ID_CARD_BACK", fileName: "cccd-back", filePath: cccdBack },
+                        userName,
+                        String(userId),
+                    );
                     fileUpdates.id_card_back_url = result.filePath;
                 } else {
                     fileUpdates.id_card_back_url = "";
@@ -267,7 +365,11 @@ app.patch("/api/profile", async (req, res) => {
             }
             if (cvFile !== undefined) {
                 if (cvFile) {
-                    const result = await saveAttachment({ fileType: "CV", fileName: cvFileName || "cv", filePath: cvFile }, userName);
+                    const result = await saveAttachment(
+                        { fileType: "CV", fileName: cvFileName || "cv", filePath: cvFile },
+                        userName,
+                        String(userId),
+                    );
                     fileUpdates.cv_url = result.filePath;
                 } else {
                     fileUpdates.cv_url = "";
@@ -277,14 +379,35 @@ app.patch("/api/profile", async (req, res) => {
             const setClauses = [];
             const onDupVals = [];
 
-            if (name !== undefined) { setClauses.push("full_name = ?"); onDupVals.push(name || ""); }
-            if (phone !== undefined) { setClauses.push("phone = ?"); onDupVals.push(phone || ""); }
-            if (dob !== undefined) { setClauses.push("date_of_birth = ?"); onDupVals.push(parseDate(dob) || null); }
+            if (name !== undefined) {
+                setClauses.push("full_name = ?");
+                onDupVals.push(name || "");
+            }
+            if (phone !== undefined) {
+                setClauses.push("phone = ?");
+                onDupVals.push(phone || "");
+            }
+            if (dob !== undefined) {
+                setClauses.push("date_of_birth = ?");
+                onDupVals.push(parseDate(dob) || null);
+            }
 
-            if (fileUpdates.avatar_url !== undefined) { setClauses.push("avatar_url = ?"); onDupVals.push(fileUpdates.avatar_url); }
-            if (fileUpdates.id_card_front_url !== undefined) { setClauses.push("id_card_front_url = ?"); onDupVals.push(fileUpdates.id_card_front_url); }
-            if (fileUpdates.id_card_back_url !== undefined) { setClauses.push("id_card_back_url = ?"); onDupVals.push(fileUpdates.id_card_back_url); }
-            if (fileUpdates.cv_url !== undefined) { setClauses.push("cv_url = ?"); onDupVals.push(fileUpdates.cv_url); }
+            if (fileUpdates.avatar_url !== undefined) {
+                setClauses.push("avatar_url = ?");
+                onDupVals.push(fileUpdates.avatar_url);
+            }
+            if (fileUpdates.id_card_front_url !== undefined) {
+                setClauses.push("id_card_front_url = ?");
+                onDupVals.push(fileUpdates.id_card_front_url);
+            }
+            if (fileUpdates.id_card_back_url !== undefined) {
+                setClauses.push("id_card_back_url = ?");
+                onDupVals.push(fileUpdates.id_card_back_url);
+            }
+            if (fileUpdates.cv_url !== undefined) {
+                setClauses.push("cv_url = ?");
+                onDupVals.push(fileUpdates.cv_url);
+            }
 
             if (setClauses.length > 0) {
                 const hasTextFields = name !== undefined || phone !== undefined || dob !== undefined;
@@ -293,10 +416,22 @@ app.patch("/api/profile", async (req, res) => {
                     const insertVals = [String(userId), name || "", phone || "", parseDate(dob) || null];
                     const fileInsertCols = [];
                     const fileInsertVals = [];
-                    if (fileUpdates.avatar_url !== undefined) { fileInsertCols.push("avatar_url"); fileInsertVals.push(fileUpdates.avatar_url); }
-                    if (fileUpdates.id_card_front_url !== undefined) { fileInsertCols.push("id_card_front_url"); fileInsertVals.push(fileUpdates.id_card_front_url); }
-                    if (fileUpdates.id_card_back_url !== undefined) { fileInsertCols.push("id_card_back_url"); fileInsertVals.push(fileUpdates.id_card_back_url); }
-                    if (fileUpdates.cv_url !== undefined) { fileInsertCols.push("cv_url"); fileInsertVals.push(fileUpdates.cv_url); }
+                    if (fileUpdates.avatar_url !== undefined) {
+                        fileInsertCols.push("avatar_url");
+                        fileInsertVals.push(fileUpdates.avatar_url);
+                    }
+                    if (fileUpdates.id_card_front_url !== undefined) {
+                        fileInsertCols.push("id_card_front_url");
+                        fileInsertVals.push(fileUpdates.id_card_front_url);
+                    }
+                    if (fileUpdates.id_card_back_url !== undefined) {
+                        fileInsertCols.push("id_card_back_url");
+                        fileInsertVals.push(fileUpdates.id_card_back_url);
+                    }
+                    if (fileUpdates.cv_url !== undefined) {
+                        fileInsertCols.push("cv_url");
+                        fileInsertVals.push(fileUpdates.cv_url);
+                    }
                     const allCols = [...insertCols, ...fileInsertCols];
                     const allVals = [...insertVals, ...fileInsertVals];
                     const placeholders = allCols.map(() => "?").join(", ");
@@ -305,10 +440,10 @@ app.patch("/api/profile", async (req, res) => {
                         [...allVals, ...onDupVals],
                     );
                 } else {
-                    await connection.execute(
-                        `UPDATE user_profiles SET ${setClauses.join(", ")} WHERE user_id = ?`,
-                        [...onDupVals, String(userId)],
-                    );
+                    await connection.execute(`UPDATE user_profiles SET ${setClauses.join(", ")} WHERE user_id = ?`, [
+                        ...onDupVals,
+                        String(userId),
+                    ]);
                 }
             }
 
@@ -338,10 +473,10 @@ app.patch("/api/admin/notes", async (req, res) => {
         return res.status(400).json({ message: "Thiếu userId." });
     }
     try {
-        await pool.execute(
-            "UPDATE users SET admin_note = ?, updated_at = NOW() WHERE id = ?",
-            [notes || null, String(userId)],
-        );
+        await pool.execute("UPDATE users SET admin_note = ?, updated_at = NOW() WHERE id = ?", [
+            notes || null,
+            String(userId),
+        ]);
         return res.json({ message: "Đã lưu ghi chú." });
     } catch (error) {
         return res.status(500).json({ message: "Không thể lưu ghi chú.", detail: error.message });
@@ -370,18 +505,59 @@ app.patch("/api/users/:id/status", async (req, res) => {
 
         if (status === "disabled") {
             await promoteElapsedSchedulesToHistory(connection, userId);
-            const today = startOfLocalDay(new Date());
-            await connection.execute(
-                "DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?",
-                [userId, toIsoDate(today)],
-            );
+            await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [
+                userId,
+            ]);
         }
 
         await connection.commit();
         return res.json({ id: String(userId), status });
     } catch (error) {
-        try { await connection.rollback(); } catch (_) {}
+        try {
+            await connection.rollback();
+        } catch (_) {}
         return res.status(500).json({ message: "Không thể cập nhật trạng thái.", detail: error.message });
+    } finally {
+        connection.release();
+    }
+});
+
+app.delete("/api/users/:id", async (req, res) => {
+    const userId = Number(req.params.id);
+    if (!Number.isInteger(userId)) {
+        return res.status(400).json({ message: "Dữ liệu không hợp lệ." });
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Only allow deleting collaborator accounts, never the admin.
+        const [target] = await connection.execute(
+            "SELECT id, role FROM users WHERE id = ? LIMIT 1",
+            [userId],
+        );
+        if (target.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: "Không tìm thấy tài khoản." });
+        }
+        if (target[0].role !== "collaborator") {
+            await connection.rollback();
+            return res.status(400).json({ message: "Không thể xóa tài khoản Admin." });
+        }
+
+        // Foreign keys on user_profiles, work_schedules and work_history all use
+        // ON DELETE CASCADE, so removing the users row deletes the profile, the
+        // weekly schedule and the work history together.
+        await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
+
+        await connection.commit();
+        return res.json({ id: String(userId), deleted: true });
+    } catch (error) {
+        try {
+            await connection.rollback();
+        } catch (_) {}
+        return res.status(500).json({ message: "Không thể xóa tài khoản.", detail: error.message });
     } finally {
         connection.release();
     }
@@ -390,7 +566,7 @@ app.patch("/api/users/:id/status", async (req, res) => {
 app.post("/api/shifts/register", async (req, res) => {
     const { userId, registrations } = req.body;
 
-    if (!userId || !Array.isArray(registrations) || registrations.length === 0) {
+    if (!userId || !Array.isArray(registrations)) {
         return res.status(400).json({
             message: "Dữ liệu không hợp lệ. Cần userId và mảng registrations.",
         });
@@ -410,17 +586,8 @@ app.post("/api/shifts/register", async (req, res) => {
         uniquePattern.push({ dayOfWeek, shiftType });
     }
 
-    if (uniquePattern.length === 0) {
-        return res.status(400).json({ message: "Không có ca đăng ký hợp lệ." });
-    }
-
     // The pattern is recurring, so it is materialised whole weeks at a time: the
-    // window is snapped back to the Monday of the week containing startDate. The week
-    // grid renders Mon-Fri from these rows, so a window starting at "today" left the
-    // already-elapsed days of the current week empty even though they were part of
-    // the pattern the CTV just saved. Backfilling those days is safe because the
-    // elapsed shifts have already been frozen into work_history (see below), and rows
-    // created after the day they apply to never enter history.
+    // window is snapped back to the Monday of the week containing startDate.
     const today = startOfLocalDay(new Date());
     const rangeStart = startOfIsoWeek(parseIsoDateInput(req.body?.startDate) || today);
     const horizonDays = Math.max(Number(req.body?.days) || DEFAULT_REGISTRATION_DAYS, 7);
@@ -439,49 +606,47 @@ app.post("/api/shifts/register", async (req, res) => {
         await connection.beginTransaction();
 
         // Freeze every shift that has already elapsed into work_history before the
-        // registration window is rewritten. "Lịch sử làm việc" reads work_history, so
-        // the past stays exactly as it was no matter what the CTV registers now.
+        // registration window is rewritten.
         await promoteElapsedSchedulesToHistory(connection, userId);
 
-        // Resolve shift_type ids from the shift_types catalog.
-        const [shiftTypeRows] = await connection.query(
-            "SELECT id, code FROM shift_types WHERE code IN ('morning', 'afternoon') AND is_active = 1",
-        );
-        const shiftTypeIdByCode = new Map(shiftTypeRows.map((row) => [row.code, row.id]));
-
-        // Replace the whole registration window. Days dropped from the pattern must
-        // not survive as stale rows, otherwise the week grid keeps showing shifts the
-        // CTV no longer registered. Deleting elapsed days of the current week is safe:
-        // their history already lives in work_history.
+        // Replace the whole registration window.
         await connection.execute("DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?", [
             userId,
             toIsoDate(rangeStart),
         ]);
 
         let inserted = 0;
-        for (let cursor = new Date(rangeStart); cursor <= rangeEnd; cursor.setDate(cursor.getDate() + 1)) {
-            const jsDay = (cursor.getDay() + 6) % 7; // 0 = Monday
-            if (jsDay > 4) continue; // Only Mon-Fri
+        if (uniquePattern.length > 0) {
+            // Resolve shift_type ids from the shift_types catalog.
+            const [shiftTypeRows] = await connection.query(
+                "SELECT id, code FROM shift_types WHERE code IN ('morning', 'afternoon') AND is_active = 1",
+            );
+            const shiftTypeIdByCode = new Map(shiftTypeRows.map((row) => [row.code, row.id]));
 
-            const weekStart = addLocalDays(cursor, -jsDay);
+            for (let cursor = new Date(rangeStart); cursor <= rangeEnd; cursor.setDate(cursor.getDate() + 1)) {
+                const jsDay = (cursor.getDay() + 6) % 7; // 0 = Monday
+                if (jsDay > 4) continue; // Only Mon-Fri
 
-            for (const pattern of uniquePattern) {
-                if (pattern.dayOfWeek !== jsDay) continue;
-                const shiftTypeId = shiftTypeIdByCode.get(pattern.shiftType);
-                if (!shiftTypeId) continue;
-                await connection.execute(
-                    `INSERT INTO work_schedules (user_id, shift_type_id, week_start_date, work_date, status)
-                     VALUES (?, ?, ?, ?, 'registered')`,
-                    [userId, shiftTypeId, toIsoDate(weekStart), toIsoDate(cursor)],
-                );
-                inserted += 1;
+                const weekStart = addLocalDays(cursor, -jsDay);
+
+                for (const pattern of uniquePattern) {
+                    if (pattern.dayOfWeek !== jsDay) continue;
+                    const shiftTypeId = shiftTypeIdByCode.get(pattern.shiftType);
+                    if (!shiftTypeId) continue;
+                    await connection.execute(
+                        `INSERT INTO work_schedules (user_id, shift_type_id, week_start_date, work_date, status)
+                         VALUES (?, ?, ?, ?, 'registered')`,
+                        [userId, shiftTypeId, toIsoDate(weekStart), toIsoDate(cursor)],
+                    );
+                    inserted += 1;
+                }
             }
         }
 
         await connection.commit();
         return res.json({
-            message: "Đã lưu lịch làm việc thành công.",
-            registrationCount: inserted,
+            message: uniquePattern.length > 0 ? "Đã lưu lịch làm việc thành công." : "Đã hủy và xóa toàn bộ lịch đăng ký.",
+            registeredCount: inserted,
         });
     } catch (error) {
         try {
@@ -545,7 +710,7 @@ app.get("/api/bootstrap", async (_req, res) => {
         // Load active schedules together with the shift type code and the user display info
         const [schedules] = await pool.query(`
       SELECT ws.id, ws.user_id, ws.work_date, ws.week_start_date,
-             st.code AS shift_code, up.full_name, up.phone
+             st.code AS shift_code, up.full_name, up.phone, up.avatar_url
       FROM work_schedules ws
       JOIN shift_types st ON st.id = ws.shift_type_id
       JOIN users u ON u.id = ws.user_id
@@ -559,7 +724,7 @@ app.get("/api/bootstrap", async (_req, res) => {
         // can never rewrite it.
         const [history] = await pool.query(`
       SELECT wh.id, wh.user_id, wh.work_date, wh.day_of_week,
-             st.code AS shift_code, up.full_name, up.phone
+             st.code AS shift_code, up.full_name, up.phone, up.avatar_url
       FROM work_history wh
       JOIN shift_types st ON st.id = wh.shift_type_id
       JOIN users u ON u.id = wh.user_id
@@ -655,14 +820,34 @@ function parseDate(value) {
     return match ? `${match[3]}-${match[2]}-${match[1]}` : null;
 }
 
-async function saveAttachment(attachment, userName) {
-    const isImage = attachment.fileType === "ID_CARD_FRONT" || attachment.fileType === "ID_CARD_BACK" || attachment.fileType === "AVATAR";
+async function saveAttachment(attachment, userName = "", userId = "") {
+    const isImage =
+        attachment.fileType === "ID_CARD_FRONT" ||
+        attachment.fileType === "ID_CARD_BACK" ||
+        attachment.fileType === "AVATAR";
     const directory = isImage ? imageDirectory : cvDirectory;
     const extension = isImage ? ".jpg" : path.extname(attachment.fileName || "").toLowerCase() || ".pdf";
     const safeUserName = sanitizeFileName(userName);
     const safeOriginalName = sanitizeFileName(path.basename(attachment.fileName || "cv"));
-    const prefix = attachment.fileType === "ID_CARD_FRONT" ? "id-card-front" : attachment.fileType === "ID_CARD_BACK" ? "id-card-back" : attachment.fileType === "AVATAR" ? "avatar" : "";
-    const fileName = isImage ? `${prefix}-${safeUserName}${extension}` : safeOriginalName;
+    const prefix =
+        attachment.fileType === "ID_CARD_FRONT"
+            ? "id-card-front"
+            : attachment.fileType === "ID_CARD_BACK"
+              ? "id-card-back"
+              : attachment.fileType === "AVATAR"
+                ? "avatar"
+                : "";
+
+    let userSuffix = "";
+    if (userId) {
+        userSuffix = safeUserName && safeUserName !== "file" ? `-${safeUserName}-${userId}` : `-${userId}`;
+    } else {
+        userSuffix = safeUserName && safeUserName !== "file" ? `-${safeUserName}` : `-${Date.now()}`;
+    }
+
+    const fileName = isImage
+        ? `${prefix}${userSuffix}${extension}`
+        : (userId ? `${safeOriginalName.replace(/\.[^/.]+$/, "")}-${userId}${extension}` : safeOriginalName);
     const filePath = path.join(directory, fileName);
     const data = decodeDataUrl(attachment.filePath);
 
@@ -721,6 +906,7 @@ function groupSchedules(schedules, idPrefix = "schedule") {
         shift.assignedCTVs.push({
             id: String(schedule.user_id),
             name: schedule.full_name,
+            ...(schedule.avatar_url ? { avatar: schedule.avatar_url } : {}),
             phone: schedule.phone || "",
             status: "Đã duyệt",
         });
@@ -810,6 +996,16 @@ function shiftType(startTime) {
     const hour = Number(String(startTime).slice(0, 2));
     return hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
 }
+
+app.use((err, _req, res, _next) => {
+    if (err && err.type === "entity.too.large") {
+        return res.status(413).json({
+            message: "Dung lượng tệp đính kèm quá lớn.",
+            detail: "Ảnh CCCD và file CV vượt quá giới hạn cho phép. Vui lòng giảm kích thước ảnh hoặc thử lại.",
+        });
+    }
+    return res.status(500).json({ message: "Lỗi máy chủ.", detail: err && err.message ? err.message : String(err) });
+});
 
 app.listen(port, () => {
     console.log(`Schedulo API listening on http://localhost:${port}`);

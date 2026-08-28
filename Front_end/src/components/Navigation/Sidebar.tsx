@@ -49,9 +49,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <h1 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff] leading-tight tracking-tight whitespace-nowrap">
                                 {t("system_name")}
                             </h1>
-                            <p className="text-[10px] font-semibold text-[#64748B] dark:text-[#94A3B8] truncate">
+                            {/* <p className="text-[10px] font-semibold text-[#64748B] dark:text-[#94A3B8] truncate">
                                 {isAdmin ? t("admin_view") : t("ctv_view")}
-                            </p>
+                            </p> */}
                         </div>
                     </div>
                 )}
