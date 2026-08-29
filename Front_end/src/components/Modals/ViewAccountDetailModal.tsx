@@ -458,96 +458,178 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                     <span>Tài khoản Quản trị viên (Admin) không tham gia đăng ký lịch làm việc.</span>
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto pb-1">
-                                    <div className="min-w-[650px] space-y-3">
-                                        <div className="grid grid-cols-5 gap-3">
-                                            {WEEKDAYS.map((day) => {
-                                                const isToday = day.index === todayWeekdayIndex;
+                                <>
+                                    {/* Mobile View: 1 cột thứ & 1 cột ca (< md) */}
+                                    <div className="md:hidden space-y-2.5">
+                                        {WEEKDAYS.map((day) => {
+                                            const morning = getShiftStatus(day.index, "morning");
+                                            const afternoon = getShiftStatus(day.index, "afternoon");
+                                            const isToday = day.index === todayWeekdayIndex;
 
-                                                return (
+                                            return (
+                                                <div
+                                                    key={day.index}
+                                                    className={`p-3 rounded-2xl border-2 bg-white dark:bg-slate-900 flex items-center gap-3 transition-colors ${
+                                                        isToday
+                                                            ? "border-blue-600 dark:border-blue-400"
+                                                            : "border-slate-200 dark:border-slate-800"
+                                                    }`}>
+                                                    {/* Cột Thứ */}
                                                     <div
-                                                        key={day.index}
-                                                        className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
+                                                        className={`w-24 shrink-0 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-center font-bold text-xs uppercase tracking-wider transition-colors ${
                                                             isToday
                                                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                                                                 : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                                         }`}>
                                                         <span>{day.dayName}</span>
                                                         {isToday && (
-                                                            <span className="rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal text-white">
+                                                            <span className="mt-1 rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white normal-case tracking-normal">
                                                                 Hôm nay
                                                             </span>
                                                         )}
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
 
-                                        <div className="grid grid-cols-5 gap-3">
-                                            {WEEKDAYS.map((day) => {
-                                                const morning = getShiftStatus(day.index, "morning");
-                                                const afternoon = getShiftStatus(day.index, "afternoon");
-                                                const isToday = day.index === todayWeekdayIndex;
+                                                    {/* Cột Ca */}
+                                                    <div className="flex-1 space-y-1.5 min-w-0">
+                                                        {morning !== "off" && (
+                                                            <div
+                                                                title={
+                                                                    morning === "pending"
+                                                                        ? "Ca sáng: Chờ duyệt"
+                                                                        : "Ca sáng: Đi làm"
+                                                                }
+                                                                className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
+                                                                    morning === "pending"
+                                                                        ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
+                                                                        : "border-amber-200/90 bg-amber-50 text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
+                                                                }`}>
+                                                                <span
+                                                                    className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
+                                                                    aria-hidden="true">
+                                                                    wb_sunny
+                                                                </span>
+                                                                <span>Ca Sáng</span>
+                                                            </div>
+                                                        )}
 
-                                                return (
-                                                    <div
-                                                        key={day.index}
-                                                        className={`min-h-[104px] rounded-2xl border-2 bg-white p-3 shadow-2xs transition-colors dark:bg-slate-900 ${
-                                                            isToday
-                                                                ? "border-blue-600 dark:border-blue-400"
-                                                                : "border-slate-200 dark:border-slate-800"
-                                                        }`}>
-                                                        <div className="space-y-2">
-                                                            {morning !== "off" ? (
-                                                                <div
-                                                                    title={
-                                                                        morning === "pending"
-                                                                            ? "Ca sáng: Chờ duyệt"
-                                                                            : "Ca sáng: Đi làm"
-                                                                    }
-                                                                    className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
-                                                                        morning === "pending"
-                                                                            ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
-                                                                            : "border-amber-200/90 bg-amber-50 text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
-                                                                    }`}>
-                                                                    <span
-                                                                        className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
-                                                                        aria-hidden="true">
-                                                                        wb_sunny
-                                                                    </span>
-                                                                    <span>Ca Sáng</span>
-                                                                </div>
-                                                            ) : afternoon !== "off" ? (
-                                                                <div className="h-[38px]" aria-hidden="true" />
-                                                            ) : null}
+                                                        {afternoon !== "off" && (
+                                                            <div
+                                                                title={
+                                                                    afternoon === "pending"
+                                                                        ? "Ca chiều: Chờ duyệt"
+                                                                        : "Ca chiều: Đi làm"
+                                                                }
+                                                                className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
+                                                                    afternoon === "pending"
+                                                                        ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
+                                                                        : "border-purple-200/90 bg-purple-50 text-purple-900 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
+                                                                }`}>
+                                                                <span
+                                                                    className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
+                                                                    aria-hidden="true">
+                                                                    wb_twilight
+                                                                </span>
+                                                                <span>Ca Chiều</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
 
-                                                            {afternoon !== "off" && (
-                                                                <div
-                                                                    title={
-                                                                        afternoon === "pending"
-                                                                            ? "Ca chiều: Chờ duyệt"
-                                                                            : "Ca chiều: Đi làm"
-                                                                    }
-                                                                    className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
-                                                                        afternoon === "pending"
-                                                                            ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
-                                                                            : "border-purple-200/90 bg-purple-50 text-purple-900 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
-                                                                    }`}>
-                                                                    <span
-                                                                        className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
-                                                                        aria-hidden="true">
-                                                                        wb_twilight
-                                                                    </span>
-                                                                    <span>Ca Chiều</span>
-                                                                </div>
+                                    {/* Desktop View: Grid 5 cột (hidden md:block) */}
+                                    <div className="hidden md:block overflow-x-auto pb-1">
+                                        <div className="min-w-[650px] space-y-3">
+                                            <div className="grid grid-cols-5 gap-3">
+                                                {WEEKDAYS.map((day) => {
+                                                    const isToday = day.index === todayWeekdayIndex;
+
+                                                    return (
+                                                        <div
+                                                            key={day.index}
+                                                            className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
+                                                                isToday
+                                                                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                                                                    : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                                            }`}>
+                                                            <span>{day.dayName}</span>
+                                                            {isToday && (
+                                                                <span className="rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal text-white">
+                                                                    Hôm nay
+                                                                </span>
                                                             )}
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <div className="grid grid-cols-5 gap-3">
+                                                {WEEKDAYS.map((day) => {
+                                                    const morning = getShiftStatus(day.index, "morning");
+                                                    const afternoon = getShiftStatus(day.index, "afternoon");
+                                                    const isToday = day.index === todayWeekdayIndex;
+
+                                                    return (
+                                                        <div
+                                                            key={day.index}
+                                                            className={`min-h-[104px] rounded-2xl border-2 bg-white p-3 shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                                isToday
+                                                                    ? "border-blue-600 dark:border-blue-400"
+                                                                    : "border-slate-200 dark:border-slate-800"
+                                                            }`}>
+                                                            <div className="space-y-2">
+                                                                {morning !== "off" ? (
+                                                                    <div
+                                                                        title={
+                                                                            morning === "pending"
+                                                                                ? "Ca sáng: Chờ duyệt"
+                                                                                : "Ca sáng: Đi làm"
+                                                                        }
+                                                                        className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
+                                                                            morning === "pending"
+                                                                                ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
+                                                                                : "border-amber-200/90 bg-amber-50 text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
+                                                                        }`}>
+                                                                        <span
+                                                                            className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
+                                                                            aria-hidden="true">
+                                                                            wb_sunny
+                                                                        </span>
+                                                                        <span>Ca Sáng</span>
+                                                                    </div>
+                                                                ) : afternoon !== "off" ? (
+                                                                    <div className="h-[38px]" aria-hidden="true" />
+                                                                ) : null}
+
+                                                                {afternoon !== "off" && (
+                                                                    <div
+                                                                        title={
+                                                                            afternoon === "pending"
+                                                                                ? "Ca chiều: Chờ duyệt"
+                                                                                : "Ca chiều: Đi làm"
+                                                                        }
+                                                                        className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
+                                                                            afternoon === "pending"
+                                                                                ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
+                                                                                : "border-purple-200/90 bg-purple-50 text-purple-900 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
+                                                                        }`}>
+                                                                        <span
+                                                                            className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
+                                                                            aria-hidden="true">
+                                                                            wb_twilight
+                                                                        </span>
+                                                                        <span>Ca Chiều</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </>
                             )}
                         </div>
 

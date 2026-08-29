@@ -485,7 +485,101 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Lịch tuần</h3>
                         </div>
 
-                        <div className="overflow-x-auto">
+                        {/* Mobile View: 1 cột thứ & 1 cột ca (< md) */}
+                        <div className="md:hidden space-y-2.5">
+                            {weekDays.map((date, index) => {
+                                const dateISO = toISODate(date);
+                                const dayName = WEEKDAYS[index].label;
+                                const dateFormatted = `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+                                const isToday = dateISO === todayISO;
+
+                                const morningCTVs = getAssignedCTVs(dateISO, "morning");
+                                const afternoonCTVs = getAssignedCTVs(dateISO, "afternoon");
+
+                                return (
+                                    <div
+                                        key={dateISO}
+                                        className={`p-3 rounded-2xl border-2 bg-white dark:bg-slate-900 flex items-center gap-3 transition-colors ${
+                                            isToday
+                                                ? "border-blue-600 dark:border-blue-400"
+                                                : "border-slate-200 dark:border-slate-800"
+                                        }`}>
+                                        {/* Cột Thứ */}
+                                        <div
+                                            className={`w-24 shrink-0 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-center font-bold text-xs uppercase tracking-wider transition-colors ${
+                                                isToday
+                                                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                                                    : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                            }`}>
+                                            <span>{dayName}</span>
+                                            {isToday && (
+                                                <span className="mt-1 rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white normal-case tracking-normal">
+                                                    Hôm nay
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Cột Ca */}
+                                        <div className="flex-1 space-y-1.5 min-w-0">
+                                            {morningCTVs.length > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleOpenShiftDetail(
+                                                            dayName,
+                                                            dateFormatted,
+                                                            "Ca Sáng",
+                                                            dateISO,
+                                                        )
+                                                    }
+                                                    className="w-full flex items-center justify-between gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 hover:border-amber-300 transition-all cursor-pointer group text-left dark:border-amber-800/50 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 dark:text-amber-200"
+                                                    title="Bấm để xem chi tiết danh sách CTV ca sáng">
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <span
+                                                            className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400 shrink-0"
+                                                            aria-hidden="true">
+                                                            wb_sunny
+                                                        </span>
+                                                    </div>
+                                                    <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-200/90 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200 transition-transform group-hover:scale-105">
+                                                        {morningCTVs.length} CTV
+                                                    </span>
+                                                </button>
+                                            )}
+
+                                            {afternoonCTVs.length > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleOpenShiftDetail(
+                                                            dayName,
+                                                            dateFormatted,
+                                                            "Ca Chiều",
+                                                            dateISO,
+                                                        )
+                                                    }
+                                                    className="w-full flex items-center justify-between gap-2 rounded-xl border border-purple-200/90 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900 shadow-xs hover:bg-purple-100 hover:border-purple-300 transition-all cursor-pointer group text-left dark:border-purple-800/50 dark:bg-purple-950/40 dark:hover:bg-purple-950/70 dark:text-purple-200"
+                                                    title="Bấm để xem chi tiết danh sách CTV ca chiều">
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <span
+                                                            className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400 shrink-0"
+                                                            aria-hidden="true">
+                                                            wb_twilight
+                                                        </span>
+                                                    </div>
+                                                    <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-200/90 text-purple-900 dark:bg-purple-900/80 dark:text-purple-200 transition-transform group-hover:scale-105">
+                                                        {afternoonCTVs.length} CTV
+                                                    </span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Desktop View: Grid 5 cột (hidden md:block) */}
+                        <div className="hidden md:block overflow-x-auto">
                             <div className="min-w-[650px] space-y-3">
                                 {/* Weekday Headers: THỨ 2, THỨ 3, THỨ 4, THỨ 5, THỨ 6 */}
                                 <div className="grid grid-cols-5 gap-3">
