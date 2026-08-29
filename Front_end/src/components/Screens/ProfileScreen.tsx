@@ -240,7 +240,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5 w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                     {/* CCCD Mặt trước */}
                     <div className="flex flex-col gap-1">
                       <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
@@ -337,12 +337,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         <div className="lg:col-span-8 flex flex-col">
           <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl shadow-xs overflow-hidden h-full flex flex-col">
             {/* Header & Actions */}
-            <div className="bg-[#F8FAFC] dark:bg-[#1f2023] px-5 py-3.5 border-b border-[#E2E8F0] dark:border-[#3b3d45] flex flex-wrap items-center justify-between gap-3">
+            <div className="bg-[#F8FAFC] dark:bg-[#1f2023] px-4 sm:px-5 py-3.5 border-b border-[#E2E8F0] dark:border-[#3b3d45] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-bold text-sm sm:text-base text-[#1a1b1e] dark:text-[#d6e3ff] flex items-center gap-2">
                 <span className="material-symbols-outlined text-accent text-[20px]">badge</span>
                 <span>Thông tin chi tiết</span>
               </h3>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={onOpenChangePassword}
                   className="px-3 py-1.5 border border-accent text-accent font-semibold text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"

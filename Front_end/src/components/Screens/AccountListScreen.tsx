@@ -65,10 +65,10 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
       </div>
 
       {/* Toolbar Section */}
-      <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+      <div className="bg-white border border-[#E2E8F0] rounded-lg p-3 sm:p-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Search */}
-          <div className="md:col-span-10 relative">
+          <div className="relative flex-1">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#44474e]">
               search
             </span>
@@ -85,10 +85,10 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
           </div>
 
           {/* Reset Action */}
-          <div className="md:col-span-2 flex items-center justify-end">
+          <div className="flex items-center justify-end shrink-0">
             <button
               onClick={handleResetFilters}
-              className="text-[#44474e] hover:text-[#1b365d] font-semibold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-[#44474e] hover:text-[#1b365d] font-semibold text-xs flex items-center gap-1 transition-colors cursor-pointer px-2 py-1.5 rounded hover:bg-slate-100"
             >
               <span className="material-symbols-outlined text-[18px]">restart_alt</span>
               <span>Đặt lại</span>
@@ -99,23 +99,23 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
 
       {/* Data Table */}
       <div className="bg-white border border-[#E2E8F0] rounded-lg overflow-hidden shadow-xs flex flex-col">
-        <div className="overflow-x-auto overflow-y-hidden h-[395px]">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+        <div className="overflow-x-auto min-h-[320px] flex-1">
+          <table className="w-full text-left border-collapse min-w-[650px]">
             <thead>
-              <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] h-[45px]">
-                <th className="py-3 px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider w-16">
+              <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] min-h-[45px]">
+                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider w-14 sm:w-16">
                   STT
                 </th>
-                <th className="py-3 px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
+                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
                   Họ và tên
                 </th>
-                <th className="py-3 px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
+                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
                   Số điện thoại
                 </th>
-                <th className="py-3 px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
+                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
                   Ngày đăng ký
                 </th>
-                <th className="py-3 px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider text-right">
+                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider text-right">
                   Thao tác
                 </th>
               </tr>
@@ -131,40 +131,40 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                 currentItems.map((acc, index) => (
                   <tr
                     key={acc.id}
-                    className="hover:bg-[#f4f3f7] transition-colors group cursor-default h-[64px] border-b border-[#E2E8F0]"
+                    className="hover:bg-[#f4f3f7] transition-colors group cursor-default border-b border-[#E2E8F0]"
                   >
-                    <td className="py-3.5 px-4 text-sm text-[#44474e]">{startIndex + index + 1}</td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3 px-3 sm:px-4 text-sm text-[#44474e]">{startIndex + index + 1}</td>
+                    <td className="py-3 px-3 sm:px-4">
                       <div
                         onClick={() => onViewAccountDetail(acc)}
-                        className="flex items-center gap-3 cursor-pointer group/user inline-flex"
+                        className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group/user inline-flex"
                         title={`Xem hồ sơ chi tiết của ${acc.name}`}
                       >
                         {acc.avatar ? (
                           <img
                             src={acc.avatar}
                             alt={acc.name}
-                            className="w-9 h-9 rounded-full object-cover border border-[#E2E8F0] group-hover/user:border-[#1b365d] group-hover/user:scale-105 transition-all"
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-[#E2E8F0] group-hover/user:border-[#1b365d] group-hover/user:scale-105 transition-all shrink-0"
                           />
                         ) : (
-                          <div className="w-9 h-9 rounded-full bg-[#aec7f7] text-[#2e476f] flex items-center justify-center font-bold text-xs group-hover/user:scale-105 transition-all">
+                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#aec7f7] text-[#2e476f] flex items-center justify-center font-bold text-xs group-hover/user:scale-105 transition-all shrink-0">
                             {acc.initials || acc.name.substring(0, 2).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <div className="font-semibold text-sm text-[#1a1b1e] group-hover/user:text-[#1b365d] group-hover/user:underline transition-colors">
+                          <div className="font-semibold text-xs sm:text-sm text-[#1a1b1e] group-hover/user:text-[#1b365d] group-hover/user:underline transition-colors">
                             {acc.name}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-sm text-[#44474e] font-medium">
+                    <td className="py-3 px-3 sm:px-4 text-xs sm:text-sm text-[#44474e] font-medium">
                       {acc.phone ? formatPhoneNumber(acc.phone) : "---"}
                     </td>
-                    <td className="py-3.5 px-4 text-sm text-[#44474e]">{acc.registerDate}</td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3 px-3 sm:px-4 text-xs sm:text-sm text-[#44474e]">{acc.registerDate}</td>
+                    <td className="py-3 px-3 sm:px-4 text-right">
                       {acc.role !== "Admin" && (
-                        <div className="flex items-center justify-end gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setAccountToResetPassword(acc)}
                             className="p-1.5 text-[#44474e] hover:text-[#1b365d] hover:bg-[#d8e2f9] rounded transition-colors cursor-pointer"

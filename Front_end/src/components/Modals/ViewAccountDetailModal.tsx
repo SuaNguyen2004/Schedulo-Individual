@@ -312,7 +312,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                         <span>Ảnh chụp CCCD (Mặt trước & Mặt sau)</span>
                                     </span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {account.cccdFront ? (
                                         <div
                                             onClick={() =>
