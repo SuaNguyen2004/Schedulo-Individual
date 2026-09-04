@@ -11,6 +11,7 @@ interface AccountListScreenProps {
   onViewAccountDetail: (account: UserAccount) => void;
   onChangeRole?: (id: string, newRole: UserRole) => void;
   onResetPassword?: (id: string, newPassword: string, requireChangeOnLogin: boolean) => void;
+  onShowToast?: (msg: string, type?: "success" | "error") => void;
 }
 
 export const AccountListScreen: React.FC<AccountListScreenProps> = ({
@@ -19,6 +20,7 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
   onDeleteAccount,
   onViewAccountDetail,
   onResetPassword,
+  onShowToast,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -332,6 +334,7 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
         <ResetPasswordModal
           account={accountToResetPassword}
           onClose={() => setAccountToResetPassword(null)}
+          onShowToast={onShowToast}
           onConfirmReset={(id, newPassword, requireChange) => {
             if (onResetPassword) {
               onResetPassword(id, newPassword, requireChange);

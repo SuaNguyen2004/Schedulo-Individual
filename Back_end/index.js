@@ -19,9 +19,9 @@ fs.mkdirSync(imageDirectory, { recursive: true });
 fs.mkdirSync(cvDirectory, { recursive: true });
 const pool = mysql.createPool({
     host: process.env.DB_HOST || "127.0.0.1",
-    port: Number(process.env.DB_PORT || 3306),
+    port: Number(process.env.DB_PORT || 3308),
     user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
+    password: process.env.DB_PASSWORD || "root",
     database: process.env.DB_NAME || "schedule",
     waitForConnections: true,
     connectionLimit: 10,
@@ -105,8 +105,14 @@ app.post("/api/auth/register", async (req, res) => {
     if (![name, email, phone, password].every((value) => typeof value === "string" && value.trim())) {
         return res.status(400).json({ message: "Vui lòng nhập đủ họ tên, email, số điện thoại và mật khẩu." });
     }
+    if (password.length < 6 || password.length > 20) {
+        return res.status(400).json({ message: "Mật khẩu phải từ 6 đến 20 ký tự." });
+    }
     if (!dob || typeof dob !== "string" || !dob.trim()) {
         return res.status(400).json({ message: "Vui lòng chọn ngày sinh." });
+    }
+    if (!parseDate(dob)) {
+        return res.status(400).json({ message: "Vui lòng nhập ngày sinh hợp lệ" });
     }
     const hasIdFront = attachments.some((a) => a.fileType === "ID_CARD_FRONT" && a.filePath);
     const hasIdBack = attachments.some((a) => a.fileType === "ID_CARD_BACK" && a.filePath);
@@ -239,8 +245,8 @@ app.patch("/api/auth/reset-password", async (req, res) => {
     if (!userId || typeof newPassword !== "string") {
         return res.status(400).json({ message: "Thiếu thông tin cần thiết." });
     }
-    if (newPassword.length < 6) {
-        return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự." });
+    if (newPassword.length < 6 || newPassword.length > 20) {
+        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 20 ký tự." });
     }
     try {
         const newHash = await bcrypt.hash(newPassword, 12);
@@ -262,8 +268,8 @@ app.patch("/api/auth/change-password", async (req, res) => {
     if (!userId || typeof oldPassword !== "string" || typeof newPassword !== "string") {
         return res.status(400).json({ message: "Thiếu thông tin cần thiết." });
     }
-    if (newPassword.length < 6) {
-        return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự." });
+    if (newPassword.length < 6 || newPassword.length > 20) {
+        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 20 ký tự." });
     }
     try {
         const [rows] = await pool.execute("SELECT id, password_hash FROM users WHERE id = ? LIMIT 1", [String(userId)]);
@@ -821,8 +827,16 @@ function formatDate(value) {
 
 function parseDate(value) {
     if (typeof value !== "string") return null;
-    const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    return match ? `${match[3]}-${match[2]}-${match[1]}` : null;
+    const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!match) return null;
+    const d = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    const y = parseInt(match[3], 10);
+    const date = new Date(y, m - 1, d);
+    if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+        return null;
+    }
+    return `${match[3]}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
 async function saveAttachment(attachment, userName = "", userId = "") {

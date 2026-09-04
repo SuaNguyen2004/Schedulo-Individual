@@ -744,7 +744,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         <button
                             type="button"
                             onClick={openRegistration}
-                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 sm:w-auto dark:focus-visible:ring-offset-slate-900">
+                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 sm:w-auto dark:focus-visible:ring-offset-slate-900 cursor-pointer">
                             <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                                 edit_calendar
                             </span>
@@ -1151,16 +1151,32 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                         return (
                                                             <div
                                                                 key={day.index}
-                                                                className="flex items-center justify-center border-r border-slate-200 p-1.5 last:border-r-0 dark:border-slate-700">
+                                                                onClick={() => {
+                                                                    if (firstDate) {
+                                                                        togglePattern(day.index, shiftOption.type);
+                                                                    }
+                                                                }}
+                                                                className={`flex items-center justify-center border-r border-slate-200 p-1.5 last:border-r-0 dark:border-slate-700 transition-colors ${
+                                                                    firstDate ? "cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/30" : ""
+                                                                }`}>
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() =>
-                                                                        togglePattern(day.index, shiftOption.type)
-                                                                    }
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (firstDate) {
+                                                                            togglePattern(day.index, shiftOption.type);
+                                                                        }
+                                                                    }}
                                                                     disabled={!firstDate}
                                                                     aria-pressed={selected}
                                                                     aria-label={`${selected ? "Bỏ chọn" : "Chọn"} ${shiftOption.label} ${day.label}${firstDate ? `, ngày đầu tiên ${formatCalendarDate(firstDate)}` : ", ngoài khoảng đăng ký"}`}
-                                                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 dark:disabled:border-slate-700 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 ${selected ? "border-blue-700 bg-blue-700 text-white shadow-xs" : "border-slate-200 bg-white text-slate-400 hover:border-blue-300 hover:text-blue-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-blue-300"}`}>
+                                                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 dark:disabled:border-slate-700 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 ${
+                                                                        firstDate ? "cursor-pointer" : ""
+                                                                    } ${
+                                                                        selected
+                                                                            ? "border-blue-700 bg-blue-700 text-white shadow-xs hover:bg-blue-800"
+                                                                            : "border-slate-200 bg-white text-slate-400 hover:border-blue-300 hover:text-blue-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-blue-300"
+                                                                    }`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px]"
                                                                         aria-hidden="true">

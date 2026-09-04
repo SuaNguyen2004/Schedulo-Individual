@@ -164,17 +164,23 @@ export const App: React.FC = () => {
     const bootstrapRef = useRef<Promise<import("./utils/api").BootstrapData> | null>(null);
 
     // Toast feedback state
-    const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-    const showToast = (msg: string) => {
-        setToastMessage(msg);
+    const showToast = (msg: string, type?: "success" | "error") => {
+        const isError =
+            type === "error" ||
+            (!type &&
+                /không|lỗi|thất bại|bị vô hiệu|phải có|tối đa|ít nhất|chưa|kiểm tra|sai|từ chối/i.test(msg));
+
+        setToast({ message: msg, type: isError ? "error" : "success" });
         setTimeout(() => {
-            setToastMessage(null);
-        }, 3000);
+            setToast(null);
+        }, 3500);
     };
 
     const clearAuthState = (toastMsg?: string) => {
         setIsLoggedIn(false);
+        setCurrentUser(EMPTY_USER);
         window.localStorage.removeItem(AUTH_STORAGE_KEY);
         window.localStorage.removeItem(AUTH_USER_EMAIL_KEY);
         window.localStorage.removeItem(AUTH_USER_ID_KEY);
@@ -210,8 +216,12 @@ export const App: React.FC = () => {
                 const authenticatedEmail = window.localStorage.getItem(AUTH_USER_EMAIL_KEY);
                 const authenticatedAccount = data.accounts.find((account) => account.email === authenticatedEmail);
                 if (authenticatedAccount) {
-                    setCurrentUser(authenticatedAccount);
-                    setCurrentTab(authenticatedAccount.role === "Admin" ? "accounts" : "schedule");
+                    if (authenticatedAccount.status !== "Kích hoạt") {
+                        clearAuthState("Tài khoản của bạn đã bị vô hiệu hoá. Vui lòng liên hệ Admin!");
+                    } else {
+                        setCurrentUser(authenticatedAccount);
+                        setCurrentTab(authenticatedAccount.role === "Admin" ? "accounts" : "schedule");
+                    }
                 } else if (authenticatedEmail) {
                     clearAuthState();
                 }
@@ -235,13 +245,42 @@ export const App: React.FC = () => {
         return () => controller.abort();
     }, []);
 
+    // Monitor logged-in user status in real-time
+    useEffect(() => {
+        if (!isLoggedIn || !currentUser.email) return;
+        const freshAccount = accounts.find(
+            (acc) => (currentUser.id && acc.id === currentUser.id) || acc.email === currentUser.email,
+        );
+        if (freshAccount && freshAccount.status !== "Kích hoạt") {
+            clearAuthState("Tài khoản của bạn đã bị vô hiệu hoá. Vui lòng liên hệ Admin!");
+        }
+    }, [accounts, isLoggedIn, currentUser.id, currentUser.email]);
+
+    // Periodic polling to sync account status live (e.g. when disabled by Admin in another session)
+    useEffect(() => {
+        if (!isLoggedIn) return;
+
+        const checkStatus = () => {
+            fetchBootstrapData()
+                .then((data) => {
+                    if (data?.accounts && Array.isArray(data.accounts)) {
+                        setAccounts(data.accounts);
+                        if (data.requests) setRequests(data.requests);
+                        if (data.shifts) setShifts(data.shifts);
+                        if (data.history) setHistory(data.history);
+                        if (data.meetings) setMeetings(data.meetings);
+                        if (data.rooms) setRooms(data.rooms);
+                    }
+                })
+                .catch(() => {});
+        };
+
+        const interval = setInterval(checkStatus, 3000);
+        return () => clearInterval(interval);
+    }, [isLoggedIn]);
+
     // Handlers
     const handleLoginSuccess = async (user: AuthenticatedUser) => {
-        setIsLoggedIn(true);
-        window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
-        window.localStorage.setItem(AUTH_USER_EMAIL_KEY, user.email);
-        window.localStorage.setItem(AUTH_USER_ID_KEY, user.id);
-
         // Wait for bootstrap data to be available so we can look up full profile
         let bootstrapData: import("./utils/api").BootstrapData | null = null;
         if (bootstrapRef.current) {
@@ -251,6 +290,16 @@ export const App: React.FC = () => {
         const account = (bootstrapData?.accounts || accounts).find(
             (item) => item.id === user.id || item.email === user.email,
         );
+        if (account && account.status !== "Kích hoạt") {
+            clearAuthState("Tài khoản của bạn đã bị vô hiệu hoá. Vui lòng liên hệ Admin!");
+            return;
+        }
+
+        setIsLoggedIn(true);
+        window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
+        window.localStorage.setItem(AUTH_USER_EMAIL_KEY, user.email);
+        window.localStorage.setItem(AUTH_USER_ID_KEY, user.id);
+
         if (account) {
             setCurrentUser(account);
             setCurrentTab(account.role === "Admin" ? "accounts" : "schedule");
@@ -405,7 +454,7 @@ export const App: React.FC = () => {
                 );
             }
 
-            showToast(`Đã đặt lại mật khẩu cho ${target.name} thành công. Mật khẩu mới: ${newPassword}`);
+            showToast(`Đã đặt lại mật khẩu cho ${target.name} thành công.`);
         } catch (err) {
             showToast(err instanceof Error ? err.message : "Không thể đặt lại mật khẩu.");
         }
@@ -575,10 +624,14 @@ export const App: React.FC = () => {
     return (
         <div className={`h-screen flex overflow-hidden bg-[#faf9fd] text-[#1a1b1e] ${isDarkMode ? "dark" : ""}`}>
             {/* Toast Notification Banner */}
-            {toastMessage && (
-                <div className="fixed bottom-6 right-6 z-[100] bg-[#002046] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-xl flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200">
-                    <span className="material-symbols-outlined text-[18px] text-[#16A34A]">check_circle</span>
-                    <span>{toastMessage}</span>
+            {toast && (
+                <div className="fixed bottom-6 right-6 z-[100] bg-[#002046] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-xl flex items-center gap-2.5 animate-in slide-in-from-bottom-3 duration-200">
+                    {toast.type === "error" ? (
+                        <span className="material-symbols-outlined text-[18px] text-red-500">cancel</span>
+                    ) : (
+                        <span className="material-symbols-outlined text-[18px] text-[#16A34A]">check_circle</span>
+                    )}
+                    <span>{toast.message}</span>
                 </div>
             )}
 
@@ -672,6 +725,7 @@ export const App: React.FC = () => {
                                 onViewAccountDetail={(acc) => setSelectedAccountDetail(acc)}
                                 onChangeRole={handleChangeRole}
                                 onResetPassword={handleResetPassword}
+                                onShowToast={showToast}
                             />
                         )}
 

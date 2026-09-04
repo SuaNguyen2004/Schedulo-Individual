@@ -264,7 +264,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <span className="p-1 rounded-full bg-white/90 text-slate-800 text-[15px] material-symbols-outlined shadow-xs">
+                            <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/90 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors shadow-xs cursor-pointer material-symbols-outlined text-[18px]">
                               zoom_in
                             </span>
                           </div>
@@ -307,7 +307,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <span className="p-1 rounded-full bg-white/90 text-slate-800 text-[15px] material-symbols-outlined shadow-xs">
+                            <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/90 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors shadow-xs cursor-pointer material-symbols-outlined text-[18px]">
                               zoom_in
                             </span>
                           </div>
@@ -480,7 +480,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                           title="Xem CV trong tab mới"
                         >
                           <span className="material-symbols-outlined text-[16px] text-blue-600">
-                            open_in_new
+                            visibility
                           </span>
                           <span>Xem</span>
                         </button>
@@ -491,7 +491,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                           className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                           title="Chọn file mới thay thế"
                         >
-                          <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                          <span className="material-symbols-outlined text-[16px]">sync</span>
                           <span>Thay đổi</span>
                         </button>
                       </div>

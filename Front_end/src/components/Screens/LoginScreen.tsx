@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { RegistrationRequest } from "../../types";
 import { loginWithDatabase, registerWithDatabase, AuthenticatedUser } from "../../utils/api";
+import { isValidDateOfBirth } from "../../utils/formatters";
 
 interface LoginScreenProps {
     onLoginSuccess: (user: AuthenticatedUser) => void;
@@ -182,17 +183,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         const errors: { [key: string]: string } = {};
 
         if (!regName.trim()) errors.regName = "Vui lòng nhập họ và tên!";
-        if (!regDay || !regMonth || !regYear) errors.regDob = "Vui lòng chọn ngày sinh!";
+        if (!regDay || !regMonth || !regYear) {
+            errors.regDob = "Vui lòng chọn ngày sinh!";
+        } else if (!isValidDateOfBirth(regDay, regMonth, regYear)) {
+            errors.regDob = "Vui lòng nhập ngày sinh hợp lệ";
+        }
         if (!regEmail.trim()) errors.regEmail = "Vui lòng nhập email!";
         if (!regPhone.trim()) errors.regPhone = "Vui lòng nhập số điện thoại!";
         else if (!/^[0-9]{10}$/.test(regPhone.trim())) errors.regPhone = "Số điện thoại phải đúng 10 chữ số!";
         if (!cccdFront) errors.cccdFront = "Vui lòng tải ảnh CCCD mặt trước!";
         if (!cccdBack) errors.cccdBack = "Vui lòng tải ảnh CCCD mặt sau!";
         if (!cvFile) errors.cvFile = "Vui lòng tải file CV lên!";
-        if (!regPassword) errors.regPassword = "Vui lòng nhập mật khẩu!";
-        if (!regConfirmPassword) errors.regConfirmPassword = "Vui lòng nhập lại mật khẩu!";
+        if (!regPassword) {
+            errors.regPassword = "Vui lòng nhập mật khẩu!";
+        } else if (regPassword.length < 6 || regPassword.length > 20) {
+            errors.regPassword = "Mật khẩu phải từ 6 đến 20 ký tự!";
+        }
 
-        if (regPassword && regConfirmPassword && regPassword !== regConfirmPassword) {
+        if (!regConfirmPassword) {
+            errors.regConfirmPassword = "Vui lòng nhập lại mật khẩu!";
+        } else if (regPassword && regConfirmPassword && regPassword !== regConfirmPassword) {
             errors.regConfirmPassword = "Mật khẩu phải trùng khớp!";
         }
 
@@ -270,7 +280,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             .catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : "Không thể gửi yêu cầu đăng ký.";
                 const lower = message.toLowerCase();
-                if (lower.includes("số điện thoại") || lower.includes("sđt") || lower.includes("phone")) {
+                if (lower.includes("ngày sinh") || lower.includes("dob") || lower.includes("date_of_birth") || lower.includes("date value")) {
+                    setRegErrors({ regDob: "Vui lòng nhập ngày sinh hợp lệ" });
+                } else if (lower.includes("mật khẩu") || lower.includes("password")) {
+                    setRegErrors({ regPassword: message });
+                } else if (lower.includes("số điện thoại") || lower.includes("sđt") || lower.includes("phone")) {
                     setRegErrors({ regPhone: message });
                 } else if (lower.includes("email")) {
                     setRegErrors({ regEmail: message });
@@ -408,7 +422,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <select
                                         value={regDay}
                                         onChange={(e) => setRegDay(e.target.value)}
-                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] ${
+                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] cursor-pointer ${
                                             regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                         }`}>
                                         <option value="">Ngày</option>
@@ -424,7 +438,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <select
                                         value={regMonth}
                                         onChange={(e) => setRegMonth(e.target.value)}
-                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] ${
+                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] cursor-pointer ${
                                             regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                         }`}>
                                         <option value="">Tháng</option>
@@ -440,7 +454,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <select
                                         value={regYear}
                                         onChange={(e) => setRegYear(e.target.value)}
-                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] ${
+                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] cursor-pointer ${
                                             regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                         }`}>
                                         <option value="">Năm</option>
@@ -490,8 +504,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         type="tel"
                                         inputMode="numeric"
                                         pattern="[0-9]{10}"
+                                        title="Số điện thoại phải gồm đúng 10 chữ số (ví dụ: 0912345678)"
                                         value={regPhone}
-                                        onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                                        onChange={(e) => {
+                                            e.currentTarget.setCustomValidity("");
+                                            setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                                        }}
+                                        onInvalid={(e) => {
+                                            e.currentTarget.setCustomValidity("Số điện thoại phải gồm đúng 10 chữ số (ví dụ: 0912345678)");
+                                        }}
                                         className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                             regErrors.regPhone ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                         }`}
@@ -513,7 +534,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         </span>
                                         <span>Ảnh CCCD (Mặt trước & Mặt sau)</span> <span className="text-[#DC2626]">*</span>
                                     </label>
-                                    <span className="text-[11px] text-[#74777f]">Định dạng JPG, PNG</span>
                                 </div>
 
                                 {/* Hidden File Inputs for CCCD */}
@@ -568,7 +588,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                         onClick={() =>
                                                             setPreviewImage({ title: "CCCD Mặt trước", url: cccdFront })
                                                         }
-                                                        className="p-1.5 bg-white/90 hover:bg-white text-[#1b365d] rounded-full shadow-xs cursor-pointer"
+                                                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/90 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors shadow-xs cursor-pointer"
                                                         title="Phóng to xem ảnh">
                                                         <span className="material-symbols-outlined text-[18px]">
                                                             zoom_in
@@ -577,7 +597,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                     <button
                                                         type="button"
                                                         onClick={() => cccdFrontInputRef.current?.click()}
-                                                        className="p-1.5 bg-white/90 hover:bg-white text-[#1b365d] rounded-full shadow-xs cursor-pointer"
+                                                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/90 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors shadow-xs cursor-pointer"
                                                         title="Đổi ảnh khác">
                                                         <span className="material-symbols-outlined text-[18px]">
                                                             sync
@@ -649,7 +669,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                         onClick={() =>
                                                             setPreviewImage({ title: "CCCD Mặt sau", url: cccdBack })
                                                         }
-                                                        className="p-1.5 bg-white/90 hover:bg-white text-[#1b365d] rounded-full shadow-xs cursor-pointer"
+                                                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/90 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors shadow-xs cursor-pointer"
                                                         title="Phóng to xem ảnh">
                                                         <span className="material-symbols-outlined text-[18px]">
                                                             zoom_in
@@ -658,7 +678,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                     <button
                                                         type="button"
                                                         onClick={() => cccdBackInputRef.current?.click()}
-                                                        className="p-1.5 bg-white/90 hover:bg-white text-[#1b365d] rounded-full shadow-xs cursor-pointer"
+                                                        className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/90 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors shadow-xs cursor-pointer"
                                                         title="Đổi ảnh khác">
                                                         <span className="material-symbols-outlined text-[18px]">
                                                             sync
@@ -714,7 +734,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         </span>
                                         <span>CV ứng tuyển (File PDF, Word)</span> <span className="text-[#DC2626]">*</span>
                                     </label>
-                                    <span className="text-[11px] text-[#74777f]">.pdf, .doc, .docx</span>
                                 </div>
 
                                 {/* Hidden File Input for CV */}
@@ -806,7 +825,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             Tải lên CV cá nhân (PDF hoặc Word)
                                         </p>
                                         <p className="text-[10px] text-slate-400 mt-0.5">
-                                            Kéo thả file vào đây hoặc nhấn để chọn từ thiết bị (.pdf, .doc, .docx)
+                                            Kéo thả file vào đây hoặc nhấn để chọn từ thiết bị
                                         </p>
                                     </div>
                                 )}
@@ -827,6 +846,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             type={showRegPassword ? "text" : "password"}
                                             value={regPassword}
                                             onChange={(e) => setRegPassword(e.target.value)}
+                                            maxLength={20}
                                             className={`w-full pl-3 pr-9 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                                 regErrors.regPassword ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                             }`}
@@ -857,6 +877,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             type={showRegConfirmPassword ? "text" : "password"}
                                             value={regConfirmPassword}
                                             onChange={(e) => setRegConfirmPassword(e.target.value)}
+                                            maxLength={20}
                                             className={`w-full pl-3 pr-9 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                                 regErrors.regConfirmPassword ? "border-[#DC2626]" : "border-[#c4c6cf]"
                                             }`}

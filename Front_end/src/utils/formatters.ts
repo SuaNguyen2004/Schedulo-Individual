@@ -34,3 +34,13 @@ export function formatDateOnly(dateTime?: string): string {
 
   return value;
 }
+
+export function isValidDateOfBirth(day: string, month: string, year: string): boolean {
+  if (!day || !month || !year) return false;
+  const d = parseInt(day, 10);
+  const m = parseInt(month, 10);
+  const y = parseInt(year, 10);
+  if (isNaN(d) || isNaN(m) || isNaN(y)) return false;
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+}

@@ -6,15 +6,19 @@ interface ResetPasswordModalProps {
   account: UserAccount | null;
   onClose: () => void;
   onConfirmReset: (id: string, newPassword: string, requireChangeOnLogin: boolean) => void;
+  onShowToast?: (msg: string, type?: "success" | "error") => void;
 }
 
 export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   account,
   onClose,
   onConfirmReset,
+  onShowToast,
 }) => {
   const [password, setPassword] = useState("CTV@123456");
+  const [showPassword, setShowPassword] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   if (!account) return null;
 
@@ -35,6 +39,12 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!password.trim()) return;
+    if (password.trim().length < 6 || password.trim().length > 20) {
+      const msg = "Mật khẩu mới phải từ 6 đến 20 ký tự.";
+      setErrorMsg(msg);
+      return;
+    }
+    setErrorMsg("");
     onConfirmReset(account.id, password.trim(), true);
     onClose();
   };
@@ -63,7 +73,13 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} autoComplete="off" className="p-5 space-y-4">
+          {errorMsg && (
+            <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 text-xs font-semibold rounded-xl flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-red-500">cancel</span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
           {/* 1. User Target Card */}
           <div className="bg-slate-50 dark:bg-[#25262b] p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex items-center gap-3">
             {account.avatar ? (
@@ -95,14 +111,28 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
 
             <div className="relative">
               <input
-                type="text"
+                type={showPassword ? "text" : "password"}
+                name="admin_reset_new_password"
+                autoComplete="new-password"
+                data-1p-ignore="true"
+                data-lpignore="true"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Nhập mật khẩu mới..."
-                className="w-full text-sm font-mono font-bold tracking-wider pl-3.5 pr-12 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-[#1a1b1e] text-slate-800 dark:text-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
+                maxLength={20}
+                className="w-full text-sm font-mono font-bold tracking-wider pl-3.5 pr-20 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-[#1a1b1e] text-slate-800 dark:text-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
                 required
               />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded cursor-pointer"
+                  title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {showPassword ? "visibility" : "visibility_off"}
+                  </span>
+                </button>
                 <button
                   type="button"
                   onClick={handleCopy}

@@ -28,8 +28,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       setErrorMsg('Vui lòng nhập mật khẩu hiện tại');
       return;
     }
-    if (newPassword.length < 6) {
-      setErrorMsg('Mật khẩu mới phải có ít nhất 6 ký tự');
+    if (newPassword.length < 6 || newPassword.length > 20) {
+      setErrorMsg('Mật khẩu mới phải từ 6 đến 20 ký tự!');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -96,7 +96,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="••••••••"
+              maxLength={20}
               className="w-full px-3 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
             />
           </div>
@@ -110,19 +110,12 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
+              maxLength={20}
               className="w-full px-3 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
             />
           </div>
 
-          <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-[#E2E8F0] rounded text-xs font-semibold text-[#44474e] hover:bg-gray-100 transition-colors"
-            >
-              Hủy
-            </button>
+          <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-end">
             <button
               type="submit"
               disabled={loading}

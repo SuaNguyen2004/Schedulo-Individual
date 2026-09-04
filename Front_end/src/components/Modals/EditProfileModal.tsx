@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { UserAccount } from "../../types";
 import { updateProfile } from "../../utils/api";
+import { isValidDateOfBirth } from "../../utils/formatters";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -32,6 +33,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const dayOptions = Array.from({ length: 31 }, (_, i) => {
+    const d = String(i + 1).padStart(2, "0");
+    return { value: d, label: d };
+  });
+
+  const monthOptions = Array.from({ length: 12 }, (_, i) => {
+    const m = String(i + 1).padStart(2, "0");
+    return { value: m, label: m };
+  });
+
+  const yearOptions = Array.from({ length: 55 }, (_, i) => {
+    const y = String(1970 + i);
+    return { value: y, label: y };
+  });
+
   useEffect(() => {
     if (isOpen) {
       setName(user.name);
@@ -57,9 +73,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         setLoading(false);
         return;
       }
+      if (dobDay || dobMonth || dobYear) {
+        if (!dobDay || !dobMonth || !dobYear || !isValidDateOfBirth(dobDay, dobMonth, dobYear)) {
+          setErrorMsg("Vui lòng nhập ngày sinh hợp lệ");
+          setLoading(false);
+          return;
+        }
+      }
       const dob = dobDay && dobMonth && dobYear ? `${dobDay}/${dobMonth}/${dobYear}` : "";
-      await updateProfile(user.id, { name, email, phone, dob });
-      onSave({ name, email, phone, dob });
+      await updateProfile(user.id, { name, email: user.email, phone, dob });
+      onSave({ name, email: user.email, phone, dob });
       if (onShowToast) onShowToast("Đã cập nhật thông tin hồ sơ cá nhân.");
       onClose();
     } catch (err: any) {
@@ -107,79 +130,71 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
-                Ngày sinh
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                <select
-                  value={dobDay}
-                  onChange={(e) => setDobDay(e.target.value)}
-                  className="px-2 py-1.5 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-xs text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px]"
-                >
-                  <option value="">Ngày</option>
-                  {Array.from({ length: 31 }, (_, i) => {
-                    const d = String(i + 1).padStart(2, "0");
-                    return (
-                      <option key={d} value={d}>{d}</option>
-                    );
-                  })}
-                </select>
-                <select
-                  value={dobMonth}
-                  onChange={(e) => setDobMonth(e.target.value)}
-                  className="px-2 py-1.5 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-xs text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px]"
-                >
-                  <option value="">Tháng</option>
-                  {Array.from({ length: 12 }, (_, i) => {
-                    const m = String(i + 1).padStart(2, "0");
-                    return (
-                      <option key={m} value={m}>{m}</option>
-                    );
-                  })}
-                </select>
-                <select
-                  value={dobYear}
-                  onChange={(e) => setDobYear(e.target.value)}
-                  className="px-2 py-1.5 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-xs text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px]"
-                >
-                  <option value="">Năm</option>
-                  {Array.from({ length: 55 }, (_, i) => {
-                    const y = String(1970 + i);
-                    return (
-                      <option key={y} value={y}>{y}</option>
-                    );
-                  })}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
                 Số điện thoại
               </label>
               <input
                 type="tel"
                 inputMode="numeric"
                 pattern="[0-9]{10}"
+                title="Số điện thoại phải gồm đúng 10 chữ số (ví dụ: 0912345678)"
                 required
                 value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                onChange={(e) => {
+                  e.currentTarget.setCustomValidity("");
+                  setPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                }}
+                onInvalid={(e) => {
+                  e.currentTarget.setCustomValidity("Số điện thoại phải gồm đúng 10 chữ số (ví dụ: 0912345678)");
+                }}
                 className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
+              Ngày sinh
+            </label>
+            <div className="grid grid-cols-3 gap-3 w-full">
+              <select
+                value={dobDay}
+                onChange={(e) => setDobDay(e.target.value)}
+                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer"
+              >
+                <option value="">Ngày</option>
+                {Array.from({ length: 31 }, (_, i) => {
+                  const d = String(i + 1).padStart(2, "0");
+                  return (
+                    <option key={d} value={d}>{d}</option>
+                  );
+                })}
+              </select>
+              <select
+                value={dobMonth}
+                onChange={(e) => setDobMonth(e.target.value)}
+                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer"
+              >
+                <option value="">Tháng</option>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const m = String(i + 1).padStart(2, "0");
+                  return (
+                    <option key={m} value={m}>{m}</option>
+                  );
+                })}
+              </select>
+              <select
+                value={dobYear}
+                onChange={(e) => setDobYear(e.target.value)}
+                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer"
+              >
+                <option value="">Năm</option>
+                {Array.from({ length: 55 }, (_, i) => {
+                  const y = String(1970 + i);
+                  return (
+                    <option key={y} value={y}>{y}</option>
+                  );
+                })}
+              </select>
             </div>
           </div>
 

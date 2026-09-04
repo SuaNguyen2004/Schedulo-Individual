@@ -404,7 +404,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                     aria-label="Xem file"
                                                     className="w-9 h-9 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition-colors flex items-center justify-center shadow-2xs cursor-pointer border border-slate-200 dark:border-slate-700">
                                                     <span className="material-symbols-outlined text-[18px]">
-                                                        open_in_new
+                                                        visibility
                                                     </span>
                                                 </button>
                                                 <span
