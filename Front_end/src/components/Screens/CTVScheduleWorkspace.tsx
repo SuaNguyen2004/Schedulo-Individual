@@ -51,6 +51,17 @@ const SHIFT_OPTIONS: Array<{
 
 const createEmptyPattern = (): WeeklyPattern => ({ 0: [], 1: [], 2: [], 3: [], 4: [] });
 
+const clonePattern = (pattern?: WeeklyPattern | null): WeeklyPattern => {
+    if (!pattern) return createEmptyPattern();
+    const cloned = createEmptyPattern();
+    for (const key of [0, 1, 2, 3, 4] as const) {
+        if (Array.isArray(pattern[key])) {
+            cloned[key] = [...pattern[key]];
+        }
+    }
+    return cloned;
+};
+
 const startOfDay = (date: Date) => {
     const result = new Date(date);
     result.setHours(0, 0, 0, 0);
@@ -267,7 +278,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         }
 
         setWeeklyPattern(restoredPattern);
-        setTempWeeklyPattern(JSON.parse(JSON.stringify(restoredPattern)));
+        setTempWeeklyPattern(clonePattern(restoredPattern));
         setIsRegistrationOpen(true);
     };
 
@@ -485,7 +496,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
             .then(() => {
                 onUpdateShifts(updatedShifts);
                 // Commit temp pattern to actual pattern after successful registration
-                setWeeklyPattern(JSON.parse(JSON.stringify(tempWeeklyPattern)));
+                setWeeklyPattern(clonePattern(tempWeeklyPattern));
                 setEditingRegistrationId(registrationId);
                 setCalendarDate(selectedOccurrences[0]?.date || rangeStart);
                 setCalendarView("week");
@@ -946,7 +957,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => changeMonth(-1)}
-                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
                                     aria-label="Xem tháng trước">
                                     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                                         chevron_left
@@ -960,7 +971,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => changeMonth(1)}
-                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
                                     aria-label="Xem tháng sau">
                                     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                                         chevron_right
@@ -1090,7 +1101,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     type="button"
                                     onClick={() => closeRegistrationModal()}
                                     aria-label="Đóng cửa sổ đăng ký"
-                                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-300 dark:hover:bg-slate-800">
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
                                     <span className="material-symbols-outlined" aria-hidden="true">
                                         close
                                     </span>
@@ -1177,26 +1188,14 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     </button>
                                 )}
                                 <button
-                                    type="button"
-                                    onClick={() => closeRegistrationModal()}
-                                    className="min-h-11 rounded-xl px-5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer">
-                                    Đóng
-                                </button>
-                                <button
                                     type="submit"
-                                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer ${
-                                        Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0)
-                                            ? "bg-blue-700 hover:bg-blue-800 focus-visible:ring-blue-600"
-                                            : "bg-amber-600 hover:bg-amber-700 focus-visible:ring-amber-500"
-                                    }`}>
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer">
                                     <span className="material-symbols-outlined text-[19px]" aria-hidden="true">
-                                        {Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0)
-                                            ? "event_available"
-                                            : "event_busy"}
+                                        event_available
                                     </span>
                                     {Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0)
                                         ? "Đăng ký lịch"
-                                        : "Lưu thay đổi (Hủy toàn bộ lịch)"}
+                                        : "Lưu thay đổi"}
                                 </button>
                             </div>
                         </form>
@@ -1236,7 +1235,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 type="button"
                                 onClick={() => setSelectedShift(null)}
                                 aria-label="Đóng chi tiết ca"
-                                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-300 dark:hover:bg-slate-800">
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined" aria-hidden="true">
                                     close
                                 </span>

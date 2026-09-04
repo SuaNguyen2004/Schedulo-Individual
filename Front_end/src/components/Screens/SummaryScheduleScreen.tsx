@@ -80,9 +80,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
         ctvList: Array<AssignedCTV & { email?: string; cctvCode?: string }>;
     } | null>(null);
 
-    // Search query within shift detail modal
-    const [detailSearchQuery, setDetailSearchQuery] = useState("");
-
     // Month Names Array
     const monthNames = [
         "Tháng 1",
@@ -252,7 +249,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
         workDate: string,
         useHistory = false,
     ) => {
-        setDetailSearchQuery("");
         const rawList = (useHistory ? getHistoryCTVs : getAssignedCTVs)(workDate, shiftName === "Ca Sáng" ? "morning" : "afternoon");
 
         // Enrich CTVs with account details
@@ -277,21 +273,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
             ctvList: enrichedList,
         });
     };
-
-    // Filtered list inside detail modal
-    const filteredDetailCTVs = useMemo(() => {
-        if (!selectedShiftDetail) return [];
-        if (!detailSearchQuery.trim()) return selectedShiftDetail.ctvList;
-
-        const q = detailSearchQuery.toLowerCase().trim();
-        return selectedShiftDetail.ctvList.filter(
-            (c) =>
-                c.name.toLowerCase().includes(q) ||
-                (c.phone && c.phone.toLowerCase().includes(q)) ||
-                (c.email && c.email.toLowerCase().includes(q)) ||
-                (c.cctvCode && c.cctvCode.toLowerCase().includes(q)),
-        );
-    }, [selectedShiftDetail, detailSearchQuery]);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-200">
@@ -684,9 +665,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     Lịch sử làm việc - {monthNames[selectedMonth]}, {selectedYear}
                                 </h3>
                             </div>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                Dữ liệu từ bảng work_history
-                            </span>
                         </div>
 
                         {/* Grid Table Container */}
@@ -834,49 +812,30 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setSelectedShiftDetail(null)}
-                                className="w-9 h-9 rounded-full bg-slate-200/60 dark:bg-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors cursor-pointer">
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
 
                         {/* Modal Body */}
                         <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
-                            {/* Filter and stats row */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-blue-50/80 dark:bg-blue-950/40 p-3 rounded-xl border border-blue-100 dark:border-blue-900/60 text-xs">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-blue-900 dark:text-blue-200">
-                                        Danh sách CTV trong ca:
-                                    </span>
-                                    <span className="font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2.5 py-0.5 rounded-lg">
-                                        {selectedShiftDetail.ctvList.length} CTV
-                                    </span>
-                                </div>
-
-                                {selectedShiftDetail.ctvList.length > 3 && (
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            value={detailSearchQuery}
-                                            onChange={(e) => setDetailSearchQuery(e.target.value)}
-                                            placeholder="Tìm CTV theo tên, SĐT..."
-                                            className="w-full sm:w-56 pl-7 pr-3 py-1.5 text-xs bg-white dark:bg-[#1a1b1e] border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-600"
-                                        />
-                                        <span className="material-symbols-outlined text-[15px] text-slate-400 absolute left-2 top-2">
-                                            search
-                                        </span>
-                                    </div>
-                                )}
+                            {/* Stats row */}
+                            <div className="flex items-center gap-2 bg-blue-50/80 dark:bg-blue-950/40 p-3 rounded-xl border border-blue-100 dark:border-blue-900/60 text-xs">
+                                <span className="font-bold text-blue-900 dark:text-blue-200">
+                                    Danh sách CTV trong ca:
+                                </span>
+                                <span className="font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2.5 py-0.5 rounded-lg">
+                                    {selectedShiftDetail.ctvList.length} CTV
+                                </span>
                             </div>
 
-                            {filteredDetailCTVs.length === 0 ? (
+                            {selectedShiftDetail.ctvList.length === 0 ? (
                                 <div className="text-center py-12 text-slate-400 space-y-2">
                                     <span className="material-symbols-outlined text-[44px] block opacity-40">
                                         group_off
                                     </span>
                                     <p className="text-sm font-semibold">
-                                        {selectedShiftDetail.ctvList.length === 0
-                                            ? "Chưa có CTV nào đăng ký ca làm việc này"
-                                            : "Không tìm thấy CTV phù hợp với từ khóa"}
+                                        Chưa có CTV nào đăng ký ca làm việc này
                                     </p>
                                 </div>
                             ) : (
@@ -891,7 +850,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                                                {filteredDetailCTVs.map((ctv, idx) => (
+                                                {selectedShiftDetail.ctvList.map((ctv, idx) => (
                                                     <tr
                                                         key={ctv.id || idx}
                                                         className="hover:bg-slate-50/80 dark:hover:bg-[#1f2023]/60 transition-colors">

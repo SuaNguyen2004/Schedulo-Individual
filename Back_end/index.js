@@ -73,20 +73,16 @@ app.post("/api/auth/login", async (req, res) => {
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
         }
         if (userStatus === "disabled") {
-            return res
-                .status(403)
-                .json({
-                    message: "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ Admin để được hỗ trợ.",
-                    disabled: true,
-                });
+            return res.status(403).json({
+                message: "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ Admin để được hỗ trợ.",
+                disabled: true,
+            });
         }
         if (userStatus === "pending") {
-            return res
-                .status(403)
-                .json({
-                    message: "Tài khoản của bạn đang chờ xét duyệt. Vui lòng liên hệ Admin để được hỗ trợ.",
-                    pending: true,
-                });
+            return res.status(403).json({
+                message: "Tài khoản của bạn đang chờ xét duyệt. Vui lòng liên hệ Admin để được hỗ trợ.",
+                pending: true,
+            });
         }
         if (userStatus !== "active") {
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
@@ -135,10 +131,9 @@ app.post("/api/auth/register", async (req, res) => {
         // duplicate — that is what previously raised ER_DUP_ENTRY and surfaced as
         // "Email hoặc số điện thoại đã được sử dụng". Reusing the same row also releases
         // the old phone number, since the profile is overwritten in place.
-        const [existingUsers] = await connection.execute(
-            "SELECT id, status FROM users WHERE email = ? FOR UPDATE",
-            [normalizedEmail],
-        );
+        const [existingUsers] = await connection.execute("SELECT id, status FROM users WHERE email = ? FOR UPDATE", [
+            normalizedEmail,
+        ]);
         const existingUser = existingUsers[0];
         const rejectedUser = existingUser && existingUser.status === "rejected" ? existingUser : null;
 
@@ -148,7 +143,7 @@ app.post("/api/auth/register", async (req, res) => {
         }
 
         const [existingPhones] = await connection.execute(
-            `SELECT up.user_id, u.status 
+            `SELECT up.user_id, u.status
              FROM user_profiles up
              JOIN users u ON u.id = up.user_id
              WHERE up.phone = ? FOR UPDATE`,
@@ -303,20 +298,19 @@ app.patch("/api/profile", async (req, res) => {
 
             let userName = name || "";
             if (!userName) {
-                const [existing] = await connection.execute(
-                    "SELECT full_name FROM user_profiles WHERE user_id = ?",
-                    [String(userId)],
-                );
+                const [existing] = await connection.execute("SELECT full_name FROM user_profiles WHERE user_id = ?", [
+                    String(userId),
+                ]);
                 if (existing && existing[0] && existing[0].full_name) {
                     userName = existing[0].full_name;
                 }
             }
 
             if (email && typeof email === "string" && email.trim()) {
-                const [existingEmail] = await connection.execute(
-                    "SELECT id FROM users WHERE email = ? AND id != ?",
-                    [email.trim(), String(userId)],
-                );
+                const [existingEmail] = await connection.execute("SELECT id FROM users WHERE email = ? AND id != ?", [
+                    email.trim(),
+                    String(userId),
+                ]);
                 if (existingEmail.length > 0) {
                     await connection.rollback();
                     return res.status(409).json({ message: "Email này đã được tài khoản khác sử dụng." });
@@ -329,9 +323,9 @@ app.patch("/api/profile", async (req, res) => {
 
             if (phone !== undefined && typeof phone === "string" && phone.trim()) {
                 const [existingPhone] = await connection.execute(
-                    `SELECT up.user_id 
-                     FROM user_profiles up 
-                     JOIN users u ON u.id = up.user_id 
+                    `SELECT up.user_id
+                     FROM user_profiles up
+                     JOIN users u ON u.id = up.user_id
                      WHERE up.phone = ? AND up.user_id != ? AND u.status != 'rejected'`,
                     [phone.trim(), String(userId)],
                 );
@@ -520,9 +514,7 @@ app.patch("/api/users/:id/status", async (req, res) => {
 
         if (status === "disabled") {
             await promoteElapsedSchedulesToHistory(connection, userId);
-            await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [
-                userId,
-            ]);
+            await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [userId]);
         }
 
         await connection.commit();
@@ -548,10 +540,7 @@ app.delete("/api/users/:id", async (req, res) => {
         await connection.beginTransaction();
 
         // Only allow deleting collaborator accounts, never the admin.
-        const [target] = await connection.execute(
-            "SELECT id, role FROM users WHERE id = ? LIMIT 1",
-            [userId],
-        );
+        const [target] = await connection.execute("SELECT id, role FROM users WHERE id = ? LIMIT 1", [userId]);
         if (target.length === 0) {
             await connection.rollback();
             return res.status(404).json({ message: "Không tìm thấy tài khoản." });
@@ -660,7 +649,8 @@ app.post("/api/shifts/register", async (req, res) => {
 
         await connection.commit();
         return res.json({
-            message: uniquePattern.length > 0 ? "Đã lưu lịch làm việc thành công." : "Đã hủy và xóa toàn bộ lịch đăng ký.",
+            message:
+                uniquePattern.length > 0 ? "Đã lưu lịch làm việc thành công." : "Đã hủy và xóa toàn bộ lịch đăng ký.",
             registeredCount: inserted,
         });
     } catch (error) {
@@ -862,7 +852,9 @@ async function saveAttachment(attachment, userName = "", userId = "") {
 
     const fileName = isImage
         ? `${prefix}${userSuffix}${extension}`
-        : (userId ? `${safeOriginalName.replace(/\.[^/.]+$/, "")}-${userId}${extension}` : safeOriginalName);
+        : userId
+          ? `${safeOriginalName.replace(/\.[^/.]+$/, "")}-${userId}${extension}`
+          : safeOriginalName;
     const filePath = path.join(directory, fileName);
     const data = decodeDataUrl(attachment.filePath);
 

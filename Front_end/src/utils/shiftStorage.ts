@@ -3,7 +3,7 @@ import type { ShiftSlot } from "../types";
 const VALID_SHIFT_TYPES = new Set(["morning", "afternoon", "evening"]);
 
 export function parseStoredShifts(serialized: string | null): ShiftSlot[] | null {
-  if (serialized === null) return null;
+  if (serialized === null || serialized === "undefined" || serialized === "null" || !serialized) return null;
 
   try {
     const parsed: unknown = JSON.parse(serialized);

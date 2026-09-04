@@ -156,10 +156,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </div>
       </div>
 
-      {/* Main Content Layout: 2 Columns on Desktop & Tablet, 1 Column on Mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Left Column (4 cols): Hồ sơ cá nhân (Avatar + Tên + CCCD) */}
-        <div className="lg:col-span-4 flex flex-col">
+      {/* Main Content Layout: 2 Equal Columns on Desktop & Tablet (50% - 50%), 1 Column on Mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+        {/* Left Column: Hồ sơ cá nhân (Avatar + Tên + CCCD) */}
+        <div className="flex flex-col">
           <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl p-5 shadow-xs flex flex-col items-center text-center relative h-full">
             {/* Interactive Avatar Container */}
             <div
@@ -333,29 +333,29 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           </div>
         </div>
 
-        {/* Right Column (8 cols): Thông tin chi tiết + Thông tin tài khoản + Hồ sơ CV */}
-        <div className="lg:col-span-8 flex flex-col">
+        {/* Right Column: Thông tin chi tiết + Thông tin tài khoản + Hồ sơ CV */}
+        <div className="flex flex-col">
           <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl shadow-xs overflow-hidden h-full flex flex-col">
             {/* Header & Actions */}
-            <div className="bg-[#F8FAFC] dark:bg-[#1f2023] px-4 sm:px-5 py-3.5 border-b border-[#E2E8F0] dark:border-[#3b3d45] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h3 className="font-bold text-sm sm:text-base text-[#1a1b1e] dark:text-[#d6e3ff] flex items-center gap-2">
+            <div className="bg-[#F8FAFC] dark:bg-[#1f2023] px-4 sm:px-5 py-3.5 border-b border-[#E2E8F0] dark:border-[#3b3d45] flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+              <h3 className="font-bold text-sm sm:text-base text-[#1a1b1e] dark:text-[#d6e3ff] flex items-center gap-2 whitespace-nowrap shrink-0">
                 <span className="material-symbols-outlined text-accent text-[20px]">badge</span>
                 <span>Thông tin chi tiết</span>
               </h3>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0 ml-auto">
                 <button
                   onClick={onOpenChangePassword}
-                  className="px-3 py-1.5 border border-accent text-accent font-semibold text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="px-3 py-1.5 border border-accent text-accent font-semibold text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
                 >
                   <span className="material-symbols-outlined text-[16px]">lock_reset</span>
                   <span>Đổi mật khẩu</span>
                 </button>
                 <button
                   onClick={onOpenEditProfile}
-                  className="px-3 py-1.5 bg-accent text-white font-semibold text-xs rounded-lg hover:opacity-90 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="px-3 py-1.5 bg-accent text-white font-semibold text-xs rounded-lg hover:opacity-90 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
                 >
                   <span className="material-symbols-outlined text-[16px]">edit</span>
-                  <span>Chỉnh sửa thông tin</span>
+                  <span>Chỉnh sửa</span>
                 </button>
               </div>
             </div>

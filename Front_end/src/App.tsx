@@ -47,9 +47,33 @@ const EMPTY_USER: UserAccount = {
     registerDate: "",
 };
 
+const cleanupLocalStorage = () => {
+    try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < window.localStorage.length; i++) {
+            const key = window.localStorage.key(i);
+            if (key) {
+                const val = window.localStorage.getItem(key);
+                if (val === "undefined" || val === "null") {
+                    keysToRemove.push(key);
+                }
+            }
+        }
+        keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+    } catch {
+        // Ignore storage errors.
+    }
+};
+cleanupLocalStorage();
+
 const loadStoredShifts = (): ShiftSlot[] => {
     try {
-        const parsed = parseStoredShifts(window.localStorage.getItem(SHIFTS_STORAGE_KEY));
+        const item = window.localStorage.getItem(SHIFTS_STORAGE_KEY);
+        if (!item || item === "undefined" || item === "null") {
+            window.localStorage.removeItem(SHIFTS_STORAGE_KEY);
+            return [];
+        }
+        const parsed = parseStoredShifts(item);
         if (parsed !== null) return parsed;
     } catch {
         // Use an empty state when localStorage is unavailable.
@@ -161,7 +185,15 @@ export const App: React.FC = () => {
     };
 
     useEffect(() => {
-        window.localStorage.setItem(SHIFTS_STORAGE_KEY, JSON.stringify(shifts));
+        try {
+            if (Array.isArray(shifts) && shifts.length > 0) {
+                window.localStorage.setItem(SHIFTS_STORAGE_KEY, JSON.stringify(shifts));
+            } else {
+                window.localStorage.removeItem(SHIFTS_STORAGE_KEY);
+            }
+        } catch {
+            // Ignore storage errors.
+        }
     }, [shifts]);
 
     useEffect(() => {
@@ -195,7 +227,7 @@ export const App: React.FC = () => {
                 if (authenticatedEmail) {
                     clearAuthState("Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra lại!");
                 }
-                throw error;
+                return null;
             });
 
         bootstrapRef.current = promise;

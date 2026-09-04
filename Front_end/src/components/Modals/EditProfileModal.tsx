@@ -78,7 +78,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </h3>
           <button
             onClick={onClose}
-            className="text-[#74777f] hover:text-[#1a1b1e] dark:hover:text-white p-1 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
