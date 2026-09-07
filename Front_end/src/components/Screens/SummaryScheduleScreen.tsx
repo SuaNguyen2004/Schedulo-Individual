@@ -249,7 +249,10 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
         workDate: string,
         useHistory = false,
     ) => {
-        const rawList = (useHistory ? getHistoryCTVs : getAssignedCTVs)(workDate, shiftName === "Ca Sáng" ? "morning" : "afternoon");
+        const rawList = (useHistory ? getHistoryCTVs : getAssignedCTVs)(
+            workDate,
+            shiftName === "Ca Sáng" ? "morning" : "afternoon",
+        );
 
         // Enrich CTVs with account details
         const enrichedList = rawList.map((ctv) => {
@@ -300,7 +303,8 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                         </div>
                     </div>
                     <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Tổng số: <strong className="text-slate-800 dark:text-slate-200">{todayData.totalUniqueCount}</strong>{" "}
+                        Tổng số:{" "}
+                        <strong className="text-slate-800 dark:text-slate-200">{todayData.totalUniqueCount}</strong>{" "}
                         Cộng tác viên
                     </span>
                 </div>
@@ -466,102 +470,115 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Lịch tuần</h3>
                         </div>
 
-                        {/* Mobile View: 1 cột thứ & 1 cột ca (< md) */}
-                        <div className="md:hidden space-y-2.5">
-                            {weekDays.map((date, index) => {
-                                const dateISO = toISODate(date);
-                                const dayName = WEEKDAYS[index].label;
-                                const dateFormatted = `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
-                                const isToday = dateISO === todayISO;
-
-                                const morningCTVs = getAssignedCTVs(dateISO, "morning");
-                                const afternoonCTVs = getAssignedCTVs(dateISO, "afternoon");
-
-                                return (
-                                    <div
-                                        key={dateISO}
-                                        className={`p-3 rounded-2xl border-2 bg-white dark:bg-slate-900 flex items-center gap-3 transition-colors ${
-                                            isToday
-                                                ? "border-blue-600 dark:border-blue-400"
-                                                : "border-slate-200 dark:border-slate-800"
-                                        }`}>
-                                        {/* Cột Thứ */}
+                        {/* Mobile View: Grid 5 cột (< md) */}
+                        <div className="md:hidden space-y-2">
+                            {/* Dòng 1: Thứ 2 -> Thứ 6 */}
+                            <div className="grid grid-cols-5 gap-1.5">
+                                {WEEKDAYS.map((weekday, index) => {
+                                    const date = weekDays[index];
+                                    const isToday = toISODate(date) === todayISO;
+                                    return (
                                         <div
-                                            className={`w-24 shrink-0 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-center font-bold text-xs uppercase tracking-wider transition-colors ${
+                                            key={weekday.index}
+                                            className={`flex flex-col items-center justify-center rounded-xl py-1.5 px-1 text-center font-bold transition-colors ${
                                                 isToday
                                                     ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                                                     : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                             }`}>
-                                            <span>{dayName}</span>
+                                            <span className="text-[11px] uppercase tracking-wider">
+                                                {weekday.label}
+                                            </span>
                                             {isToday && (
-                                                <span className="mt-1 rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white normal-case tracking-normal">
+                                                <span className="mt-0.5 rounded bg-blue-600 px-1 py-0.2 text-[9px] font-bold text-white normal-case leading-tight">
                                                     Hôm nay
                                                 </span>
                                             )}
                                         </div>
+                                    );
+                                })}
+                            </div>
 
-                                        {/* Cột Ca */}
-                                        <div className="flex-1 space-y-1.5 min-w-0">
-                                            {morningCTVs.length > 0 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        handleOpenShiftDetail(
-                                                            dayName,
-                                                            dateFormatted,
-                                                            "Ca Sáng",
-                                                            dateISO,
-                                                        )
-                                                    }
-                                                    className="w-full flex items-center justify-between gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 hover:border-amber-300 transition-all cursor-pointer group text-left dark:border-amber-800/50 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 dark:text-amber-200"
-                                                    title="Bấm để xem chi tiết danh sách CTV ca sáng">
-                                                    <div className="flex items-center gap-1.5 min-w-0">
+                            {/* Dòng 2: Ca Sáng / Ca Chiều (Chỉ hiển thị Icon + Số lượng, không có "CTV") */}
+                            <div className="grid grid-cols-5 gap-1.5">
+                                {weekDays.map((date, index) => {
+                                    const dateISO = toISODate(date);
+                                    const dayName = WEEKDAYS[index].label;
+                                    const dateFormatted = `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+                                    const isToday = dateISO === todayISO;
+
+                                    const morningCTVs = getAssignedCTVs(dateISO, "morning");
+                                    const afternoonCTVs = getAssignedCTVs(dateISO, "afternoon");
+
+                                    return (
+                                        <div
+                                            key={dateISO}
+                                            className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                isToday
+                                                    ? "border-blue-600 dark:border-blue-400"
+                                                    : "border-slate-200 dark:border-slate-800"
+                                            }`}>
+                                            <div className="space-y-1">
+                                                {morningCTVs.length > 0 ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleOpenShiftDetail(
+                                                                dayName,
+                                                                dateFormatted,
+                                                                "Ca Sáng",
+                                                                dateISO,
+                                                            )
+                                                        }
+                                                        className="w-full flex items-center justify-center gap-1 rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 transition-all cursor-pointer dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
+                                                        title="Bấm để xem chi tiết danh sách CTV ca sáng">
                                                         <span
-                                                            className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400 shrink-0"
+                                                            className="material-symbols-outlined text-[16px] text-amber-700 dark:text-amber-400 leading-none shrink-0"
                                                             aria-hidden="true">
                                                             wb_sunny
                                                         </span>
-                                                    </div>
-                                                    <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-200/90 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200 transition-transform group-hover:scale-105">
-                                                        {morningCTVs.length} CTV
-                                                    </span>
-                                                </button>
-                                            )}
+                                                        <span className="text-[11px] font-extrabold text-amber-900 dark:text-amber-100">
+                                                            {morningCTVs.length}
+                                                        </span>
+                                                    </button>
+                                                ) : afternoonCTVs.length > 0 ? (
+                                                    <div className="h-[28px]" aria-hidden="true" />
+                                                ) : null}
 
-                                            {afternoonCTVs.length > 0 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        handleOpenShiftDetail(
-                                                            dayName,
-                                                            dateFormatted,
-                                                            "Ca Chiều",
-                                                            dateISO,
-                                                        )
-                                                    }
-                                                    className="w-full flex items-center justify-between gap-2 rounded-xl border border-purple-200/90 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900 shadow-xs hover:bg-purple-100 hover:border-purple-300 transition-all cursor-pointer group text-left dark:border-purple-800/50 dark:bg-purple-950/40 dark:hover:bg-purple-950/70 dark:text-purple-200"
-                                                    title="Bấm để xem chi tiết danh sách CTV ca chiều">
-                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                {afternoonCTVs.length > 0 ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleOpenShiftDetail(
+                                                                dayName,
+                                                                dateFormatted,
+                                                                "Ca Chiều",
+                                                                dateISO,
+                                                            )
+                                                        }
+                                                        className="w-full flex items-center justify-center gap-1 rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-xs font-bold text-purple-900 shadow-2xs hover:bg-purple-100 transition-all cursor-pointer dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
+                                                        title="Bấm để xem chi tiết danh sách CTV ca chiều">
                                                         <span
-                                                            className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400 shrink-0"
+                                                            className="material-symbols-outlined text-[16px] text-purple-700 dark:text-purple-400 leading-none shrink-0"
                                                             aria-hidden="true">
                                                             wb_twilight
                                                         </span>
-                                                    </div>
-                                                    <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-200/90 text-purple-900 dark:bg-purple-900/80 dark:text-purple-200 transition-transform group-hover:scale-105">
-                                                        {afternoonCTVs.length} CTV
-                                                    </span>
-                                                </button>
-                                            )}
+                                                        <span className="text-[11px] font-extrabold text-purple-900 dark:text-purple-100">
+                                                            {afternoonCTVs.length}
+                                                        </span>
+                                                    </button>
+                                                ) : morningCTVs.length > 0 ? (
+                                                    <div className="h-[28px]" aria-hidden="true" />
+                                                ) : null}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {/* Desktop View: Grid 5 cột (hidden md:block) */}
-                        <div className="hidden md:block overflow-x-auto">
-                            <div className="min-w-[650px] space-y-3">
+                        <div className="hidden md:block">
+                            <div className="w-full space-y-3">
                                 {/* Weekday Headers: THỨ 2, THỨ 3, THỨ 4, THỨ 5, THỨ 6 */}
                                 <div className="grid grid-cols-5 gap-3">
                                     {WEEKDAYS.map((weekday) => (
@@ -600,16 +617,14 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                     dateISO,
                                                                 )
                                                             }
-                                                            className="w-full flex items-center justify-between gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 hover:border-amber-300 transition-all cursor-pointer group text-left dark:border-amber-800/50 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 dark:text-amber-200"
+                                                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-amber-200/90 bg-amber-50 px-2 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 hover:border-amber-300 transition-all cursor-pointer group dark:border-amber-800/50 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 dark:text-amber-200"
                                                             title="Bấm để xem chi tiết danh sách CTV ca sáng">
-                                                            <div className="flex items-center gap-1.5 min-w-0">
-                                                                <span
-                                                                    className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400 shrink-0"
-                                                                    aria-hidden="true">
-                                                                    wb_sunny
-                                                                </span>
-                                                            </div>
-                                                            <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-200/90 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200 transition-transform group-hover:scale-105">
+                                                            <span
+                                                                className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400 shrink-0"
+                                                                aria-hidden="true">
+                                                                wb_sunny
+                                                            </span>
+                                                            <span className="text-[12px] font-extrabold text-amber-900 dark:text-amber-100 whitespace-nowrap">
                                                                 {morningCTVs.length} CTV
                                                             </span>
                                                         </button>
@@ -629,16 +644,14 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                     dateISO,
                                                                 )
                                                             }
-                                                            className="w-full flex items-center justify-between gap-2 rounded-xl border border-purple-200/90 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900 shadow-xs hover:bg-purple-100 hover:border-purple-300 transition-all cursor-pointer group text-left dark:border-purple-800/50 dark:bg-purple-950/40 dark:hover:bg-purple-950/70 dark:text-purple-200"
+                                                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-purple-200/90 bg-purple-50 px-2 py-2 text-xs font-bold text-purple-900 shadow-xs hover:bg-purple-100 hover:border-purple-300 transition-all cursor-pointer group dark:border-purple-800/50 dark:bg-purple-950/40 dark:hover:bg-purple-950/70 dark:text-purple-200"
                                                             title="Bấm để xem chi tiết danh sách CTV ca chiều">
-                                                            <div className="flex items-center gap-1.5 min-w-0">
-                                                                <span
-                                                                    className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400 shrink-0"
-                                                                    aria-hidden="true">
-                                                                    wb_twilight
-                                                                </span>
-                                                            </div>
-                                                            <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-200/90 text-purple-900 dark:bg-purple-900/80 dark:text-purple-200 transition-transform group-hover:scale-105">
+                                                            <span
+                                                                className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400 shrink-0"
+                                                                aria-hidden="true">
+                                                                wb_twilight
+                                                            </span>
+                                                            <span className="text-[12px] font-extrabold text-purple-900 dark:text-purple-100 whitespace-nowrap">
                                                                 {afternoonCTVs.length} CTV
                                                             </span>
                                                         </button>
@@ -668,29 +681,29 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                         </div>
 
                         {/* Grid Table Container */}
-                        <div className="overflow-x-auto">
-                            <div className="min-w-[850px]">
+                        <div className="w-full">
+                            <div className="w-full">
                                 {/* Header Columns (Mon to Fri) */}
-                                <div className="grid grid-cols-5 gap-3 mb-3 text-center">
+                                <div className="grid grid-cols-5 gap-1.5 sm:gap-3 mb-2 sm:mb-3 text-center">
                                     {WEEKDAYS.map((day) => (
                                         <div
                                             key={day.index}
-                                            className="py-2.5 px-3 bg-slate-100 dark:bg-[#1f2023] rounded-xl font-bold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wider border border-slate-200/80 dark:border-slate-800">
+                                            className="py-1.5 px-1 sm:py-2.5 sm:px-3 bg-slate-100 dark:bg-[#1f2023] rounded-xl font-bold text-[11px] sm:text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wider border border-slate-200/80 dark:border-slate-800">
                                             {day.label}
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Calendar Weeks Rows */}
-                                <div className="space-y-3">
+                                <div className="space-y-1.5 sm:space-y-3">
                                     {calendarWeeks.map((week, weekIdx) => (
-                                        <div key={weekIdx} className="grid grid-cols-5 gap-3">
+                                        <div key={weekIdx} className="grid grid-cols-5 gap-1.5 sm:gap-3">
                                             {week.map((cell, colIdx) => {
                                                 if (!cell) {
                                                     return (
                                                         <div
                                                             key={colIdx}
-                                                            className="min-h-[110px] bg-slate-50/50 dark:bg-[#1f2023]/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800/60 opacity-40"
+                                                            className="min-h-[88px] sm:min-h-[110px] bg-slate-50/50 dark:bg-[#1f2023]/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800/60 opacity-40"
                                                         />
                                                     );
                                                 }
@@ -701,17 +714,17 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                 return (
                                                     <div
                                                         key={colIdx}
-                                                        className={`min-h-[110px] p-3 rounded-xl border transition-all flex flex-col ${
+                                                        className={`min-h-[88px] sm:min-h-[110px] p-1.5 sm:p-3 rounded-xl border transition-all flex flex-col ${
                                                             cell.isToday
                                                                 ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20"
                                                                 : "bg-white dark:bg-[#222327] border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                                                         }`}>
                                                         {/* Day Cell Header */}
-                                                        <div className="flex items-center justify-center border-b border-slate-100 dark:border-slate-800/80 pb-1.5 mb-2">
-                                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                                                        <div className="flex items-center justify-center border-b border-slate-100 dark:border-slate-800/80 pb-1 mb-1.5 sm:pb-1.5 sm:mb-2">
+                                                            <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                                                                 <span>{cell.dateShort}</span>
                                                                 {cell.isToday && (
-                                                                    <span className="rounded bg-blue-700 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                                                    <span className="rounded bg-blue-700 px-1 py-0.2 text-[9px] font-bold text-white sm:px-1.5 sm:py-0.5 sm:text-[10px] leading-tight">
                                                                         Hôm nay
                                                                     </span>
                                                                 )}
@@ -719,7 +732,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                         </div>
 
                                                         {/* Shift Buttons inside Day Cell */}
-                                                        <div className="space-y-1.5 min-h-[58px] flex flex-col justify-start">
+                                                        <div className="space-y-1 sm:space-y-1.5 min-h-[56px] flex flex-col justify-start">
                                                             {/* Ca Sáng Button */}
                                                             {morningCTVs.length > 0 ? (
                                                                 <button
@@ -733,19 +746,25 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                             true,
                                                                         )
                                                                     }
-                                                                    className="w-full px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-950/80 border border-amber-200/80 dark:border-amber-900/40 flex items-center justify-between text-left transition-all cursor-pointer group"
-                                                                    title="Bấm xem danh sách CTV ca sáng">
-                                                                    <div className="flex items-center text-amber-800 dark:text-amber-300">
-                                                                        <span className="material-symbols-outlined text-[16px]">
-                                                                            wb_sunny
-                                                                        </span>
-                                                                    </div>
-                                                                    <span className="text-[10px] font-bold bg-amber-200/80 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded group-hover:scale-105 transition-transform">
-                                                                        {morningCTVs.length} CTV
+                                                                    className="w-full flex items-center justify-center gap-1 rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 transition-all cursor-pointer dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
+                                                                    title="Bấm để xem chi tiết danh sách CTV ca sáng">
+                                                                    <span
+                                                                        className="material-symbols-outlined text-[16px] text-amber-700 dark:text-amber-400 leading-none shrink-0"
+                                                                        aria-hidden="true">
+                                                                        wb_sunny
+                                                                    </span>
+                                                                    <span className="text-[11px] sm:text-[12px] font-extrabold text-amber-900 dark:text-amber-100">
+                                                                        {morningCTVs.length}
+                                                                    </span>
+                                                                    <span className="hidden sm:inline text-[11px] font-bold text-amber-900 dark:text-amber-100">
+                                                                        CTV
                                                                     </span>
                                                                 </button>
                                                             ) : afternoonCTVs.length > 0 ? (
-                                                                <div className="h-[32px]" aria-hidden="true" />
+                                                                <div
+                                                                    className="h-[28px] sm:h-[32px]"
+                                                                    aria-hidden="true"
+                                                                />
                                                             ) : null}
 
                                                             {/* Ca Chiều Button */}
@@ -761,19 +780,25 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                             true,
                                                                         )
                                                                     }
-                                                                    className="w-full px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-950/80 border border-purple-200/80 dark:border-purple-900/40 flex items-center justify-between text-left transition-all cursor-pointer group"
-                                                                    title="Bấm xem danh sách CTV ca chiều">
-                                                                    <div className="flex items-center text-purple-800 dark:text-purple-300">
-                                                                        <span className="material-symbols-outlined text-[16px]">
-                                                                            wb_twilight
-                                                                        </span>
-                                                                    </div>
-                                                                    <span className="text-[10px] font-bold bg-purple-200/80 dark:bg-purple-900/70 text-purple-900 dark:text-purple-200 px-1.5 py-0.5 rounded group-hover:scale-105 transition-transform">
-                                                                        {afternoonCTVs.length} CTV
+                                                                    className="w-full flex items-center justify-center gap-1 rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-xs font-bold text-purple-900 shadow-2xs hover:bg-purple-100 transition-all cursor-pointer dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
+                                                                    title="Bấm để xem chi tiết danh sách CTV ca chiều">
+                                                                    <span
+                                                                        className="material-symbols-outlined text-[16px] text-purple-700 dark:text-purple-400 leading-none shrink-0"
+                                                                        aria-hidden="true">
+                                                                        wb_twilight
+                                                                    </span>
+                                                                    <span className="text-[11px] sm:text-[12px] font-extrabold text-purple-900 dark:text-purple-100">
+                                                                        {afternoonCTVs.length}
+                                                                    </span>
+                                                                    <span className="hidden sm:inline text-[11px] font-bold text-purple-900 dark:text-purple-100">
+                                                                        CTV
                                                                     </span>
                                                                 </button>
                                                             ) : morningCTVs.length > 0 ? (
-                                                                <div className="h-[32px]" aria-hidden="true" />
+                                                                <div
+                                                                    className="h-[28px] sm:h-[32px]"
+                                                                    aria-hidden="true"
+                                                                />
                                                             ) : null}
                                                         </div>
                                                     </div>
@@ -834,9 +859,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     <span className="material-symbols-outlined text-[44px] block opacity-40">
                                         group_off
                                     </span>
-                                    <p className="text-sm font-semibold">
-                                        Chưa có CTV nào đăng ký ca làm việc này
-                                    </p>
+                                    <p className="text-sm font-semibold">Chưa có CTV nào đăng ký ca làm việc này</p>
                                 </div>
                             ) : (
                                 <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xs">

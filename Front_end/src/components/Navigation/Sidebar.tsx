@@ -10,7 +10,6 @@ interface SidebarProps {
     userName?: string;
     userRole?: string;
     userAvatar?: string;
-    onOpenSettings?: () => void;
     isCollapsed?: boolean;
     onToggleCollapse?: () => void;
 }
@@ -23,11 +22,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     userName = "",
     userRole = "",
     userAvatar = "",
-    onOpenSettings,
     isCollapsed = false,
     onToggleCollapse,
 }) => {
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const { t } = useSystemSettings();
 
     const isAdmin = userRole === "Admin";
@@ -49,9 +46,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <h1 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff] leading-tight tracking-tight whitespace-nowrap">
                                 {t("system_name")}
                             </h1>
-                            {/* <p className="text-[10px] font-semibold text-[#64748B] dark:text-[#94A3B8] truncate">
-                                {isAdmin ? t("admin_view") : t("ctv_view")}
-                            </p> */}
                         </div>
                     </div>
                 )}
@@ -188,54 +182,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
             </nav>
 
-            {/* User Profile Widget Footer with Popover */}
-            <div className="p-3 border-t border-[#E2E8F0] dark:border-[#c4c6cf] relative">
-                {/* User Popover Menu */}
-                {isUserMenuOpen && (
-                    <>
-                        {/* Transparent backdrop for outside click */}
-                        <div className="fixed inset-0 z-30" onClick={() => setIsUserMenuOpen(false)} />
-
-                        <div
-                            className={`absolute bottom-full mb-2 bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-xl shadow-xl p-2 z-40 animate-in fade-in slide-in-from-bottom-2 duration-150 ${
-                                isCollapsed ? "left-2 w-48" : "left-3 right-3"
-                            }`}>
-                            {/* Menu Actions */}
-                            <div className="space-y-1">
-                                {/* Cài đặt */}
-                                {onOpenSettings && (
-                                    <button
-                                        onClick={() => {
-                                            onOpenSettings();
-                                            setIsUserMenuOpen(false);
-                                        }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-[#1a1b1e] dark:text-white hover:bg-[#f4f3f7] dark:hover:bg-[#32343b] transition-colors text-left cursor-pointer">
-                                        <span className="material-symbols-outlined text-[20px]">settings</span>
-                                        <span>{t("nav_settings")}</span>
-                                    </button>
-                                )}
-
-                                {/* Đăng xuất */}
-                                <button
-                                    onClick={() => {
-                                        onLogout();
-                                        setIsUserMenuOpen(false);
-                                    }}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors text-left cursor-pointer border-t border-[#E2E8F0] dark:border-[#3b3d45] mt-1 pt-2">
-                                    <span className="material-symbols-outlined text-[20px]">logout</span>
-                                    <span>{t("logout")}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {/* User Card Bar */}
-                <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className={`w-full flex items-center ${
-                        isCollapsed ? "justify-center p-1.5" : "justify-between p-2"
-                    } rounded-xl hover:bg-[#e9e7eb] dark:hover:bg-[#25262b] transition-colors cursor-pointer group text-left`}>
+            {/* User Profile Widget Footer with Direct Logout */}
+            <div className="p-3 border-t border-[#E2E8F0] dark:border-[#c4c6cf]">
+                <div
+                    className={`flex items-center ${
+                        isCollapsed ? "flex-col gap-2 justify-center" : "justify-between gap-2"
+                    }`}>
                     <div className="flex items-center gap-2.5 min-w-0">
                         {userAvatar ? (
                             <img
@@ -245,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             />
                         ) : (
                             <div className="w-9 h-9 rounded-full bg-accent text-white font-bold flex items-center justify-center text-xs shrink-0">
-                                {userName.slice(0, 2).toUpperCase()}
+                                {(userName || "").slice(0, 2).toUpperCase() || "US"}
                             </div>
                         )}
                         {!isCollapsed && (
@@ -257,12 +209,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             </div>
                         )}
                     </div>
-                    {!isCollapsed && (
-                        <span className="material-symbols-outlined text-[18px] text-[#74777f] group-hover:text-[#1a1b1e] dark:text-[#c4c6cf] transition-transform">
-                            {isUserMenuOpen ? "unfold_less" : "unfold_more"}
-                        </span>
-                    )}
-                </button>
+
+                    <button
+                        onClick={onLogout}
+                        title={t("logout")}
+                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-xs transition-colors duration-200 cursor-pointer shrink-0 shadow-xs whitespace-nowrap">
+                        <span>{t("logout")}</span>
+                    </button>
+                </div>
             </div>
         </aside>
     );

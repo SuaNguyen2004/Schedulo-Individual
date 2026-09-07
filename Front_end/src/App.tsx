@@ -25,7 +25,6 @@ import { ViewRequestModal } from "./components/Modals/ViewRequestModal";
 import { ViewAccountDetailModal } from "./components/Modals/ViewAccountDetailModal";
 import { EditProfileModal } from "./components/Modals/EditProfileModal";
 import { ChangePasswordModal } from "./components/Modals/ChangePasswordModal";
-import { SettingsModal } from "./components/Modals/SettingsModal";
 import { useSystemSettings } from "./context/SystemSettingsContext";
 import { parseStoredShifts } from "./utils/shiftStorage";
 import { formatDateOnly } from "./utils/formatters";
@@ -165,7 +164,6 @@ export const App: React.FC = () => {
     const [selectedAccountDetail, setSelectedAccountDetail] = useState<UserAccount | null>(null);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Store bootstrap promise so handleLoginSuccess can await it
     const bootstrapRef = useRef<Promise<import("./utils/api").BootstrapData> | null>(null);
@@ -324,7 +322,7 @@ export const App: React.FC = () => {
             });
             setCurrentTab(user.role === "ADMIN" ? "accounts" : "schedule");
         }
-        showToast(`Đăng nhập thành công với ${user.email}`);
+        showToast("Đăng nhập thành công");
     };
 
     const handleLogout = () => {
@@ -658,7 +656,6 @@ export const App: React.FC = () => {
                     userName={currentUser.name}
                     userRole={currentUser.role}
                     userAvatar={currentUser.avatar}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
                     isCollapsed={isSidebarCollapsed}
                     onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                 />
@@ -685,10 +682,6 @@ export const App: React.FC = () => {
                         userName={currentUser.name}
                         userRole={currentUser.role}
                         userAvatar={currentUser.avatar}
-                        onOpenSettings={() => {
-                            setIsSettingsOpen(true);
-                            setIsMobileMenuOpen(false);
-                        }}
                         isCollapsed={false}
                     />
                 </div>
@@ -912,8 +905,6 @@ export const App: React.FC = () => {
                 onClose={() => setIsChangePasswordOpen(false)}
                 onSuccess={() => showToast("Đổi mật khẩu thành công!")}
             />
-
-            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
         </div>
     );
 };

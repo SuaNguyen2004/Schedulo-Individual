@@ -268,7 +268,13 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 <p>
                                     Ngày đăng ký:{" "}
                                     <span className="font-semibold text-[#1b365d] dark:text-white">
-                                        {account.registerDate || account.joinDate ? formatDateOnly(account.registerDate || account.joinDate) : <span className="italic text-[#74777f] dark:text-[#c4c6cf]">Chưa cập nhật</span>}
+                                        {account.registerDate || account.joinDate ? (
+                                            formatDateOnly(account.registerDate || account.joinDate)
+                                        ) : (
+                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                                Chưa cập nhật
+                                            </span>
+                                        )}
                                     </span>
                                 </p>
                             </div>
@@ -294,13 +300,23 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
                                     <span className="text-[#74777f]">Số điện thoại:</span>
                                     <span className="font-semibold text-[#1b365d] dark:text-white">
-                                        {account.phone ? formatPhoneNumber(account.phone) : <span className="italic text-[#74777f] dark:text-[#c4c6cf]">Chưa cập nhật</span>}
+                                        {account.phone ? (
+                                            formatPhoneNumber(account.phone)
+                                        ) : (
+                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                                Chưa cập nhật
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
                                 <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
                                     <span className="text-[#74777f]">Ngày sinh:</span>
                                     <span className="font-semibold text-[#1b365d] dark:text-white">
-                                        {account.dob || <span className="italic text-[#74777f] dark:text-[#c4c6cf]">Chưa cập nhật</span>}
+                                        {account.dob || (
+                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                                Chưa cập nhật
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
                             </div>
@@ -342,7 +358,10 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                     {account.cccdBack ? (
                                         <div
                                             onClick={() =>
-                                                setPreviewImg({ title: `CCCD Mặt sau - ${account.name}`, url: account.cccdBack! })
+                                                setPreviewImg({
+                                                    title: `CCCD Mặt sau - ${account.name}`,
+                                                    url: account.cccdBack!,
+                                                })
                                             }
                                             className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 transition-all">
                                             <img
@@ -459,103 +478,113 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 </div>
                             ) : (
                                 <>
-                                    {/* Mobile View: 1 cột thứ & 1 cột ca (< md) */}
-                                    <div className="md:hidden space-y-2.5">
-                                        {WEEKDAYS.map((day) => {
-                                            const morning = getShiftStatus(day.index, "morning");
-                                            const afternoon = getShiftStatus(day.index, "afternoon");
-                                            const isToday = day.index === todayWeekdayIndex;
-
-                                            return (
-                                                <div
-                                                    key={day.index}
-                                                    className={`p-3 rounded-2xl border-2 bg-white dark:bg-slate-900 flex items-center gap-3 transition-colors ${
-                                                        isToday
-                                                            ? "border-blue-600 dark:border-blue-400"
-                                                            : "border-slate-200 dark:border-slate-800"
-                                                    }`}>
-                                                    {/* Cột Thứ */}
+                                    {/* Mobile View: Grid 5 cột (< md) */}
+                                    <div className="md:hidden space-y-2">
+                                        {/* Dòng 1: Thứ 2 -> Thứ 6 */}
+                                        <div className="grid grid-cols-5 gap-1.5">
+                                            {WEEKDAYS.map((day) => {
+                                                const isToday = day.index === todayWeekdayIndex;
+                                                return (
                                                     <div
-                                                        className={`w-24 shrink-0 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-center font-bold text-xs uppercase tracking-wider transition-colors ${
+                                                        key={day.index}
+                                                        className={`flex flex-col items-center justify-center rounded-xl py-1.5 px-1 text-center font-bold transition-colors ${
                                                             isToday
                                                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                                                                 : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                                         }`}>
-                                                        <span>{day.dayName}</span>
+                                                        <span className="text-[11px] uppercase tracking-wider">
+                                                            {day.dayName}
+                                                        </span>
                                                         {isToday && (
-                                                            <span className="mt-1 rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white normal-case tracking-normal">
+                                                            <span className="mt-0.5 rounded bg-blue-600 px-1 py-0.2 text-[9px] font-bold text-white normal-case leading-tight">
                                                                 Hôm nay
                                                             </span>
                                                         )}
                                                     </div>
+                                                );
+                                            })}
+                                        </div>
 
-                                                    {/* Cột Ca */}
-                                                    <div className="flex-1 space-y-1.5 min-w-0">
-                                                        {morning !== "off" && (
-                                                            <div
-                                                                title={
-                                                                    morning === "pending"
-                                                                        ? "Ca sáng: Chờ duyệt"
-                                                                        : "Ca sáng: Đi làm"
-                                                                }
-                                                                className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
-                                                                    morning === "pending"
-                                                                        ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
-                                                                        : "border-amber-200/90 bg-amber-50 text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
-                                                                }`}>
-                                                                <span
-                                                                    className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
-                                                                    aria-hidden="true">
-                                                                    wb_sunny
-                                                                </span>
-                                                                <span>Ca Sáng</span>
-                                                            </div>
-                                                        )}
+                                        {/* Dòng 2: Ca Sáng / Ca Chiều (Chỉ Icon, căn chỉnh Slot 1/2) */}
+                                        <div className="grid grid-cols-5 gap-1.5">
+                                            {WEEKDAYS.map((day) => {
+                                                const morning = getShiftStatus(day.index, "morning");
+                                                const afternoon = getShiftStatus(day.index, "afternoon");
+                                                const isToday = day.index === todayWeekdayIndex;
 
-                                                        {afternoon !== "off" && (
-                                                            <div
-                                                                title={
-                                                                    afternoon === "pending"
-                                                                        ? "Ca chiều: Chờ duyệt"
-                                                                        : "Ca chiều: Đi làm"
-                                                                }
-                                                                className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
-                                                                    afternoon === "pending"
-                                                                        ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
-                                                                        : "border-purple-200/90 bg-purple-50 text-purple-900 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
-                                                                }`}>
-                                                                <span
-                                                                    className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
-                                                                    aria-hidden="true">
-                                                                    wb_twilight
-                                                                </span>
-                                                                <span>Ca Chiều</span>
-                                                            </div>
-                                                        )}
+                                                return (
+                                                    <div
+                                                        key={day.index}
+                                                        className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                            isToday
+                                                                ? "border-blue-600 dark:border-blue-400"
+                                                                : "border-slate-200 dark:border-slate-800"
+                                                        }`}>
+                                                        <div className="space-y-1">
+                                                            {morning !== "off" ? (
+                                                                <div
+                                                                    title={
+                                                                        morning === "pending"
+                                                                            ? "Ca sáng: Chờ duyệt"
+                                                                            : "Ca sáng: Đi làm"
+                                                                    }
+                                                                    className={`flex w-full items-center justify-center rounded-lg border h-[28px] shadow-2xs select-none transition-colors ${
+                                                                        morning === "pending"
+                                                                            ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
+                                                                            : "border-amber-200/90 bg-amber-50 text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                    }`}>
+                                                                    <span className="material-symbols-outlined text-[18px] leading-none">
+                                                                        wb_sunny
+                                                                    </span>
+                                                                </div>
+                                                            ) : afternoon !== "off" ? (
+                                                                <div className="h-[28px]" aria-hidden="true" />
+                                                            ) : null}
+
+                                                            {afternoon !== "off" ? (
+                                                                <div
+                                                                    title={
+                                                                        afternoon === "pending"
+                                                                            ? "Ca chiều: Chờ duyệt"
+                                                                            : "Ca chiều: Đi làm"
+                                                                    }
+                                                                    className={`flex w-full items-center justify-center rounded-lg border h-[28px] shadow-2xs select-none transition-colors ${
+                                                                        afternoon === "pending"
+                                                                            ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
+                                                                            : "border-purple-200/90 bg-purple-50 text-purple-700 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                    }`}>
+                                                                    <span className="material-symbols-outlined text-[18px] leading-none">
+                                                                        wb_twilight
+                                                                    </span>
+                                                                </div>
+                                                            ) : morning !== "off" ? (
+                                                                <div className="h-[28px]" aria-hidden="true" />
+                                                            ) : null}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            })}
+                                        </div>
                                     </div>
 
                                     {/* Desktop View: Grid 5 cột (hidden md:block) */}
-                                    <div className="hidden md:block overflow-x-auto pb-1">
-                                        <div className="min-w-[650px] space-y-3">
-                                            <div className="grid grid-cols-5 gap-3">
+                                    <div className="hidden md:block">
+                                        <div className="w-full space-y-3">
+                                            <div className="grid grid-cols-5 gap-2.5">
                                                 {WEEKDAYS.map((day) => {
                                                     const isToday = day.index === todayWeekdayIndex;
 
                                                     return (
                                                         <div
                                                             key={day.index}
-                                                            className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
+                                                            className={`flex items-center justify-center gap-1 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
                                                                 isToday
                                                                     ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                                                                     : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                                             }`}>
                                                             <span>{day.dayName}</span>
                                                             {isToday && (
-                                                                <span className="rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal text-white">
+                                                                <span className="rounded-md bg-blue-600 px-1 py-0.5 text-[9px] font-bold normal-case tracking-normal text-white shrink-0">
                                                                     Hôm nay
                                                                 </span>
                                                             )}
@@ -564,7 +593,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                 })}
                                             </div>
 
-                                            <div className="grid grid-cols-5 gap-3">
+                                            <div className="grid grid-cols-5 gap-2.5">
                                                 {WEEKDAYS.map((day) => {
                                                     const morning = getShiftStatus(day.index, "morning");
                                                     const afternoon = getShiftStatus(day.index, "afternoon");
@@ -573,7 +602,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                     return (
                                                         <div
                                                             key={day.index}
-                                                            className={`min-h-[104px] rounded-2xl border-2 bg-white p-3 shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                            className={`min-h-[104px] rounded-2xl border-2 bg-white p-2.5 shadow-2xs transition-colors dark:bg-slate-900 ${
                                                                 isToday
                                                                     ? "border-blue-600 dark:border-blue-400"
                                                                     : "border-slate-200 dark:border-slate-800"
@@ -586,42 +615,42 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                                                 ? "Ca sáng: Chờ duyệt"
                                                                                 : "Ca sáng: Đi làm"
                                                                         }
-                                                                        className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
+                                                                        className={`flex w-full items-center justify-center rounded-xl border h-[38px] shadow-2xs select-none transition-colors ${
                                                                             morning === "pending"
                                                                                 ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
-                                                                                : "border-amber-200/90 bg-amber-50 text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
+                                                                                : "border-amber-200/90 bg-amber-50 text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
                                                                         }`}>
                                                                         <span
-                                                                            className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
+                                                                            className="material-symbols-outlined text-[20px] leading-none"
                                                                             aria-hidden="true">
                                                                             wb_sunny
                                                                         </span>
-                                                                        <span>Ca Sáng</span>
                                                                     </div>
                                                                 ) : afternoon !== "off" ? (
                                                                     <div className="h-[38px]" aria-hidden="true" />
                                                                 ) : null}
 
-                                                                {afternoon !== "off" && (
+                                                                {afternoon !== "off" ? (
                                                                     <div
                                                                         title={
                                                                             afternoon === "pending"
                                                                                 ? "Ca chiều: Chờ duyệt"
                                                                                 : "Ca chiều: Đi làm"
                                                                         }
-                                                                        className={`flex w-full items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold shadow-xs ${
+                                                                        className={`flex w-full items-center justify-center rounded-xl border h-[38px] shadow-2xs select-none transition-colors ${
                                                                             afternoon === "pending"
                                                                                 ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
-                                                                                : "border-purple-200/90 bg-purple-50 text-purple-900 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
+                                                                                : "border-purple-200/90 bg-purple-50 text-purple-700 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
                                                                         }`}>
                                                                         <span
-                                                                            className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
+                                                                            className="material-symbols-outlined text-[20px] leading-none"
                                                                             aria-hidden="true">
                                                                             wb_twilight
                                                                         </span>
-                                                                        <span>Ca Chiều</span>
                                                                     </div>
-                                                                )}
+                                                                ) : morning !== "off" ? (
+                                                                    <div className="h-[38px]" aria-hidden="true" />
+                                                                ) : null}
                                                             </div>
                                                         </div>
                                                     );

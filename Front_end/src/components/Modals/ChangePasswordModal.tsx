@@ -73,14 +73,6 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
 
                     <div>
                         <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Mật khẩu hiện tại</label>
-                        <input
-                            type="password"
-                            required
-                            value={oldPassword}
-                            onChange={(e) => setOldPassword(e.target.value)}
-                            autoComplete="current-password"
-                            className="w-full px-3 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
-                        />
                         <div className="relative">
                             <input
                                 type={showOldPassword ? "text" : "password"}
@@ -104,15 +96,6 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
 
                     <div>
                         <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Mật khẩu mới</label>
-                        <input
-                            type="password"
-                            required
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            maxLength={20}
-                            autoComplete="new-password"
-                            className="w-full px-3 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
-                        />
                         <div className="relative">
                             <input
                                 type={showNewPassword ? "text" : "password"}
@@ -137,15 +120,6 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
 
                     <div>
                         <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Xác nhận mật khẩu mới</label>
-                        <input
-                            type="password"
-                            required
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            maxLength={20}
-                            autoComplete="new-password"
-                            className="w-full px-3 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
-                        />
                         <div className="relative">
                             <input
                                 type={showConfirmPassword ? "text" : "password"}

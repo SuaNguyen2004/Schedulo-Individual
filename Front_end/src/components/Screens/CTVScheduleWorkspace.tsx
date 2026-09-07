@@ -239,9 +239,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         // (including the current active week).
         const currentWeekMonday = startOfWeek(today);
         const currentWeekMondayISO = toISODate(currentWeekMonday);
-        const activeShifts = myShifts.filter(
-            (shift) => shift.workDate && shift.workDate >= currentWeekMondayISO,
-        );
+        const activeShifts = myShifts.filter((shift) => shift.workDate && shift.workDate >= currentWeekMondayISO);
 
         const restoredPattern = createEmptyPattern();
         for (const shift of activeShifts) {
@@ -375,11 +373,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
         if (selectedOccurrences.length === 0) {
             const updatedShifts = shifts.map((shift) => {
-                if (
-                    !shift.workDate ||
-                    shift.workDate < windowStartISO ||
-                    !isAssignedToCurrentUser(shift)
-                ) {
+                if (!shift.workDate || shift.workDate < windowStartISO || !isAssignedToCurrentUser(shift)) {
                     return shift;
                 }
 
@@ -501,9 +495,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                 setCalendarDate(selectedOccurrences[0]?.date || rangeStart);
                 setCalendarView("week");
                 setIsRegistrationOpen(false);
-                onShowToast(
-                    "Bạn đã đăng ký ca làm việc thành công.",
-                );
+                onShowToast("Bạn đã đăng ký ca làm việc thành công.");
             })
             .catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : "Không thể lưu lịch làm việc.";
@@ -721,10 +713,10 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                 </div>
             )}
 
-            <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/70 p-4 shadow-sm dark:border-slate-700 dark:from-[#25262b] dark:via-[#25262b] dark:to-blue-950/25">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+            <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/70 p-3 sm:p-4 shadow-sm dark:border-slate-700 dark:from-[#25262b] dark:via-[#25262b] dark:to-blue-950/25">
+                <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-[0.16em] text-blue-700 dark:text-blue-300 shrink-0">
+                        <span className="material-symbols-outlined text-[16px] sm:text-[18px]" aria-hidden="true">
                             calendar_month
                         </span>
                         Lịch làm việc
@@ -733,9 +725,9 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         <button
                             type="button"
                             disabled
-                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-300 px-5 py-3 text-sm font-bold text-slate-500 cursor-not-allowed sm:w-auto dark:bg-slate-800 dark:text-slate-500"
+                            className="inline-flex min-h-9 sm:min-h-11 shrink-0 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-slate-300 px-3 py-1.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-500 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500 whitespace-nowrap"
                             title="Tài khoản chờ duyệt chưa thể đăng ký lịch làm việc">
-                            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                            <span className="material-symbols-outlined text-[18px] sm:text-[20px]" aria-hidden="true">
                                 lock
                             </span>
                             Chờ duyệt để đăng ký ca
@@ -744,8 +736,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         <button
                             type="button"
                             onClick={openRegistration}
-                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 sm:w-auto dark:focus-visible:ring-offset-slate-900 cursor-pointer">
-                            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                            className="inline-flex min-h-9 sm:min-h-11 shrink-0 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-blue-700 px-3 py-1.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer whitespace-nowrap">
+                            <span className="material-symbols-outlined text-[18px] sm:text-[20px]" aria-hidden="true">
                                 edit_calendar
                             </span>
                             Đăng ký lịch làm việc
@@ -791,90 +783,100 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Lịch tuần</h3>
                         </div>
 
-                        {/* Mobile View: 1 cột thứ & 1 cột ca (< md) */}
-                        <div className="md:hidden space-y-2.5">
-                            {weekDays.map((date, index) => {
-                                const dateISO = toISODate(date);
-                                const isToday = dateISO === todayISO;
-                                const weekday = WEEKDAYS[index];
-                                const morningShift = getVisibleShift(date, "morning");
-                                const afternoonShift = getVisibleShift(date, "afternoon");
-
-                                return (
-                                    <div
-                                        key={dateISO}
-                                        className={`p-3 rounded-2xl border-2 bg-white dark:bg-slate-900 flex items-center gap-3 transition-colors ${
-                                            isToday
-                                                ? "border-blue-600 dark:border-blue-400"
-                                                : "border-slate-200 dark:border-slate-800"
-                                        }`}>
-                                        {/* Cột Thứ */}
+                        {/* Mobile View: Grid 5 cột (< md) */}
+                        <div className="md:hidden space-y-2">
+                            {/* Dòng 1: Thứ 2 -> Thứ 6 */}
+                            <div className="grid grid-cols-5 gap-1.5">
+                                {WEEKDAYS.map((weekday, index) => {
+                                    const date = weekDays[index];
+                                    const isToday = toISODate(date) === todayISO;
+                                    return (
                                         <div
-                                            className={`w-24 shrink-0 flex flex-col items-center justify-center py-2 px-2 rounded-xl text-center font-bold text-xs uppercase tracking-wider transition-colors ${
+                                            key={weekday.index}
+                                            className={`flex flex-col items-center justify-center rounded-xl py-1.5 px-1 text-center font-bold transition-colors ${
                                                 isToday
                                                     ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                                                     : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                             }`}>
-                                            <span>{weekday.label}</span>
+                                            <span className="text-[11px] uppercase tracking-wider">
+                                                {weekday.label}
+                                            </span>
                                             {isToday && (
-                                                <span className="mt-1 rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white normal-case tracking-normal">
+                                                <span className="mt-0.5 rounded bg-blue-600 px-1 py-0.2 text-[9px] font-bold text-white normal-case leading-tight">
                                                     Hôm nay
                                                 </span>
                                             )}
                                         </div>
+                                    );
+                                })}
+                            </div>
 
-                                        {/* Cột Ca */}
-                                        <div className="flex-1 space-y-1.5 min-w-0">
-                                            {morningShift && (
-                                                <div className="flex w-full items-center gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 shadow-xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200">
-                                                    <span
-                                                        className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
-                                                        aria-hidden="true">
-                                                        wb_sunny
-                                                    </span>
-                                                    <span className="text-amber-900 dark:text-amber-100">
-                                                        Ca Sáng
-                                                    </span>
-                                                </div>
-                                            )}
+                            {/* Dòng 2: Ca Sáng / Ca Chiều (Chỉ hiển thị Icon, không có text "Ca Sáng/Chiều") */}
+                            <div className="grid grid-cols-5 gap-1.5">
+                                {weekDays.map((date) => {
+                                    const dateISO = toISODate(date);
+                                    const isToday = dateISO === todayISO;
+                                    const morningShift = getVisibleShift(date, "morning");
+                                    const afternoonShift = getVisibleShift(date, "afternoon");
 
-                                            {afternoonShift && (
-                                                <div className="flex w-full items-center gap-2 rounded-xl border border-purple-200/90 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900 shadow-xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200">
-                                                    <span
-                                                        className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
-                                                        aria-hidden="true">
-                                                        wb_twilight
-                                                    </span>
-                                                    <span className="text-purple-900 dark:text-purple-100">
-                                                        Ca Chiều
-                                                    </span>
-                                                </div>
-                                            )}
+                                    return (
+                                        <div
+                                            key={dateISO}
+                                            className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                isToday
+                                                    ? "border-blue-600 dark:border-blue-400"
+                                                    : "border-slate-200 dark:border-slate-800"
+                                            }`}>
+                                            <div className="space-y-1">
+                                                {morningShift ? (
+                                                    <div
+                                                        className="flex w-full items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                        title="Ca Sáng">
+                                                        <span className="material-symbols-outlined text-[18px] leading-none">
+                                                            wb_sunny
+                                                        </span>
+                                                    </div>
+                                                ) : afternoonShift ? (
+                                                    <div className="h-[28px]" aria-hidden="true" />
+                                                ) : null}
+
+                                                {afternoonShift ? (
+                                                    <div
+                                                        className="flex w-full items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                        title="Ca Chiều">
+                                                        <span className="material-symbols-outlined text-[18px] leading-none">
+                                                            wb_twilight
+                                                        </span>
+                                                    </div>
+                                                ) : morningShift ? (
+                                                    <div className="h-[28px]" aria-hidden="true" />
+                                                ) : null}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {/* Desktop View: Grid 5 cột (hidden md:block) */}
-                        <div className="hidden md:block overflow-x-auto">
-                            <div className="min-w-[650px] space-y-3">
+                        <div className="hidden md:block">
+                            <div className="w-full space-y-3">
                                 {/* Header: THỨ 2, THỨ 3, THỨ 4, THỨ 5, THỨ 6 */}
-                                <div className="grid grid-cols-5 gap-3">
+                                <div className="grid grid-cols-5 gap-2.5">
                                     {WEEKDAYS.map((weekday, index) => {
                                         const date = weekDays[index];
                                         const isToday = toISODate(date) === todayISO;
                                         return (
                                             <div
                                                 key={weekday.index}
-                                                className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
+                                                className={`flex items-center justify-center gap-1 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
                                                     isToday
                                                         ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                                                         : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                                 }`}>
                                                 <span>{weekday.label}</span>
                                                 {isToday && (
-                                                    <span className="rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white normal-case tracking-normal">
+                                                    <span className="rounded-md bg-blue-600 px-1 py-0.5 text-[9px] font-bold text-white normal-case tracking-normal shrink-0">
                                                         Hôm nay
                                                     </span>
                                                 )}
@@ -884,7 +886,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 </div>
 
                                 {/* Day Cards */}
-                                <div className="grid grid-cols-5 gap-3">
+                                <div className="grid grid-cols-5 gap-2.5">
                                     {weekDays.map((date) => {
                                         const dateISO = toISODate(date);
                                         const isToday = dateISO === todayISO;
@@ -894,21 +896,20 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                         return (
                                             <div
                                                 key={dateISO}
-                                                className={`rounded-2xl border-2 bg-white p-3 min-h-[104px] shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                className={`rounded-2xl border-2 bg-white p-2.5 min-h-[104px] shadow-2xs transition-colors dark:bg-slate-900 ${
                                                     isToday
                                                         ? "border-blue-600 dark:border-blue-400"
                                                         : "border-slate-200 dark:border-slate-800"
                                                 }`}>
                                                 <div className="space-y-2">
                                                     {morningShift ? (
-                                                        <div className="flex w-full items-center gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 shadow-xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200">
+                                                        <div
+                                                            className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[38px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                            title="Ca Sáng">
                                                             <span
-                                                                className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
+                                                                className="material-symbols-outlined text-[20px] leading-none"
                                                                 aria-hidden="true">
                                                                 wb_sunny
-                                                            </span>
-                                                            <span className="text-amber-900 dark:text-amber-100">
-                                                                Ca Sáng
                                                             </span>
                                                         </div>
                                                     ) : afternoonShift ? (
@@ -916,14 +917,13 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                     ) : null}
 
                                                     {afternoonShift ? (
-                                                        <div className="flex w-full items-center gap-2 rounded-xl border border-purple-200/90 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900 shadow-xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200">
+                                                        <div
+                                                            className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[38px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                            title="Ca Chiều">
                                                             <span
-                                                                className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
+                                                                className="material-symbols-outlined text-[20px] leading-none"
                                                                 aria-hidden="true">
                                                                 wb_twilight
-                                                            </span>
-                                                            <span className="text-purple-900 dark:text-purple-100">
-                                                                Ca Chiều
                                                             </span>
                                                         </div>
                                                     ) : morningShift ? (
@@ -980,27 +980,27 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <div className="min-w-[850px]">
-                                <div className="mb-3 grid grid-cols-5 gap-3 text-center">
+                        <div className="w-full">
+                            <div className="w-full">
+                                <div className="mb-2 sm:mb-3 grid grid-cols-5 gap-1.5 sm:gap-3 text-center">
                                     {WEEKDAYS.map((day) => (
                                         <div
                                             key={day.index}
-                                            className="rounded-xl border border-slate-200/80 bg-slate-100 px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-[#1f2023] dark:text-slate-200">
+                                            className="rounded-xl border border-slate-200/80 bg-slate-100 py-1.5 px-1 sm:py-2.5 sm:px-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-[#1f2023] dark:text-slate-200">
                                             {day.label}
                                         </div>
                                     ))}
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-1.5 sm:space-y-3">
                                     {monthWeeks.map((week, weekIndex) => (
-                                        <div key={weekIndex} className="grid grid-cols-5 gap-3">
+                                        <div key={weekIndex} className="grid grid-cols-5 gap-1.5 sm:gap-3">
                                             {week.map((date, dayIndex) => {
                                                 if (!date) {
                                                     return (
                                                         <div
                                                             key={dayIndex}
-                                                            className="min-h-[110px] rounded-xl border border-dashed border-slate-200 bg-slate-50/50 opacity-40 dark:border-slate-800/60 dark:bg-[#1f2023]/30"
+                                                            className="min-h-[88px] sm:min-h-[110px] rounded-xl border border-dashed border-slate-200 bg-slate-50/50 opacity-40 dark:border-slate-800/60 dark:bg-[#1f2023]/30"
                                                             aria-hidden="true"
                                                         />
                                                     );
@@ -1017,53 +1017,53 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                 return (
                                                     <div
                                                         key={dateISO}
-                                                        className={`flex min-h-[110px] flex-col rounded-xl border p-2.5 transition-all ${isToday ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20" : "border-slate-200/90 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#222327] dark:hover:border-slate-700"}`}>
-                                                        <div className="mb-2 flex min-h-6 items-center justify-center gap-2 border-b border-slate-100 pb-1.5 text-center dark:border-slate-800/80">
-                                                            <span className="flex items-center justify-center gap-1 text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                        className={`flex min-h-[88px] sm:min-h-[110px] flex-col rounded-xl border p-1.5 sm:p-2.5 transition-all ${isToday ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20" : "border-slate-200/90 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#222327] dark:hover:border-slate-700"}`}>
+                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center gap-1 border-b border-slate-100 pb-1 sm:pb-1.5 text-center dark:border-slate-800/80">
+                                                            <span className="flex items-center justify-center gap-1 text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
                                                                 {formatShortDate(date)}
                                                                 {isToday && (
-                                                                    <span className="rounded bg-blue-700 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                                                    <span className="rounded bg-blue-700 px-1 py-0.2 text-[9px] font-bold text-white sm:px-1.5 sm:py-0.5 sm:text-[10px] leading-tight">
                                                                         Hôm nay
                                                                     </span>
                                                                 )}
                                                             </span>
                                                         </div>
 
-                                                        <div className="space-y-1.5">
+                                                        <div className="space-y-1 sm:space-y-1.5 min-h-[56px] flex flex-col justify-start">
                                                             {morningShift ? (
                                                                 <div
                                                                     key={`${dateISO}-morning`}
-                                                                    className="flex w-full items-center gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 shadow-xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
-                                                                    aria-label={`Ca Sáng, ${formatShortDate(date)}`}>
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                    title={`Ca Sáng, ${formatShortDate(date)}`}>
                                                                     <span
-                                                                        className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
+                                                                        className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
                                                                         aria-hidden="true">
                                                                         wb_sunny
                                                                     </span>
-                                                                    <span className="text-amber-900 dark:text-amber-100">
-                                                                        Ca Sáng
-                                                                    </span>
                                                                 </div>
                                                             ) : afternoonShift ? (
-                                                                <div className="h-[38px]" aria-hidden="true" />
+                                                                <div
+                                                                    className="h-[28px] sm:h-[32px]"
+                                                                    aria-hidden="true"
+                                                                />
                                                             ) : null}
 
                                                             {afternoonShift ? (
                                                                 <div
                                                                     key={`${dateISO}-afternoon`}
-                                                                    className="flex w-full items-center gap-2 rounded-xl border border-purple-200/90 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900 shadow-xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
-                                                                    aria-label={`Ca Chiều, ${formatShortDate(date)}`}>
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                    title={`Ca Chiều, ${formatShortDate(date)}`}>
                                                                     <span
-                                                                        className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
+                                                                        className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
                                                                         aria-hidden="true">
                                                                         wb_twilight
                                                                     </span>
-                                                                    <span className="text-purple-900 dark:text-purple-100">
-                                                                        Ca Chiều
-                                                                    </span>
                                                                 </div>
                                                             ) : morningShift ? (
-                                                                <div className="h-[38px]" aria-hidden="true" />
+                                                                <div
+                                                                    className="h-[28px] sm:h-[32px]"
+                                                                    aria-hidden="true"
+                                                                />
                                                             ) : null}
                                                         </div>
                                                     </div>
@@ -1113,11 +1113,18 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     <legend className="text-sm font-bold text-slate-900 dark:text-white">
                                         Mẫu ca làm việc theo tuần
                                     </legend>
-                                    <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                                        <div className="min-w-[500px]">
-                                            <div className="grid grid-cols-[120px_repeat(5,1fr)] bg-slate-50 dark:bg-slate-900/40">
-                                                <div className="border-r border-slate-200 p-2 text-xs font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300 flex items-center justify-center">
-                                                    Ca / Thứ
+                                    <div className="mt-3 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <div className="w-full">
+                                            <div className="grid grid-cols-[48px_repeat(5,1fr)] sm:grid-cols-[100px_repeat(5,1fr)] bg-slate-50 dark:bg-slate-900/40">
+                                                <div
+                                                    className="border-r border-slate-200 p-2 text-xs font-bold text-slate-500 dark:border-slate-700 dark:text-slate-400 flex items-center justify-center"
+                                                    title="Ca làm việc">
+                                                    <span className="sm:hidden material-symbols-outlined text-[16px]">
+                                                        schedule
+                                                    </span>
+                                                    <span className="hidden sm:inline font-bold text-slate-600 dark:text-slate-300">
+                                                        Ca / Thứ
+                                                    </span>
                                                 </div>
                                                 {WEEKDAYS.map((day) => (
                                                     <div
@@ -1132,14 +1139,35 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                             {SHIFT_OPTIONS.map((shiftOption) => (
                                                 <div
                                                     key={shiftOption.type}
-                                                    className="grid grid-cols-[120px_repeat(5,1fr)] border-t border-slate-200 dark:border-slate-700">
-                                                    <div className="flex items-center justify-center gap-2 border-r border-slate-200 p-2 text-xs font-bold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                                                        <span
-                                                            className="material-symbols-outlined text-[16px]"
-                                                            aria-hidden="true">
-                                                            {shiftOption.icon}
-                                                        </span>
-                                                        {shiftOption.label}
+                                                    className="grid grid-cols-[48px_repeat(5,1fr)] sm:grid-cols-[100px_repeat(5,1fr)] border-t border-slate-200 dark:border-slate-700">
+                                                    <div className="flex items-center justify-center gap-1.5 border-r border-slate-200 p-1.5 dark:border-slate-700">
+                                                        {shiftOption.type === "morning" ? (
+                                                            <>
+                                                                <div
+                                                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 text-amber-700 shadow-2xs transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300 shrink-0"
+                                                                    title="Ca sáng">
+                                                                    <span className="material-symbols-outlined text-[18px] leading-none">
+                                                                        wb_sunny
+                                                                    </span>
+                                                                </div>
+                                                                <span className="hidden sm:inline text-xs font-extrabold text-amber-900 dark:text-amber-100">
+                                                                    Sáng
+                                                                </span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div
+                                                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 text-purple-700 shadow-2xs transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300 shrink-0"
+                                                                    title="Ca chiều">
+                                                                    <span className="material-symbols-outlined text-[18px] leading-none">
+                                                                        wb_twilight
+                                                                    </span>
+                                                                </div>
+                                                                <span className="hidden sm:inline text-xs font-extrabold text-purple-900 dark:text-purple-100">
+                                                                    Chiều
+                                                                </span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                     {WEEKDAYS.map((day) => {
                                                         const firstDate = getFirstRegistrationDate(day.index);
@@ -1157,7 +1185,9 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                                     }
                                                                 }}
                                                                 className={`flex items-center justify-center border-r border-slate-200 p-1.5 last:border-r-0 dark:border-slate-700 transition-colors ${
-                                                                    firstDate ? "cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/30" : ""
+                                                                    firstDate
+                                                                        ? "cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/30"
+                                                                        : ""
                                                                 }`}>
                                                                 <button
                                                                     type="button"
@@ -1194,7 +1224,9 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                             </div>
 
                             <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white/95 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-end dark:border-slate-700 dark:bg-[#25262b]/95">
-                                {Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0) && (
+                                {Object.keys(tempWeeklyPattern).some(
+                                    (key) => (tempWeeklyPattern[Number(key)] || []).length > 0,
+                                ) && (
                                     <button
                                         type="button"
                                         onClick={() => setTempWeeklyPattern(createEmptyPattern())}
@@ -1209,7 +1241,9 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     <span className="material-symbols-outlined text-[19px]" aria-hidden="true">
                                         event_available
                                     </span>
-                                    {Object.keys(tempWeeklyPattern).some((key) => (tempWeeklyPattern[Number(key)] || []).length > 0)
+                                    {Object.keys(tempWeeklyPattern).some(
+                                        (key) => (tempWeeklyPattern[Number(key)] || []).length > 0,
+                                    )
                                         ? "Đăng ký lịch"
                                         : "Lưu thay đổi"}
                                 </button>
