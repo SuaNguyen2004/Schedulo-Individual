@@ -49,7 +49,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                 <span className="material-symbols-outlined text-[20px]">badge</span>
                             </div>
                             <h3 className="text-base font-bold text-[#1b365d] dark:text-[#d6e3ff]">
-                                Chi tiết Hồ sơ Đăng ký CTV
+                                Chi tiết hồ sơ đăng ký CTV
                             </h3>
                         </div>
                         <button
@@ -105,13 +105,23 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                 <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
                                     <span className="text-[#74777f] dark:text-[#c4c6cf]">Số điện thoại:</span>
                                     <span className="font-semibold text-[#1b365d] dark:text-white">
-                                        {request.phone ? formatPhoneNumber(request.phone) : <span className="italic text-[#74777f] dark:text-[#c4c6cf]">Chưa cập nhật</span>}
+                                        {request.phone ? (
+                                            formatPhoneNumber(request.phone)
+                                        ) : (
+                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                                Chưa cập nhật
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
                                 <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
                                     <span className="text-[#74777f] dark:text-[#c4c6cf]">Ngày sinh:</span>
                                     <span className="font-semibold text-[#1b365d] dark:text-white">
-                                        {request.dob || <span className="italic text-[#74777f] dark:text-[#c4c6cf]">Chưa cập nhật</span>}
+                                        {request.dob || (
+                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                                Chưa cập nhật
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
                             </div>
@@ -129,7 +139,10 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                 {request.cccdFront ? (
                                     <div
                                         onClick={() =>
-                                            setPreviewImg({ title: `CCCD Mặt trước - ${request.name}`, url: request.cccdFront! })
+                                            setPreviewImg({
+                                                title: `CCCD Mặt trước - ${request.name}`,
+                                                url: request.cccdFront!,
+                                            })
                                         }
                                         className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 dark:hover:border-blue-500 transition-all">
                                         <img
@@ -152,7 +165,10 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                 {request.cccdBack ? (
                                     <div
                                         onClick={() =>
-                                            setPreviewImg({ title: `CCCD Mặt sau - ${request.name}`, url: request.cccdBack! })
+                                            setPreviewImg({
+                                                title: `CCCD Mặt sau - ${request.name}`,
+                                                url: request.cccdBack!,
+                                            })
                                         }
                                         className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 dark:hover:border-blue-500 transition-all">
                                         <img

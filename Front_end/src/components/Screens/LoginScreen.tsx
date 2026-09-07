@@ -280,7 +280,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             .catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : "Không thể gửi yêu cầu đăng ký.";
                 const lower = message.toLowerCase();
-                if (lower.includes("ngày sinh") || lower.includes("dob") || lower.includes("date_of_birth") || lower.includes("date value")) {
+                if (
+                    lower.includes("ngày sinh") ||
+                    lower.includes("dob") ||
+                    lower.includes("date_of_birth") ||
+                    lower.includes("date value")
+                ) {
                     setRegErrors({ regDob: "Vui lòng nhập ngày sinh hợp lệ" });
                 } else if (lower.includes("mật khẩu") || lower.includes("password")) {
                     setRegErrors({ regPassword: message });
@@ -349,7 +354,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         type={showLoginPassword ? "text" : "password"}
                                         value={loginPassword}
                                         onChange={(e) => setLoginPassword(e.target.value)}
-                                        placeholder="••••••••"
+                                        autoComplete="current-password"
                                         disabled={isProcessing}
                                         className="w-full pl-3 pr-10 py-2 bg-[#faf9fd] border border-[#c4c6cf] rounded-lg text-[#1a1b1e] text-sm focus:outline-none focus:border-[#002046] h-[40px]"
                                     />
@@ -511,7 +516,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
                                         }}
                                         onInvalid={(e) => {
-                                            e.currentTarget.setCustomValidity("Số điện thoại phải gồm đúng 10 chữ số (ví dụ: 0912345678)");
+                                            e.currentTarget.setCustomValidity(
+                                                "Số điện thoại phải gồm đúng 10 chữ số (ví dụ: 0912345678)",
+                                            );
                                         }}
                                         className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
                                             regErrors.regPhone ? "border-[#DC2626]" : "border-[#c4c6cf]"
@@ -532,7 +539,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         <span className="material-symbols-outlined text-[#1b365d] text-[18px]">
                                             badge
                                         </span>
-                                        <span>Ảnh CCCD (Mặt trước & Mặt sau)</span> <span className="text-[#DC2626]">*</span>
+                                        <span>Ảnh CCCD (Mặt trước & Mặt sau)</span>{" "}
+                                        <span className="text-[#DC2626]">*</span>
                                     </label>
                                 </div>
 
@@ -732,7 +740,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         <span className="material-symbols-outlined text-[#1b365d] text-[18px]">
                                             description
                                         </span>
-                                        <span>CV ứng tuyển (File PDF, Word)</span> <span className="text-[#DC2626]">*</span>
+                                        <span>CV ứng tuyển (File PDF, Word)</span>{" "}
+                                        <span className="text-[#DC2626]">*</span>
                                     </label>
                                 </div>
 

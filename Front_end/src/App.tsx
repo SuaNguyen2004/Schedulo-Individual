@@ -29,7 +29,14 @@ import { SettingsModal } from "./components/Modals/SettingsModal";
 import { useSystemSettings } from "./context/SystemSettingsContext";
 import { parseStoredShifts } from "./utils/shiftStorage";
 import { formatDateOnly } from "./utils/formatters";
-import { fetchBootstrapData, updateProfile, saveAdminNotes, toggleAccountStatus, resetPassword, deleteAccount } from "./utils/api";
+import {
+    fetchBootstrapData,
+    updateProfile,
+    saveAdminNotes,
+    toggleAccountStatus,
+    resetPassword,
+    deleteAccount,
+} from "./utils/api";
 import { approveRegistrationRequest, rejectRegistrationRequest, AuthenticatedUser } from "./utils/api";
 
 const SHIFTS_STORAGE_KEY = "schedulo_shifts";
@@ -169,8 +176,7 @@ export const App: React.FC = () => {
     const showToast = (msg: string, type?: "success" | "error") => {
         const isError =
             type === "error" ||
-            (!type &&
-                /không|lỗi|thất bại|bị vô hiệu|phải có|tối đa|ít nhất|chưa|kiểm tra|sai|từ chối/i.test(msg));
+            (!type && /không|lỗi|thất bại|bị vô hiệu|phải có|tối đa|ít nhất|chưa|kiểm tra|sai|từ chối/i.test(msg));
 
         setToast({ message: msg, type: isError ? "error" : "success" });
         setTimeout(() => {
@@ -230,7 +236,7 @@ export const App: React.FC = () => {
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === "AbortError") return;
                 console.warn("Không thể tải dữ liệu từ Backend, sử dụng dữ liệu cục bộ.", error);
-                
+
                 // If there's an active session but bootstrap failed (e.g. database offline),
                 // clear auth state and redirect to login screen
                 const authenticatedEmail = window.localStorage.getItem(AUTH_USER_EMAIL_KEY);
@@ -284,7 +290,11 @@ export const App: React.FC = () => {
         // Wait for bootstrap data to be available so we can look up full profile
         let bootstrapData: import("./utils/api").BootstrapData | null = null;
         if (bootstrapRef.current) {
-            try { bootstrapData = await bootstrapRef.current; } catch { /* ignore */ }
+            try {
+                bootstrapData = await bootstrapRef.current;
+            } catch {
+                /* ignore */
+            }
         }
 
         const account = (bootstrapData?.accounts || accounts).find(
@@ -357,7 +367,7 @@ export const App: React.FC = () => {
 
         try {
             await toggleAccountStatus(id, isDisabling ? "disabled" : "active");
-            setAccounts((prev) => prev.map((acc) => acc.id === id ? { ...acc, status: newStatus } : acc));
+            setAccounts((prev) => prev.map((acc) => (acc.id === id ? { ...acc, status: newStatus } : acc)));
             if (isDisabling) {
                 setShifts((prevShifts) =>
                     prevShifts.map((shift) => {
@@ -547,7 +557,7 @@ export const App: React.FC = () => {
         try {
             await approveRegistrationRequest(id, requireAdminId(id));
             setRequests((prev) => prev.filter((r) => r.id !== id));
-            showToast(`Đã phê duyệt hồ sơ của ${req.name} và lưu vào database`);
+            showToast(`Đã phê duyệt tài khoản của ${req.name} thành công`);
         } catch (error) {
             showToast(error instanceof Error ? error.message : "Không thể phê duyệt hồ sơ");
         }
@@ -703,12 +713,12 @@ export const App: React.FC = () => {
                             {currentTab === "accounts"
                                 ? "Tài khoản"
                                 : currentTab === "requests"
-                                ? "Yêu cầu đăng ký"
-                                : currentTab === "schedule"
-                                ? "Lịch làm việc"
-                                : currentTab === "meetings"
-                                ? "Lịch tổng hợp"
-                                : "Hồ sơ cá nhân"}
+                                  ? "Yêu cầu đăng ký"
+                                  : currentTab === "schedule"
+                                    ? "Lịch làm việc"
+                                    : currentTab === "meetings"
+                                      ? "Lịch tổng hợp"
+                                      : "Hồ sơ cá nhân"}
                         </span>
                     </div>
                 </div>
@@ -770,47 +780,87 @@ export const App: React.FC = () => {
                                 onOpenChangePassword={() => setIsChangePasswordOpen(true)}
                                 onUpdateAvatar={async (newAvatar) => {
                                     try {
-                                        const result = await updateProfile(currentUser.id, { name: currentUser.name, avatar: newAvatar || "" });
+                                        const result = await updateProfile(currentUser.id, {
+                                            name: currentUser.name,
+                                            avatar: newAvatar || "",
+                                        });
                                         const savedUrl = result.avatar ?? newAvatar;
                                         handleSaveProfile({ avatar: savedUrl });
-                                        if (!newAvatar) { showToast("Đã xóa ảnh đại diện"); }
-                                        else { showToast("Đã thay đổi ảnh đại diện thành công"); }
+                                        if (!newAvatar) {
+                                            showToast("Đã xóa ảnh đại diện");
+                                        } else {
+                                            showToast("Đã thay đổi ảnh đại diện thành công");
+                                        }
                                     } catch (err) {
-                                        showToast(err instanceof Error ? err.message : "Không thể cập nhật ảnh đại diện.");
+                                        showToast(
+                                            err instanceof Error ? err.message : "Không thể cập nhật ảnh đại diện.",
+                                        );
                                     }
                                 }}
                                 onUpdateCccdFront={async (url) => {
                                     try {
-                                        const result = await updateProfile(currentUser.id, { name: currentUser.name, cccdFront: url || "" });
+                                        const result = await updateProfile(currentUser.id, {
+                                            name: currentUser.name,
+                                            cccdFront: url || "",
+                                        });
                                         const savedUrl = result.cccdFront ?? url;
                                         handleSaveProfile({ cccdFront: savedUrl });
-                                        if (!url) { showToast("Đã xóa ảnh CCCD mặt trước"); }
-                                        else { showToast("Đã thay đổi ảnh CCCD mặt trước thành công"); }
+                                        if (!url) {
+                                            showToast("Đã xóa ảnh CCCD mặt trước");
+                                        } else {
+                                            showToast("Đã thay đổi ảnh CCCD mặt trước thành công");
+                                        }
                                     } catch (err) {
-                                        showToast(err instanceof Error ? err.message : "Không thể cập nhật CCCD mặt trước.");
+                                        showToast(
+                                            err instanceof Error ? err.message : "Không thể cập nhật CCCD mặt trước.",
+                                        );
                                     }
                                 }}
                                 onUpdateCccdBack={async (url) => {
                                     try {
-                                        const result = await updateProfile(currentUser.id, { name: currentUser.name, cccdBack: url || "" });
+                                        const result = await updateProfile(currentUser.id, {
+                                            name: currentUser.name,
+                                            cccdBack: url || "",
+                                        });
                                         const savedUrl = result.cccdBack ?? url;
                                         handleSaveProfile({ cccdBack: savedUrl });
-                                        if (!url) { showToast("Đã xóa ảnh CCCD mặt sau"); }
-                                        else { showToast("Đã thay đổi ảnh CCCD mặt sau thành công"); }
+                                        if (!url) {
+                                            showToast("Đã xóa ảnh CCCD mặt sau");
+                                        } else {
+                                            showToast("Đã thay đổi ảnh CCCD mặt sau thành công");
+                                        }
                                     } catch (err) {
-                                        showToast(err instanceof Error ? err.message : "Không thể cập nhật CCCD mặt sau.");
+                                        showToast(
+                                            err instanceof Error ? err.message : "Không thể cập nhật CCCD mặt sau.",
+                                        );
                                     }
                                 }}
                                 onUpdateCvFile={async (cvData) => {
                                     try {
                                         if (!cvData) {
-                                            await updateProfile(currentUser.id, { name: currentUser.name, cvFile: "", cvFileName: "" });
-                                            handleSaveProfile({ cvFile: undefined, cvFileName: undefined, cvFileSize: undefined });
+                                            await updateProfile(currentUser.id, {
+                                                name: currentUser.name,
+                                                cvFile: "",
+                                                cvFileName: "",
+                                            });
+                                            handleSaveProfile({
+                                                cvFile: undefined,
+                                                cvFileName: undefined,
+                                                cvFileSize: undefined,
+                                            });
                                             showToast("Đã xóa file CV");
                                         } else {
-                                            const result = await updateProfile(currentUser.id, { name: currentUser.name, cvFile: cvData.cvFile, cvFileName: cvData.cvFileName });
+                                            const result = await updateProfile(currentUser.id, {
+                                                name: currentUser.name,
+                                                cvFile: cvData.cvFile,
+                                                cvFileName: cvData.cvFileName,
+                                            });
                                             const savedUrl = result.cvFile ?? cvData.cvFile;
-                                            handleSaveProfile({ cvFile: savedUrl, cvFileName: cvData.cvFileName, cvFileSize: cvData.cvFileSize });
+                                            handleSaveProfile({
+                                                cvFile: savedUrl,
+                                                cvFileName: cvData.cvFileName,
+                                                cvFileSize: cvData.cvFileSize,
+                                            });
                                             showToast(`Đã cập nhật file CV: ${cvData.cvFileName}`);
                                         }
                                     } catch (err) {
