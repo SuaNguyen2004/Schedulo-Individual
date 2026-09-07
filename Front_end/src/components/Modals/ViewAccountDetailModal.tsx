@@ -414,24 +414,18 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                         </div>
 
                                         <div className="flex items-center gap-1.5 shrink-0">
-                                            <div className="relative group">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (account.cvFile) window.open(account.cvFile, "_blank");
-                                                    }}
-                                                    aria-label="Xem file"
-                                                    className="w-9 h-9 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition-colors flex items-center justify-center shadow-2xs cursor-pointer border border-slate-200 dark:border-slate-700">
-                                                    <span className="material-symbols-outlined text-[18px]">
-                                                        visibility
-                                                    </span>
-                                                </button>
-                                                <span
-                                                    role="tooltip"
-                                                    className="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 dark:bg-slate-100 dark:text-slate-900">
-                                                    Xem trong tab mới
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (account.cvFile) window.open(account.cvFile, "_blank");
+                                                }}
+                                                className="px-3 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
+                                                title="Xem CV trong tab mới">
+                                                <span className="material-symbols-outlined text-[16px]">
+                                                    visibility
                                                 </span>
-                                            </div>
+                                                <span>Xem</span>
+                                            </button>
                                         </div>
                                     </div>
                                 ) : (

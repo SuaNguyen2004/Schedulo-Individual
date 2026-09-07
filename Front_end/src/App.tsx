@@ -260,10 +260,8 @@ export const App: React.FC = () => {
         }
     }, [accounts, isLoggedIn, currentUser.id, currentUser.email]);
 
-    // Periodic polling to sync account status live (e.g. when disabled by Admin in another session)
+    // Periodic polling to sync account status live across sessions
     useEffect(() => {
-        if (!isLoggedIn) return;
-
         const checkStatus = () => {
             fetchBootstrapData()
                 .then((data) => {
@@ -281,23 +279,30 @@ export const App: React.FC = () => {
 
         const interval = setInterval(checkStatus, 3000);
         return () => clearInterval(interval);
-    }, [isLoggedIn]);
+    }, []);
 
     // Handlers
     const handleLoginSuccess = async (user: AuthenticatedUser) => {
-        // Wait for bootstrap data to be available so we can look up full profile
-        let bootstrapData: import("./utils/api").BootstrapData | null = null;
-        if (bootstrapRef.current) {
-            try {
-                bootstrapData = await bootstrapRef.current;
-            } catch {
-                /* ignore */
+        // Always fetch fresh bootstrap data from backend on login to get real-time account status
+        let freshBootstrapData: import("./utils/api").BootstrapData | null = null;
+        try {
+            freshBootstrapData = await fetchBootstrapData();
+            if (freshBootstrapData) {
+                setAccounts(freshBootstrapData.accounts);
+                if (freshBootstrapData.requests) setRequests(freshBootstrapData.requests);
+                if (freshBootstrapData.shifts) setShifts(freshBootstrapData.shifts);
+                if (freshBootstrapData.history) setHistory(freshBootstrapData.history);
+                if (freshBootstrapData.meetings) setMeetings(freshBootstrapData.meetings);
+                if (freshBootstrapData.rooms) setRooms(freshBootstrapData.rooms);
+                bootstrapRef.current = Promise.resolve(freshBootstrapData);
             }
+        } catch {
+            /* ignore network errors */
         }
 
-        const account = (bootstrapData?.accounts || accounts).find(
-            (item) => item.id === user.id || item.email === user.email,
-        );
+        const accountList = freshBootstrapData?.accounts || accounts;
+        const account = accountList.find((item) => item.id === user.id || item.email === user.email);
+
         if (account && account.status !== "Kích hoạt") {
             clearAuthState("Tài khoản của bạn đã bị vô hiệu hoá. Vui lòng liên hệ Admin!");
             return;

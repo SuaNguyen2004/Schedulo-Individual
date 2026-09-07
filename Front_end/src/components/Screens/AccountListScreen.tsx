@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { UserAccount, UserRole } from "../../types";
 import { formatPhoneNumber } from "../../utils/formatters";
 import { ResetPasswordModal } from "../Modals/ResetPasswordModal";
+import { getPaginationRange } from "../../utils/pagination";
 
 interface AccountListScreenProps {
     accounts: UserAccount[];
@@ -231,18 +232,26 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                             <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                         </button>
 
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                            <button
-                                key={pageNum}
-                                onClick={() => setCurrentPage(pageNum)}
-                                className={`w-8 h-8 flex items-center justify-center rounded text-xs font-semibold transition-colors cursor-pointer ${
-                                    currentPage === pageNum
-                                        ? "bg-accent text-white"
-                                        : "border border-[#E2E8F0] dark:border-slate-700 text-[#44474e] dark:text-slate-200 hover:bg-[#f4f3f7] dark:hover:bg-slate-800"
-                                }`}>
-                                {pageNum}
-                            </button>
-                        ))}
+                        {getPaginationRange(currentPage, totalPages).map((item, idx) =>
+                            typeof item === "number" ? (
+                                <button
+                                    key={item}
+                                    onClick={() => setCurrentPage(item)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded text-xs font-semibold transition-colors cursor-pointer ${
+                                        currentPage === item
+                                            ? "bg-accent text-white"
+                                            : "border border-[#E2E8F0] dark:border-slate-700 text-[#44474e] dark:text-slate-200 hover:bg-[#f4f3f7] dark:hover:bg-slate-800"
+                                    }`}>
+                                    {item}
+                                </button>
+                            ) : (
+                                <span
+                                    key={`ellipsis-${idx}`}
+                                    className="w-8 h-8 flex items-center justify-center text-xs font-semibold text-[#44474e] dark:text-slate-200 select-none">
+                                    {item}
+                                </span>
+                            ),
+                        )}
 
                         <button
                             disabled={currentPage === totalPages}

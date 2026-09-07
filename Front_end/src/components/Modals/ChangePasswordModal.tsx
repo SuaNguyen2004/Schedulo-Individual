@@ -13,6 +13,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
+    const [errors, setErrors] = useState<{ oldPassword?: string; newPassword?: string; confirmPassword?: string }>({});
     const [loading, setLoading] = useState(false);
 
     const [showOldPassword, setShowOldPassword] = useState(false);
@@ -23,18 +24,25 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!oldPassword) {
-            setErrorMsg("Vui lòng nhập mật khẩu hiện tại");
-            return;
+        const newErrors: { oldPassword?: string; newPassword?: string; confirmPassword?: string } = {};
+
+        if (!oldPassword.trim()) {
+            newErrors.oldPassword = "Vui lòng nhập mật khẩu hiện tại!";
         }
-        if (newPassword.length < 6 || newPassword.length > 20) {
-            setErrorMsg("Mật khẩu mới phải từ 6 đến 20 ký tự!");
-            return;
+        if (!newPassword.trim()) {
+            newErrors.newPassword = "Vui lòng nhập mật khẩu mới!";
+        } else if (newPassword.length < 6 || newPassword.length > 20) {
+            newErrors.newPassword = "Mật khẩu mới phải từ 6 đến 20 ký tự!";
         }
-        if (newPassword !== confirmPassword) {
-            setErrorMsg("Mật khẩu xác nhận không khớp");
-            return;
+        if (!confirmPassword.trim()) {
+            newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu mới!";
+        } else if (newPassword && newPassword !== confirmPassword) {
+            newErrors.confirmPassword = "Mật khẩu xác nhận không khớp!";
         }
+
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) return;
+
         setErrorMsg("");
         setLoading(true);
         try {
@@ -43,6 +51,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
             setOldPassword("");
             setNewPassword("");
             setConfirmPassword("");
+            setErrors({});
             onClose();
         } catch (err: any) {
             setErrorMsg(err.message || "Đổi mật khẩu thất bại.");
@@ -63,7 +72,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 space-y-4" noValidate>
                     {errorMsg && (
                         <div className="p-2.5 bg-[#ffdad6] text-[#ba1a1a] text-xs font-semibold rounded flex items-center gap-2">
                             <span className="material-symbols-outlined text-[16px]">error</span>
@@ -72,15 +81,21 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
                     )}
 
                     <div>
-                        <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Mật khẩu hiện tại</label>
+                        <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Mật khẩu hiện tại *</label>
                         <div className="relative">
                             <input
                                 type={showOldPassword ? "text" : "password"}
-                                required
                                 value={oldPassword}
-                                onChange={(e) => setOldPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setOldPassword(e.target.value);
+                                    if (errors.oldPassword) setErrors((prev) => ({ ...prev, oldPassword: undefined }));
+                                }}
                                 autoComplete="current-password"
-                                className="w-full pl-3 pr-10 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
+                                className={`w-full pl-3 pr-10 py-2 border rounded text-sm text-[#1a1b1e] outline-none transition-colors ${
+                                    errors.oldPassword
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-[#c4c6cf] focus:border-[#002046]"
+                                }`}
                             />
                             <button
                                 type="button"
@@ -92,19 +107,26 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
                                 </span>
                             </button>
                         </div>
+                        {errors.oldPassword && <p className="text-xs text-red-500 mt-1">{errors.oldPassword}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Mật khẩu mới</label>
+                        <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Mật khẩu mới *</label>
                         <div className="relative">
                             <input
                                 type={showNewPassword ? "text" : "password"}
-                                required
                                 value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setNewPassword(e.target.value);
+                                    if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: undefined }));
+                                }}
                                 maxLength={20}
                                 autoComplete="new-password"
-                                className="w-full pl-3 pr-10 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
+                                className={`w-full pl-3 pr-10 py-2 border rounded text-sm text-[#1a1b1e] outline-none transition-colors ${
+                                    errors.newPassword
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-[#c4c6cf] focus:border-[#002046]"
+                                }`}
                             />
                             <button
                                 type="button"
@@ -116,19 +138,29 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
                                 </span>
                             </button>
                         </div>
+                        {errors.newPassword && <p className="text-xs text-red-500 mt-1">{errors.newPassword}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">Xác nhận mật khẩu mới</label>
+                        <label className="block text-xs font-semibold text-[#1a1b1e] mb-1">
+                            Xác nhận mật khẩu mới *
+                        </label>
                         <div className="relative">
                             <input
                                 type={showConfirmPassword ? "text" : "password"}
-                                required
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setConfirmPassword(e.target.value);
+                                    if (errors.confirmPassword)
+                                        setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                                }}
                                 maxLength={20}
                                 autoComplete="new-password"
-                                className="w-full pl-3 pr-10 py-2 border border-[#c4c6cf] rounded text-sm text-[#1a1b1e] focus:border-[#002046] outline-none"
+                                className={`w-full pl-3 pr-10 py-2 border rounded text-sm text-[#1a1b1e] outline-none transition-colors ${
+                                    errors.confirmPassword
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-[#c4c6cf] focus:border-[#002046]"
+                                }`}
                             />
                             <button
                                 type="button"
@@ -140,13 +172,16 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
                                 </span>
                             </button>
                         </div>
+                        {errors.confirmPassword && (
+                            <p className="text-xs text-red-500 mt-1">{errors.confirmPassword}</p>
+                        )}
                     </div>
 
                     <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-end">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-4 py-2 bg-accent hover:opacity-90 text-white rounded text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs">
                             {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
                         </button>
                     </div>

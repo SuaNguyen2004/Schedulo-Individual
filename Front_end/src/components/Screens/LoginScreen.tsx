@@ -301,11 +301,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
     };
 
     return (
-        <div className="bg-[#faf9fd] text-[#1a1b1e] min-h-screen flex items-center justify-center font-['Inter',sans-serif] p-4 sm:p-6">
+        <div className="bg-[#faf9fd] text-[#1a1b1e] h-screen w-screen overflow-y-auto flex items-start sm:items-center justify-center font-['Inter',sans-serif] p-4 sm:p-6 py-6 sm:py-10">
             <main
                 className={`w-full ${
-                    mode === "register" ? "max-w-xl" : "max-w-md"
-                } bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8 flex flex-col relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-200`}>
+                    mode === "register" ? "max-w-xl my-auto" : "max-w-md my-auto"
+                } bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8 flex flex-col relative shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-200 shrink-0`}>
                 {/* Header Branding */}
                 <div className="flex flex-col items-center mb-6">
                     <div className="w-14 h-14 bg-[#1b365d] rounded-full flex items-center justify-center mb-3 shadow-xs">

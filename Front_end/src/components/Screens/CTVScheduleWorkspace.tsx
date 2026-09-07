@@ -1110,10 +1110,23 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
                             <div className="space-y-5 p-5">
                                 <fieldset>
-                                    <legend className="text-sm font-bold text-slate-900 dark:text-white">
-                                        Mẫu ca làm việc theo tuần
-                                    </legend>
-                                    <div className="mt-3 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <div className="flex items-center justify-between gap-2 mb-3">
+                                        <legend className="text-sm font-bold text-slate-900 dark:text-white">
+                                            Mẫu ca làm việc theo tuần
+                                        </legend>
+                                        {Object.keys(tempWeeklyPattern).some(
+                                            (key) => (tempWeeklyPattern[Number(key)] || []).length > 0,
+                                        ) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setTempWeeklyPattern(createEmptyPattern())}
+                                                className="sm:hidden inline-flex items-center justify-center gap-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-xs whitespace-nowrap">
+                                                <span className="material-symbols-outlined text-[16px]">clear_all</span>
+                                                <span>Bỏ chọn tất cả</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
                                         <div className="w-full">
                                             <div className="grid grid-cols-[48px_repeat(5,1fr)] sm:grid-cols-[100px_repeat(5,1fr)] bg-slate-50 dark:bg-slate-900/40">
                                                 <div
@@ -1223,21 +1236,21 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 </fieldset>
                             </div>
 
-                            <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white/95 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-end dark:border-slate-700 dark:bg-[#25262b]/95">
+                            <div className="sticky bottom-0 flex items-center justify-center sm:justify-end gap-3 border-t border-slate-200 bg-white/95 p-4 backdrop-blur dark:border-slate-700 dark:bg-[#25262b]/95">
                                 {Object.keys(tempWeeklyPattern).some(
                                     (key) => (tempWeeklyPattern[Number(key)] || []).length > 0,
                                 ) && (
                                     <button
                                         type="button"
                                         onClick={() => setTempWeeklyPattern(createEmptyPattern())}
-                                        className="min-h-11 rounded-xl px-4 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30 transition-colors flex items-center justify-center gap-1.5 sm:mr-auto cursor-pointer">
+                                        className="hidden sm:inline-flex items-center justify-center gap-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-bold transition-colors sm:mr-auto cursor-pointer shadow-xs whitespace-nowrap">
                                         <span className="material-symbols-outlined text-[16px]">clear_all</span>
                                         <span>Bỏ chọn tất cả</span>
                                     </button>
                                 )}
                                 <button
                                     type="submit"
-                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer">
+                                    className="inline-flex min-h-10 sm:min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer whitespace-nowrap">
                                     <span className="material-symbols-outlined text-[19px]" aria-hidden="true">
                                         event_available
                                     </span>

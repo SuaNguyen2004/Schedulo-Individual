@@ -334,13 +334,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             <div className="flex items-center gap-2 shrink-0 ml-auto">
                                 <button
                                     onClick={onOpenChangePassword}
-                                    className="px-3 py-1.5 border border-accent text-accent font-semibold text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap">
+                                    className="px-3.5 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap">
                                     <span className="material-symbols-outlined text-[16px]">lock_reset</span>
                                     <span>Đổi mật khẩu</span>
                                 </button>
                                 <button
                                     onClick={onOpenEditProfile}
-                                    className="px-3 py-1.5 bg-accent text-white font-semibold text-xs rounded-lg hover:opacity-90 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap">
+                                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap">
                                     <span className="material-symbols-outlined text-[16px]">edit</span>
                                     <span>Chỉnh sửa</span>
                                 </button>
@@ -474,9 +474,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                     onClick={() => {
                                                         if (user.cvFile) window.open(user.cvFile, "_blank");
                                                     }}
-                                                    className="px-3 py-1.5 bg-white hover:bg-slate-100 dark:bg-[#25262b] dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                                                    className="px-3.5 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
                                                     title="Xem CV trong tab mới">
-                                                    <span className="material-symbols-outlined text-[16px] text-blue-600">
+                                                    <span className="material-symbols-outlined text-[16px]">
                                                         visibility
                                                     </span>
                                                     <span>Xem</span>
@@ -485,7 +485,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={() => cvFileInputRef.current?.click()}
-                                                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                                    className="px-3.5 py-1.5 bg-blue-50/80 hover:bg-blue-100/90 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
                                                     title="Chọn file mới thay thế">
                                                     <span className="material-symbols-outlined text-[16px]">sync</span>
                                                     <span>Thay đổi</span>

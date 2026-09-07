@@ -31,12 +31,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <aside
-            className={`bg-[#f4f3f7] dark:bg-[#1a1b1e] h-screen fixed left-0 top-0 border-r border-[#E2E8F0] dark:border-[#c4c6cf] flex flex-col z-20 transition-all duration-300 ease-in-out ${
+            className={`bg-[#f4f3f7] dark:bg-[#1a1b1e] h-screen max-h-screen overflow-hidden fixed left-0 top-0 border-r border-[#E2E8F0] dark:border-[#c4c6cf] flex flex-col z-20 transition-all duration-300 ease-in-out ${
                 isCollapsed ? "w-[72px]" : "w-[280px]"
             }`}>
             {/* Header */}
             <div
-                className={`px-3 py-3.5 border-b border-[#E2E8F0] dark:border-[#c4c6cf] flex items-center ${isCollapsed ? "justify-center" : "justify-between gap-1.5"}`}>
+                className={`px-3 py-3.5 border-b border-[#E2E8F0] dark:border-[#c4c6cf] flex items-center shrink-0 ${isCollapsed ? "justify-center" : "justify-between gap-1.5"}`}>
                 {!isCollapsed && (
                     <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-9 h-9 rounded-lg bg-accent text-white flex items-center justify-center shadow-xs shrink-0 border border-white/20">
@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex-1 py-3 flex flex-col gap-1.5 px-3 overflow-y-auto overflow-x-hidden">
+            <nav className="flex-1 py-3 flex flex-col gap-1.5 px-3 overflow-y-auto overflow-x-hidden min-h-0">
                 {/* Admin only: Tài khoản */}
                 {isAdmin && (
                     <button
@@ -183,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </nav>
 
             {/* User Profile Widget Footer with Direct Logout */}
-            <div className="p-3 border-t border-[#E2E8F0] dark:border-[#c4c6cf]">
+            <div className="p-3 border-t border-[#E2E8F0] dark:border-[#c4c6cf] shrink-0">
                 <div
                     className={`flex items-center ${
                         isCollapsed ? "flex-col gap-2 justify-center" : "justify-between gap-2"
@@ -213,8 +213,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                         onClick={onLogout}
                         title={t("logout")}
-                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-xs transition-colors duration-200 cursor-pointer shrink-0 shadow-xs whitespace-nowrap">
-                        <span>{t("logout")}</span>
+                        className={`flex items-center justify-center bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold transition-colors duration-200 cursor-pointer shrink-0 shadow-xs ${
+                            isCollapsed
+                                ? "w-9 h-9 rounded-xl p-0"
+                                : "px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                        }`}>
+                        {isCollapsed ? (
+                            <span className="material-symbols-outlined text-[20px]">logout</span>
+                        ) : (
+                            <span>{t("logout")}</span>
+                        )}
                     </button>
                 </div>
             </div>

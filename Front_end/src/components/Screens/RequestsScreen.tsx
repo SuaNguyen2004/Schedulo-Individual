@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { RegistrationRequest } from "../../types";
 import { formatPhoneNumber, formatDateOnly } from "../../utils/formatters";
+import { getPaginationRange } from "../../utils/pagination";
 
 interface RequestsScreenProps {
     requests: RegistrationRequest[];
@@ -196,18 +197,26 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                             <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                         </button>
 
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                            <button
-                                key={pageNum}
-                                onClick={() => setCurrentPage(pageNum)}
-                                className={`w-8 h-8 flex items-center justify-center rounded text-xs font-semibold transition-colors cursor-pointer ${
-                                    currentPage === pageNum
-                                        ? "bg-[#1b365d] text-white"
-                                        : "border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7]"
-                                }`}>
-                                {pageNum}
-                            </button>
-                        ))}
+                        {getPaginationRange(currentPage, totalPages).map((item, idx) =>
+                            typeof item === "number" ? (
+                                <button
+                                    key={item}
+                                    onClick={() => setCurrentPage(item)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded text-xs font-semibold transition-colors cursor-pointer ${
+                                        currentPage === item
+                                            ? "bg-[#1b365d] text-white"
+                                            : "border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7]"
+                                    }`}>
+                                    {item}
+                                </button>
+                            ) : (
+                                <span
+                                    key={`ellipsis-${idx}`}
+                                    className="w-8 h-8 flex items-center justify-center text-xs font-semibold text-[#44474e] select-none">
+                                    {item}
+                                </span>
+                            ),
+                        )}
 
                         <button
                             disabled={currentPage === totalPages}
