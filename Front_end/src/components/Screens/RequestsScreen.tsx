@@ -88,8 +88,8 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
 
             {/* Content Section: Table for Desktop/Tablet, Cards for Mobile */}
             <div className="bg-white border border-[#E2E8F0] rounded-xl sm:rounded-2xl overflow-hidden shadow-xs flex flex-col">
-                {/* 1. TABLE VIEW: Desktop & Tablet (≥ 768px) */}
-                <div className="hidden md:block overflow-x-auto min-h-[388px]">
+                {/* 1. TABLE VIEW: Desktop & Tablet (≥ 768px) - Fixed minimum height for 5 rows, no internal vertical scrollbar */}
+                <div className="hidden md:block overflow-x-auto min-h-[400px]">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-slate-50/80 border-b border-[#E2E8F0]">
                             <tr>
@@ -110,7 +110,7 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-[#E2E8F0]">
                             {currentItems.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="py-12 text-center text-[#74777f] text-sm">
@@ -121,11 +121,11 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                                 currentItems.map((req, index) => (
                                     <tr
                                         key={req.id}
-                                        className="hover:bg-[#f4f3f7] transition-colors group cursor-default border-b border-[#E2E8F0] h-[68px]">
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] text-center font-medium">
+                                        className="hover:bg-[#f4f3f7] transition-colors group cursor-default h-[68px]">
+                                        <td className="py-3 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] text-center font-medium">
                                             {startIndex + index + 1}
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6">
+                                        <td className="py-3 px-3.5 xl:px-6">
                                             <div
                                                 onClick={() => onViewRequestDetail(req)}
                                                 className="inline-flex items-center gap-3 cursor-pointer group/name transition-colors max-w-full"
@@ -138,13 +138,13 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#1a1b1e] font-medium">
+                                        <td className="py-3 px-3.5 xl:px-6 text-xs sm:text-sm text-[#1a1b1e] font-medium">
                                             {req.phone ? formatPhoneNumber(req.phone) : "---"}
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e]">
+                                        <td className="py-3 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e]">
                                             {formatDateOnly(req.submittedAt)}
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-right">
+                                        <td className="py-3 px-3.5 xl:px-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 {req.status === "Chờ duyệt" && (
                                                     <>
@@ -175,8 +175,8 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                     </table>
                 </div>
 
-                {/* 2. CARD VIEW: Mobile (≤ 767px) */}
-                <div className="block md:hidden p-3.5 space-y-2.5 min-h-[560px]">
+                {/* 2. CARD VIEW: Mobile (≤ 767px) - Minimum height for 5 cards, no inner vertical scrollbar */}
+                <div className="block md:hidden p-3.5 space-y-2.5 min-h-[580px] w-full">
                     {currentItems.length === 0 ? (
                         <div className="py-10 text-center text-[#74777f] text-sm bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                             Không tìm thấy yêu cầu đăng ký phù hợp.
@@ -244,8 +244,8 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                     )}
                 </div>
 
-                {/* 3. PAGINATION FOOTER */}
-                <div className="flex items-center justify-between sm:justify-end p-4 xl:px-6 border-t border-[#E2E8F0] bg-white min-h-[64px]">
+                {/* 3. PAGINATION FOOTER - Fixed Height 64px */}
+                <div className="h-[64px] shrink-0 border-t border-[#E2E8F0] bg-white flex items-center justify-between sm:justify-end px-4 xl:px-6 w-full">
                     {/* Desktop & Tablet Pagination (≥ 768px): Fixed Layout Numbered Buttons */}
                     <div className="hidden md:flex items-center gap-2">
                         <button

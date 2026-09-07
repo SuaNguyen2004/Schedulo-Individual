@@ -309,7 +309,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
 
                 <div className="border border-slate-200/80 dark:border-slate-700/80 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xs">
                     {/* Header bar */}
-                    <div className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center">
+                    <div className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-1.5 sm:py-2 flex items-center">
                         <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                             CA LÀM VIỆC
                         </div>
@@ -319,9 +319,9 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                     </div>
 
                     {/* Row 1: Ca Sáng */}
-                    <div className="border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center">
+                    <div className="border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center">
                         <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-amber-700 dark:text-amber-400">
-                            <span className="material-symbols-outlined text-[18px] sm:text-[20px] text-amber-500 shrink-0">
+                            <span className="material-symbols-outlined text-[17px] sm:text-[19px] text-amber-500 shrink-0">
                                 wb_sunny
                             </span>
                             <span>Ca Sáng</span>
@@ -330,24 +330,24 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             {todayData.morningList.length === 0 ? (
                                 <span className="text-xs text-slate-400 italic">Chưa có CTV đăng ký</span>
                             ) : (
-                                <div className="flex flex-wrap gap-2 sm:gap-2.5">
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                     {todayData.morningList.map((ctv) => (
                                         <div
                                             key={`morning-${ctv.id || ctv.name}`}
                                             onClick={() => handleCTVClick(ctv)}
-                                            className="inline-flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 min-h-[40px] sm:min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
+                                            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
                                             {ctv.avatar ? (
                                                 <img
                                                     src={ctv.avatar}
                                                     alt={ctv.name}
-                                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
                                                 />
                                             ) : (
-                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1b365d] text-white text-xs sm:text-sm font-bold flex items-center justify-center shrink-0">
+                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#1b365d] text-white text-[11px] sm:text-xs font-bold flex items-center justify-center shrink-0">
                                                     {ctv.initials || ctv.name.substring(0, 2).toUpperCase()}
                                                 </div>
                                             )}
-                                            <span className="text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-200 max-w-[140px] sm:max-w-none break-words line-clamp-2 leading-snug">
+                                            <span className="text-xs sm:text-[14px] font-medium text-slate-800 dark:text-slate-200 max-w-[130px] sm:max-w-none break-words line-clamp-2 leading-snug">
                                                 {ctv.name}
                                             </span>
                                         </div>
@@ -358,9 +358,9 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                     </div>
 
                     {/* Row 2: Ca Chiều */}
-                    <div className="px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center">
+                    <div className="px-3 sm:px-4 py-2 sm:py-2.5 flex items-center">
                         <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-indigo-700 dark:text-indigo-400">
-                            <span className="material-symbols-outlined text-[18px] sm:text-[20px] text-indigo-500 shrink-0">
+                            <span className="material-symbols-outlined text-[17px] sm:text-[19px] text-indigo-500 shrink-0">
                                 wb_twilight
                             </span>
                             <span>Ca Chiều</span>
@@ -369,24 +369,24 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             {todayData.afternoonList.length === 0 ? (
                                 <span className="text-xs text-slate-400 italic">Chưa có CTV đăng ký</span>
                             ) : (
-                                <div className="flex flex-wrap gap-2 sm:gap-2.5">
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                     {todayData.afternoonList.map((ctv) => (
                                         <div
                                             key={`afternoon-${ctv.id || ctv.name}`}
                                             onClick={() => handleCTVClick(ctv)}
-                                            className="inline-flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 min-h-[40px] sm:min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
+                                            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
                                             {ctv.avatar ? (
                                                 <img
                                                     src={ctv.avatar}
                                                     alt={ctv.name}
-                                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
                                                 />
                                             ) : (
-                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1b365d] text-white text-xs sm:text-sm font-bold flex items-center justify-center shrink-0">
+                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#1b365d] text-white text-[11px] sm:text-xs font-bold flex items-center justify-center shrink-0">
                                                     {ctv.initials || ctv.name.substring(0, 2).toUpperCase()}
                                                 </div>
                                             )}
-                                            <span className="text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-200 max-w-[140px] sm:max-w-none break-words line-clamp-2 leading-snug">
+                                            <span className="text-xs sm:text-[14px] font-medium text-slate-800 dark:text-slate-200 max-w-[130px] sm:max-w-none break-words line-clamp-2 leading-snug">
                                                 {ctv.name}
                                             </span>
                                         </div>

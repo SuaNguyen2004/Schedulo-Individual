@@ -101,8 +101,8 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
 
             {/* Data Container: Table for Desktop/Tablet, Cards for Mobile */}
             <div className="bg-white border border-[#E2E8F0] rounded-xl sm:rounded-2xl overflow-hidden shadow-xs flex flex-col w-full max-w-full">
-                {/* 1. TABLE VIEW: Desktop & Tablet (≥ 768px) */}
-                <div className="hidden md:block overflow-x-auto min-h-[388px]">
+                {/* 1. TABLE VIEW: Desktop & Tablet (≥ 768px) - Fixed minimum height for exactly 5 rows (min-h-[400px] prevents vertical scrollbar) */}
+                <div className="hidden md:block overflow-x-auto min-h-[400px]">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-slate-50/80 border-b border-[#E2E8F0]">
                             <tr>
@@ -123,7 +123,7 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-[#E2E8F0]">
                             {currentItems.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="py-12 text-center text-[#74777f] text-sm">
@@ -134,11 +134,11 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                                 currentItems.map((acc, index) => (
                                     <tr
                                         key={acc.id}
-                                        className="hover:bg-[#f4f3f7] transition-colors group cursor-default border-b border-[#E2E8F0] h-[68px]">
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] text-center font-medium">
+                                        className="hover:bg-[#f4f3f7] transition-colors group cursor-default h-[68px]">
+                                        <td className="py-3 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] text-center font-medium">
                                             {startIndex + index + 1}
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6">
+                                        <td className="py-3 px-3.5 xl:px-6">
                                             <div
                                                 onClick={() => onViewAccountDetail(acc)}
                                                 className="flex items-center gap-3 cursor-pointer group/user inline-flex max-w-full"
@@ -161,13 +161,13 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] font-medium">
+                                        <td className="py-3 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] font-medium">
                                             {acc.phone ? formatPhoneNumber(acc.phone) : "---"}
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e]">
+                                        <td className="py-3 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e]">
                                             {acc.registerDate}
                                         </td>
-                                        <td className="py-3.5 px-3.5 xl:px-6 text-center">
+                                        <td className="py-3 px-3.5 xl:px-6 text-center">
                                             {acc.role !== "Admin" && (
                                                 <div className="flex items-center justify-center gap-2 xl:gap-2.5">
                                                     <button
@@ -212,8 +212,8 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                     </table>
                 </div>
 
-                {/* 2. CARD VIEW: Mobile (≤ 767px) */}
-                <div className="block md:hidden p-3.5 space-y-2.5 min-h-[560px] w-full">
+                {/* 2. CARD VIEW: Mobile (≤ 767px) - Minimum height for 5 cards, no inner vertical scrollbar */}
+                <div className="block md:hidden p-3.5 space-y-2.5 min-h-[580px] w-full">
                     {currentItems.length === 0 ? (
                         <div className="py-10 text-center text-[#74777f] text-sm bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                             Không tìm thấy tài khoản phù hợp.
@@ -222,7 +222,7 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                         currentItems.map((acc, index) => (
                             <div
                                 key={acc.id}
-                                className="bg-white border border-[#E2E8F0] rounded-xl px-3.5 py-3 shadow-2xs space-y-2 w-full">
+                                className="bg-white border border-[#E2E8F0] rounded-xl px-3.5 py-3 shadow-2xs space-y-2 w-full shrink-0">
                                 {/* Card Header: STT left, Date right */}
                                 <div className="flex items-center justify-between gap-2 border-b border-[#E2E8F0]/60 pb-2">
                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-[#1b365d]">
@@ -305,8 +305,8 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                     )}
                 </div>
 
-                {/* 3. PAGINATION FOOTER */}
-                <div className="flex items-center justify-between sm:justify-end p-4 xl:px-6 border-t border-[#E2E8F0] bg-white min-h-[64px] w-full">
+                {/* 3. PAGINATION FOOTER - Fixed Height 64px */}
+                <div className="h-[64px] shrink-0 border-t border-[#E2E8F0] bg-white flex items-center justify-between sm:justify-end px-4 xl:px-6 w-full">
                     {/* Desktop & Tablet Pagination (≥ 768px): Fixed Layout Numbered Buttons */}
                     <div className="hidden md:flex items-center gap-2">
                         <button
