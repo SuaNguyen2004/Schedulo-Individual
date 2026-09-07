@@ -55,23 +55,23 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
     };
 
     return (
-        <div className="space-y-6">
+        <div className="w-full max-w-full space-y-4 sm:space-y-6 overflow-x-hidden">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-[#1a1b1e] tracking-tight">Danh sách tài khoản</h2>
-                    <p className="text-sm text-[#44474e] mt-1">
+                    <h2 className="text-xl sm:text-2xl font-bold text-[#1a1b1e] tracking-tight">Danh sách tài khoản</h2>
+                    <p className="text-xs sm:text-sm text-[#44474e] mt-0.5 sm:mt-1">
                         Tổng số <span className="font-semibold text-[#1a1b1e]">{ctvAccounts.length}</span> tài khoản
                     </p>
                 </div>
             </div>
 
             {/* Toolbar Section */}
-            <div className="bg-white border border-[#E2E8F0] rounded-lg p-3 sm:p-4 shadow-xs">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="bg-white border border-[#E2E8F0] rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xs">
+                <div className="flex items-center justify-between gap-2 sm:gap-3">
                     {/* Search */}
                     <div className="relative flex-1">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#44474e]">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#44474e] text-[20px]">
                             search
                         </span>
                         <input
@@ -82,7 +82,7 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                                 setCurrentPage(1);
                             }}
                             placeholder="Tìm theo họ tên, email, sđt..."
-                            className="w-full pl-10 pr-4 py-2 h-[40px] border border-[#E2E8F0] rounded text-sm bg-white text-[#1a1b1e] focus:border-[#1b365d] focus:ring-1 focus:ring-[#1b365d] outline-none"
+                            className="w-full pl-10 pr-4 h-[40px] sm:h-[44px] border border-[#E2E8F0] rounded-xl text-xs sm:text-sm bg-white text-[#1a1b1e] focus:border-[#1b365d] focus:ring-1 focus:ring-[#1b365d] outline-none transition-all"
                         />
                     </div>
 
@@ -90,33 +90,35 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                     <div className="flex items-center justify-end shrink-0">
                         <button
                             onClick={handleResetFilters}
-                            className="text-[#44474e] hover:text-[#1b365d] font-semibold text-xs flex items-center gap-1 transition-colors cursor-pointer px-2 py-1.5 rounded hover:bg-slate-100">
+                            className="h-[40px] sm:h-[44px] px-3 sm:px-4 border border-[#E2E8F0] rounded-xl text-[#44474e] hover:text-[#1b365d] hover:bg-slate-50 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                            title="Đặt lại bộ lọc">
                             <span className="material-symbols-outlined text-[18px]">restart_alt</span>
-                            <span>Đặt lại</span>
+                            <span className="hidden sm:inline">Đặt lại</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Data Table */}
-            <div className="bg-white border border-[#E2E8F0] rounded-lg overflow-hidden shadow-xs flex flex-col">
-                <div className="overflow-x-auto min-h-[335px] flex-1">
-                    <table className="w-full text-left border-collapse min-w-[650px]">
-                        <thead>
-                            <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] min-h-[45px]">
-                                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider w-14 sm:w-16">
+            {/* Data Container: Table for Desktop/Tablet, Cards for Mobile */}
+            <div className="bg-white border border-[#E2E8F0] rounded-xl sm:rounded-2xl overflow-hidden shadow-xs flex flex-col w-full max-w-full">
+                {/* 1. TABLE VIEW: Desktop & Tablet (≥ 768px) */}
+                <div className="hidden md:block overflow-x-auto min-h-[388px]">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-50/80 border-b border-[#E2E8F0]">
+                            <tr>
+                                <th className="py-3 px-3.5 xl:px-6 text-xs font-semibold text-[#44474e] uppercase tracking-wider text-center w-16">
                                     STT
                                 </th>
-                                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
+                                <th className="py-3 px-3.5 xl:px-6 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
                                     Họ và tên
                                 </th>
-                                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
+                                <th className="py-3 px-3.5 xl:px-6 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
                                     Số điện thoại
                                 </th>
-                                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
+                                <th className="py-3 px-3.5 xl:px-6 text-xs font-semibold text-[#44474e] uppercase tracking-wider">
                                     Ngày đăng ký
                                 </th>
-                                <th className="py-3 px-3 sm:px-4 text-xs font-semibold text-[#44474e] uppercase tracking-wider text-right">
+                                <th className="py-3 px-3.5 xl:px-6 text-xs font-semibold text-[#44474e] uppercase tracking-wider text-center">
                                     Thao tác
                                 </th>
                             </tr>
@@ -129,107 +131,190 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                                     </td>
                                 </tr>
                             ) : (
-                                <>
-                                    {currentItems.map((acc, index) => (
-                                        <tr
-                                            key={acc.id}
-                                            className="hover:bg-[#f4f3f7] transition-colors group cursor-default border-b border-[#E2E8F0] h-[58px]">
-                                            <td className="py-3 px-3 sm:px-4 text-sm text-[#44474e]">
-                                                {startIndex + index + 1}
-                                            </td>
-                                            <td className="py-3 px-3 sm:px-4">
-                                                <div
-                                                    onClick={() => onViewAccountDetail(acc)}
-                                                    className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group/user inline-flex"
-                                                    title={`Xem hồ sơ chi tiết của ${acc.name}`}>
-                                                    {acc.avatar ? (
-                                                        <img
-                                                            src={acc.avatar}
-                                                            alt={acc.name}
-                                                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-[#E2E8F0] group-hover/user:border-[#1b365d] group-hover/user:scale-105 transition-all shrink-0"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#aec7f7] text-[#2e476f] flex items-center justify-center font-bold text-xs group-hover/user:scale-105 transition-all shrink-0">
-                                                            {acc.initials || acc.name.substring(0, 2).toUpperCase()}
-                                                        </div>
-                                                    )}
-                                                    <div>
-                                                        <div className="font-semibold text-xs sm:text-sm text-[#1a1b1e] group-hover/user:text-[#1b365d] group-hover/user:underline transition-colors">
-                                                            {acc.name}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-3 px-3 sm:px-4 text-xs sm:text-sm text-[#44474e] font-medium">
-                                                {acc.phone ? formatPhoneNumber(acc.phone) : "---"}
-                                            </td>
-                                            <td className="py-3 px-3 sm:px-4 text-xs sm:text-sm text-[#44474e]">
-                                                {acc.registerDate}
-                                            </td>
-                                            <td className="py-3 px-3 sm:px-4 text-right">
-                                                {acc.role !== "Admin" && (
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        <button
-                                                            onClick={() => setAccountToResetPassword(acc)}
-                                                            className="p-1.5 text-[#44474e] hover:text-[#1b365d] hover:bg-[#d8e2f9] rounded transition-colors cursor-pointer"
-                                                            title="Đặt lại mật khẩu mặc định (Quên MK)">
-                                                            <span className="material-symbols-outlined text-[20px]">
-                                                                lock_reset
-                                                            </span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setAccountToToggle(acc)}
-                                                            className={`p-1.5 rounded transition-colors cursor-pointer ${
-                                                                acc.status === "Kích hoạt"
-                                                                    ? "text-[#44474e] hover:text-[#EA580C] hover:bg-[#ffddb9]"
-                                                                    : "text-[#44474e] hover:text-[#16A34A] hover:bg-[#c7ecc7]"
-                                                            }`}
-                                                            title={
-                                                                acc.status === "Kích hoạt"
-                                                                    ? "Vô hiệu hóa tài khoản"
-                                                                    : "Kích hoạt tài khoản"
-                                                            }>
-                                                            <span className="material-symbols-outlined text-[20px]">
-                                                                {acc.status === "Kích hoạt" ? "lock" : "lock_open"}
-                                                            </span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setAccountToDelete(acc)}
-                                                            className="p-1.5 text-[#44474e] hover:text-[#DC2626] hover:bg-[#ffdad6] rounded transition-colors cursor-pointer"
-                                                            title="Xóa tài khoản">
-                                                            <span className="material-symbols-outlined text-[20px]">
-                                                                delete
-                                                            </span>
-                                                        </button>
+                                currentItems.map((acc, index) => (
+                                    <tr
+                                        key={acc.id}
+                                        className="hover:bg-[#f4f3f7] transition-colors group cursor-default border-b border-[#E2E8F0] h-[68px]">
+                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] text-center font-medium">
+                                            {startIndex + index + 1}
+                                        </td>
+                                        <td className="py-3.5 px-3.5 xl:px-6">
+                                            <div
+                                                onClick={() => onViewAccountDetail(acc)}
+                                                className="flex items-center gap-3 cursor-pointer group/user inline-flex max-w-full"
+                                                title={`Xem hồ sơ chi tiết của ${acc.name}`}>
+                                                {acc.avatar ? (
+                                                    <img
+                                                        src={acc.avatar}
+                                                        alt={acc.name}
+                                                        className="w-9 h-9 rounded-full object-cover border border-[#E2E8F0] group-hover/user:border-[#1b365d] group-hover/user:scale-105 transition-all shrink-0"
+                                                    />
+                                                ) : (
+                                                    <div className="w-9 h-9 rounded-full bg-[#aec7f7] text-[#2e476f] flex items-center justify-center font-bold text-xs group-hover/user:scale-105 transition-all shrink-0">
+                                                        {acc.initials || acc.name.substring(0, 2).toUpperCase()}
                                                     </div>
                                                 )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {currentItems.length < itemsPerPage &&
-                                        Array.from({ length: itemsPerPage - currentItems.length }).map((_, idx) => (
-                                            <tr
-                                                key={`empty-${idx}`}
-                                                className="border-b border-[#E2E8F0]/40 h-[58px] pointer-events-none select-none">
-                                                <td colSpan={5} className="py-3 px-3 sm:px-4">
-                                                    &nbsp;
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </>
+                                                <div className="min-w-0">
+                                                    <div className="font-semibold text-xs sm:text-sm text-[#1a1b1e] group-hover/user:text-[#1b365d] group-hover/user:underline transition-colors truncate max-w-[160px] md:max-w-[200px] xl:max-w-none">
+                                                        {acc.name}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e] font-medium">
+                                            {acc.phone ? formatPhoneNumber(acc.phone) : "---"}
+                                        </td>
+                                        <td className="py-3.5 px-3.5 xl:px-6 text-xs sm:text-sm text-[#44474e]">
+                                            {acc.registerDate}
+                                        </td>
+                                        <td className="py-3.5 px-3.5 xl:px-6 text-center">
+                                            {acc.role !== "Admin" && (
+                                                <div className="flex items-center justify-center gap-2 xl:gap-2.5">
+                                                    <button
+                                                        onClick={() => setAccountToResetPassword(acc)}
+                                                        className="w-10 h-10 xl:w-11 xl:h-11 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+                                                        title="Đặt lại mật khẩu mặc định (Quên MK)">
+                                                        <span className="material-symbols-outlined text-[20px] xl:text-[22px]">
+                                                            lock_reset
+                                                        </span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setAccountToToggle(acc)}
+                                                        className={`w-10 h-10 xl:w-11 xl:h-11 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                                                            acc.status === "Kích hoạt"
+                                                                ? "bg-orange-50 hover:bg-orange-100 border-orange-200 text-[#EA580C]"
+                                                                : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700"
+                                                        }`}
+                                                        title={
+                                                            acc.status === "Kích hoạt"
+                                                                ? "Vô hiệu hóa tài khoản"
+                                                                : "Kích hoạt tài khoản"
+                                                        }>
+                                                        <span className="material-symbols-outlined text-[20px] xl:text-[22px]">
+                                                            {acc.status === "Kích hoạt" ? "lock" : "lock_open"}
+                                                        </span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setAccountToDelete(acc)}
+                                                        className="w-10 h-10 xl:w-11 xl:h-11 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-[#DC2626] flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+                                                        title="Xóa tài khoản">
+                                                        <span className="material-symbols-outlined text-[20px] xl:text-[22px]">
+                                                            delete
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
                             )}
                         </tbody>
                     </table>
                 </div>
 
-                {/* Pagination Footer */}
-                <div className="flex items-center justify-end p-4 border-t border-[#E2E8F0] bg-white h-[61px]">
-                    <div className="flex items-center gap-1">
+                {/* 2. CARD VIEW: Mobile (≤ 767px) */}
+                <div className="block md:hidden p-3.5 space-y-2.5 min-h-[560px] w-full">
+                    {currentItems.length === 0 ? (
+                        <div className="py-10 text-center text-[#74777f] text-sm bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                            Không tìm thấy tài khoản phù hợp.
+                        </div>
+                    ) : (
+                        currentItems.map((acc, index) => (
+                            <div
+                                key={acc.id}
+                                className="bg-white border border-[#E2E8F0] rounded-xl px-3.5 py-3 shadow-2xs space-y-2 w-full">
+                                {/* Card Header: STT left, Date right */}
+                                <div className="flex items-center justify-between gap-2 border-b border-[#E2E8F0]/60 pb-2">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-[#1b365d]">
+                                        #{startIndex + index + 1}
+                                    </span>
+                                    <span className="text-[15px] text-[#74777f] flex items-center gap-1 font-medium">
+                                        <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                                        {acc.registerDate}
+                                    </span>
+                                </div>
+
+                                {/* Card User Details: Avatar + Name (18px) + Phone (15px) middle, Arrow (22px) right */}
+                                <div
+                                    onClick={() => onViewAccountDetail(acc)}
+                                    className="flex items-center gap-3 cursor-pointer group active:opacity-80 transition-opacity py-0.5">
+                                    {acc.avatar ? (
+                                        <img
+                                            src={acc.avatar}
+                                            alt={acc.name}
+                                            className="w-11 h-11 rounded-full object-cover border border-[#E2E8F0] shrink-0 shadow-2xs"
+                                        />
+                                    ) : (
+                                        <div className="w-11 h-11 rounded-full bg-[#aec7f7] text-[#2e476f] flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
+                                            {acc.initials || acc.name.substring(0, 2).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="font-bold text-[18px] text-[#1b365d] group-hover:underline truncate leading-snug">
+                                            {acc.name}
+                                        </h4>
+                                        <p className="text-[15px] text-[#44474e] flex items-center gap-1.5 mt-0.5">
+                                            <span className="material-symbols-outlined text-[16px] text-[#74777f]">
+                                                call
+                                            </span>
+                                            <span className="font-medium">
+                                                {acc.phone ? formatPhoneNumber(acc.phone) : "---"}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <span className="material-symbols-outlined text-slate-400 text-[22px]">
+                                        chevron_right
+                                    </span>
+                                </div>
+
+                                {/* Card Actions: 3 icon buttons (46px, icon 22px, gap 10px, rounded 12px) */}
+                                {acc.role !== "Admin" && (
+                                    <div className="flex items-center justify-end gap-[10px] pt-2 mt-1 border-t border-[#E2E8F0]/60">
+                                        <button
+                                            onClick={() => setAccountToResetPassword(acc)}
+                                            className="w-[46px] h-[46px] rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center active:scale-95 transition-all shadow-2xs cursor-pointer"
+                                            title="Đặt lại mật khẩu mặc định">
+                                            <span className="material-symbols-outlined text-[22px]">lock_reset</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setAccountToToggle(acc)}
+                                            className={`w-[46px] h-[46px] rounded-xl border flex items-center justify-center active:scale-95 transition-all shadow-2xs cursor-pointer ${
+                                                acc.status === "Kích hoạt"
+                                                    ? "bg-orange-50 hover:bg-orange-100 border-orange-200 text-[#EA580C]"
+                                                    : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700"
+                                            }`}
+                                            title={
+                                                acc.status === "Kích hoạt"
+                                                    ? "Vô hiệu hóa tài khoản"
+                                                    : "Kích hoạt tài khoản"
+                                            }>
+                                            <span className="material-symbols-outlined text-[22px]">
+                                                {acc.status === "Kích hoạt" ? "lock" : "lock_open"}
+                                            </span>
+                                        </button>
+                                        <button
+                                            onClick={() => setAccountToDelete(acc)}
+                                            className="w-[46px] h-[46px] rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-[#DC2626] flex items-center justify-center active:scale-95 transition-all shadow-2xs cursor-pointer"
+                                            title="Xóa tài khoản">
+                                            <span className="material-symbols-outlined text-[22px]">delete</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* 3. PAGINATION FOOTER */}
+                <div className="flex items-center justify-between sm:justify-end p-4 xl:px-6 border-t border-[#E2E8F0] bg-white min-h-[64px] w-full">
+                    {/* Desktop & Tablet Pagination (≥ 768px): Fixed Layout Numbered Buttons */}
+                    <div className="hidden md:flex items-center gap-2">
                         <button
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                            className="w-8 h-8 flex items-center justify-center rounded border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer">
-                            <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer shadow-2xs shrink-0"
+                            aria-label="Trang trước">
+                            <span className="material-symbols-outlined text-[20px]">chevron_left</span>
                         </button>
 
                         {getPaginationRange(currentPage, totalPages).map((item, idx) =>
@@ -237,17 +322,17 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                                 <button
                                     key={item}
                                     onClick={() => setCurrentPage(item)}
-                                    className={`w-8 h-8 flex items-center justify-center rounded text-xs font-semibold transition-colors cursor-pointer ${
+                                    className={`w-12 h-12 flex items-center justify-center rounded-xl text-sm font-bold transition-all cursor-pointer shadow-2xs shrink-0 ${
                                         currentPage === item
-                                            ? "bg-accent text-white"
-                                            : "border border-[#E2E8F0] dark:border-slate-700 text-[#44474e] dark:text-slate-200 hover:bg-[#f4f3f7] dark:hover:bg-slate-800"
+                                            ? "bg-[#1b365d] text-white border-transparent"
+                                            : "border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7]"
                                     }`}>
                                     {item}
                                 </button>
                             ) : (
                                 <span
                                     key={`ellipsis-${idx}`}
-                                    className="w-8 h-8 flex items-center justify-center text-xs font-semibold text-[#44474e] dark:text-slate-200 select-none">
+                                    className="w-[40px] h-12 flex items-center justify-center text-sm font-bold text-[#74777f] select-none shrink-0">
                                     {item}
                                 </span>
                             ),
@@ -256,8 +341,30 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                         <button
                             disabled={currentPage === totalPages}
                             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                            className="w-8 h-8 flex items-center justify-center rounded border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer">
-                            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer shadow-2xs shrink-0"
+                            aria-label="Trang sau">
+                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                        </button>
+                    </div>
+
+                    {/* Mobile Pagination (≤ 767px): ‹ Trang X / Y › with fixed button and width sizes */}
+                    <div className="flex md:hidden items-center justify-between w-full">
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer shadow-2xs shrink-0">
+                            <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                        </button>
+
+                        <span className="w-[120px] text-center text-xs font-bold text-[#1a1b1e] px-3 py-2.5 rounded-xl bg-slate-100 border border-slate-200 shrink-0">
+                            Trang {currentPage} / {totalPages}
+                        </span>
+
+                        <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer shadow-2xs shrink-0">
+                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                         </button>
                     </div>
                 </div>

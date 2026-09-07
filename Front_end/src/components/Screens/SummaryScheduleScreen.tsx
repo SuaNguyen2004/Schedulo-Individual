@@ -287,66 +287,67 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
             </div>
 
             {/* Danh sách CTV đăng ký hôm nay (Khối thống kê nhanh) */}
-            <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl p-5 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                            <span className="material-symbols-outlined text-[20px]">badge</span>
+            <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-3.5">
+                    <div className="flex items-baseline gap-2.5 flex-wrap sm:flex-nowrap">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0 self-center">
+                            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">badge</span>
                         </div>
-                        <div>
-                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
-                                <span>Danh sách CTV đăng ký hôm nay</span>
-                                <span className="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold">
-                                    {todayData.dayLabel}
-                                </span>
-                            </h3>
-                        </div>
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 flex items-baseline gap-2 flex-wrap">
+                            <span>Danh sách CTV đăng ký hôm nay</span>
+                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold shrink-0">
+                                {todayData.dayLabel}
+                            </span>
+                        </h3>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium sm:ml-auto shrink-0 whitespace-nowrap self-baseline">
                         Tổng số:{" "}
                         <strong className="text-slate-800 dark:text-slate-200">{todayData.totalUniqueCount}</strong>{" "}
                         Cộng tác viên
                     </span>
                 </div>
 
-                <div className="border border-slate-200/80 dark:border-slate-700/80 rounded-xl overflow-hidden">
+                <div className="border border-slate-200/80 dark:border-slate-700/80 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xs">
                     {/* Header bar */}
-                    <div className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700/80 px-4 sm:px-6 py-3 flex items-center">
-                        <div className="w-32 sm:w-48 shrink-0 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <div className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center">
+                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                             CA LÀM VIỆC
                         </div>
-                        <div className="flex-1 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        <div className="w-[72%] sm:w-[75%] flex-1 text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                             DANH SÁCH NHÂN VIÊN
                         </div>
                     </div>
 
                     {/* Row 1: Ca Sáng */}
-                    <div className="border-b border-slate-200/80 dark:border-slate-700/80 px-4 sm:px-6 py-4 flex items-start sm:items-center">
-                        <div className="w-32 sm:w-48 shrink-0 font-bold text-sm text-slate-900 dark:text-slate-100">
-                            Ca Sáng
+                    <div className="border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center">
+                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-amber-700 dark:text-amber-400">
+                            <span className="material-symbols-outlined text-[18px] sm:text-[20px] text-amber-500 shrink-0">
+                                wb_sunny
+                            </span>
+                            <span>Ca Sáng</span>
                         </div>
-                        <div className="flex-1">
+                        <div className="w-[72%] sm:w-[75%] flex-1 min-w-0">
                             {todayData.morningList.length === 0 ? (
                                 <span className="text-xs text-slate-400 italic">Chưa có CTV đăng ký</span>
                             ) : (
-                                <div className="flex flex-wrap gap-2.5">
+                                <div className="flex flex-wrap gap-2 sm:gap-2.5">
                                     {todayData.morningList.map((ctv) => (
                                         <div
                                             key={`morning-${ctv.id || ctv.name}`}
                                             onClick={() => handleCTVClick(ctv)}
-                                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/60 dark:bg-slate-800/60 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all cursor-pointer group shadow-2xs">
+                                            className="inline-flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 min-h-[40px] sm:min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
                                             {ctv.avatar ? (
                                                 <img
                                                     src={ctv.avatar}
                                                     alt={ctv.name}
-                                                    className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
                                                 />
                                             ) : (
-                                                <div className="w-7 h-7 rounded-full bg-[#1b365d] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1b365d] text-white text-xs sm:text-sm font-bold flex items-center justify-center shrink-0">
                                                     {ctv.initials || ctv.name.substring(0, 2).toUpperCase()}
                                                 </div>
                                             )}
-                                            <span className="text-xs font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                            <span className="text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-200 max-w-[140px] sm:max-w-none break-words line-clamp-2 leading-snug">
                                                 {ctv.name}
                                             </span>
                                         </div>
@@ -357,32 +358,35 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                     </div>
 
                     {/* Row 2: Ca Chiều */}
-                    <div className="px-4 sm:px-6 py-4 flex items-start sm:items-center">
-                        <div className="w-32 sm:w-48 shrink-0 font-bold text-sm text-slate-900 dark:text-slate-100">
-                            Ca Chiều
+                    <div className="px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center">
+                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-indigo-700 dark:text-indigo-400">
+                            <span className="material-symbols-outlined text-[18px] sm:text-[20px] text-indigo-500 shrink-0">
+                                wb_twilight
+                            </span>
+                            <span>Ca Chiều</span>
                         </div>
-                        <div className="flex-1">
+                        <div className="w-[72%] sm:w-[75%] flex-1 min-w-0">
                             {todayData.afternoonList.length === 0 ? (
                                 <span className="text-xs text-slate-400 italic">Chưa có CTV đăng ký</span>
                             ) : (
-                                <div className="flex flex-wrap gap-2.5">
+                                <div className="flex flex-wrap gap-2 sm:gap-2.5">
                                     {todayData.afternoonList.map((ctv) => (
                                         <div
                                             key={`afternoon-${ctv.id || ctv.name}`}
                                             onClick={() => handleCTVClick(ctv)}
-                                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/60 dark:bg-slate-800/60 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all cursor-pointer group shadow-2xs">
+                                            className="inline-flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 min-h-[40px] sm:min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
                                             {ctv.avatar ? (
                                                 <img
                                                     src={ctv.avatar}
                                                     alt={ctv.name}
-                                                    className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
                                                 />
                                             ) : (
-                                                <div className="w-7 h-7 rounded-full bg-[#1b365d] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1b365d] text-white text-xs sm:text-sm font-bold flex items-center justify-center shrink-0">
                                                     {ctv.initials || ctv.name.substring(0, 2).toUpperCase()}
                                                 </div>
                                             )}
-                                            <span className="text-xs font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                            <span className="text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-200 max-w-[140px] sm:max-w-none break-words line-clamp-2 leading-snug">
                                                 {ctv.name}
                                             </span>
                                         </div>
