@@ -22,7 +22,6 @@ export interface WorkRoom {
 
 export type ContrastOption = "Thấp" | "Trung bình" | "Cao";
 export type AccentColorOption = "Trắng" | "Lục" | "Lam" | "Vàng" | "Đỏ" | "Cam" | "Tím";
-export type LanguageOption = "Tiếng Việt" | "Tiếng Anh";
 
 export interface UserAccount {
     id: string;

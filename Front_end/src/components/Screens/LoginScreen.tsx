@@ -301,24 +301,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
     };
 
     return (
-        <div className="bg-[#faf9fd] text-[#1a1b1e] h-screen w-screen overflow-y-auto flex items-start sm:items-center justify-center font-['Inter',sans-serif] p-4 sm:p-6 py-6 sm:py-10">
+        <div className="bg-[#F8FAFC] text-[#0F172A] h-screen w-full overflow-y-auto flex items-start sm:items-center justify-center font-['Inter',sans-serif] p-4 sm:p-6 py-6 sm:py-10">
             <main
                 className={`w-full ${
                     mode === "register" ? "max-w-xl my-auto" : "max-w-md my-auto"
                 } bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8 flex flex-col relative shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-200 shrink-0`}>
                 {/* Header Branding */}
                 <div className="flex flex-col items-center mb-6">
-                    <div className="w-14 h-14 bg-[#1b365d] rounded-full flex items-center justify-center mb-3 shadow-xs">
+                    <div className="w-14 h-14 bg-[#2563EB] rounded-full flex items-center justify-center mb-3 shadow-xs">
                         <span
                             className="material-symbols-outlined text-white text-2xl"
                             style={{ fontVariationSettings: "'FILL' 1" }}>
                             assured_workload
                         </span>
                     </div>
-                    <span className="text-xs font-bold text-[#1b365d] uppercase tracking-wider text-center">
+                    <span className="text-xs font-bold text-[#0F172A] uppercase tracking-wider text-center">
                         Viện Khoa học và Công nghệ Quân sự
                     </span>
-                    <p className="text-[11px] text-[#74777f] text-center mt-0.5">
+                    <p className="text-[11px] text-[#64748B] text-center mt-0.5">
                         Hệ thống Quản lý và Điều phối Lịch trình Cộng tác viên
                     </p>
                 </div>
@@ -326,42 +326,43 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 {/* MODE: LOGIN */}
                 {mode === "login" && (
                     <div>
-                        <h1 className="text-xl font-bold text-[#002046] text-center mb-6">Đăng nhập</h1>
+                        <h1 className="text-xl font-bold text-[#0F172A] text-center mb-6">Đăng nhập</h1>
 
                         {loginError && (
-                            <p className="text-xs font-semibold text-[#DC2626] mb-4 text-center bg-[#ffdad6] p-2 rounded">
+                            <p className="text-xs font-semibold text-[#DC2626] mb-4 text-center bg-[#FEF2F2] border border-[#FCA5A5] p-2.5 rounded-lg">
                                 {loginError}
                             </p>
                         )}
 
                         <form onSubmit={handleLoginSubmit} className="space-y-5">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-[#1a1b1e] block">Email</label>
+                                <label className="text-xs font-semibold text-[#0F172A] block">Email</label>
                                 <input
                                     type="email"
                                     value={loginEmail}
                                     onChange={(e) => setLoginEmail(e.target.value)}
                                     placeholder="Nhập email"
                                     disabled={isProcessing}
-                                    className="w-full px-3 py-2 bg-[#faf9fd] border border-[#c4c6cf] rounded-lg text-[#1a1b1e] text-sm focus:outline-none focus:border-[#002046] h-[40px]"
+                                    className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] text-sm placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-[#1a1b1e] block">Mật khẩu</label>
+                                <label className="text-xs font-semibold text-[#0F172A] block">Mật khẩu</label>
                                 <div className="relative">
                                     <input
                                         type={showLoginPassword ? "text" : "password"}
                                         value={loginPassword}
                                         onChange={(e) => setLoginPassword(e.target.value)}
+                                        placeholder="Nhập mật khẩu"
                                         autoComplete="current-password"
                                         disabled={isProcessing}
-                                        className="w-full pl-3 pr-10 py-2 bg-[#faf9fd] border border-[#c4c6cf] rounded-lg text-[#1a1b1e] text-sm focus:outline-none focus:border-[#002046] h-[40px]"
+                                        className="w-full pl-3.5 pr-10 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] text-sm placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowLoginPassword(!showLoginPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#74777f] hover:text-[#002046]">
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#64748B] hover:text-[#2563EB] transition-colors">
                                         <span className="material-symbols-outlined text-[20px]">
                                             {showLoginPassword ? "visibility" : "visibility_off"}
                                         </span>
@@ -372,12 +373,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             <button
                                 type="submit"
                                 disabled={isProcessing}
-                                className="w-full bg-[#1b365d] hover:bg-[#002046] text-white font-semibold text-sm py-2 px-4 rounded-lg h-[42px] transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50">
+                                className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-[15px] py-2.5 px-4 rounded-xl h-[46px] transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50">
                                 <span>{isProcessing ? "Đang xử lý..." : "Đăng nhập"}</span>
                             </button>
 
                             <div className="text-center pt-4 border-t border-[#E2E8F0]">
-                                <p className="text-xs text-[#44474e]">
+                                <p className="text-xs text-[#64748B]">
                                     Chưa có tài khoản?{" "}
                                     <button
                                         type="button"
@@ -385,7 +386,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             setMode("register");
                                             setRegErrors({});
                                         }}
-                                        className="text-[#002046] font-bold hover:underline cursor-pointer ml-1">
+                                        className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold hover:underline cursor-pointer ml-1">
                                         Tạo tài khoản mới
                                     </button>
                                 </p>
@@ -397,20 +398,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 {/* MODE: REGISTER */}
                 {mode === "register" && (
                     <div>
-                        <h1 className="text-xl font-bold text-[#002046] text-center mb-5">Đăng ký tài khoản</h1>
+                        <h1 className="text-xl font-bold text-[#0F172A] text-center mb-5">Đăng ký tài khoản</h1>
 
                         <form onSubmit={handleRegisterSubmit} className="space-y-4">
                             {/* Họ và tên */}
                             <div>
-                                <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">
+                                <label className="text-xs font-semibold text-[#0F172A] block mb-1.5">
                                     Họ và tên <span className="text-[#DC2626]">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={regName}
                                     onChange={(e) => setRegName(e.target.value)}
-                                    className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
-                                        regErrors.regName ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                    placeholder="Nhập họ và tên"
+                                    className={`w-full px-3.5 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
+                                        regErrors.regName
+                                            ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
+                                            : "border-[#E2E8F0]"
                                     }`}
                                 />
                                 {regErrors.regName && (
@@ -420,15 +424,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
                             {/* Ngày sinh (3 dropdowns: Ngày, Tháng, Năm) */}
                             <div>
-                                <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">
+                                <label className="text-xs font-semibold text-[#0F172A] block mb-1.5">
                                     Ngày sinh <span className="text-[#DC2626]">*</span>
                                 </label>
                                 <div className="grid grid-cols-3 gap-2">
                                     <select
                                         value={regDay}
                                         onChange={(e) => setRegDay(e.target.value)}
-                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] cursor-pointer ${
-                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        className={`px-3 py-2 border rounded-xl text-xs sm:text-sm bg-[#F8FAFC] text-[#0F172A] h-[44px] cursor-pointer focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-colors ${
+                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#E2E8F0]"
                                         }`}>
                                         <option value="">Ngày</option>
                                         {Array.from({ length: 31 }, (_, i) => {
@@ -443,8 +447,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <select
                                         value={regMonth}
                                         onChange={(e) => setRegMonth(e.target.value)}
-                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] cursor-pointer ${
-                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        className={`px-3 py-2 border rounded-xl text-xs sm:text-sm bg-[#F8FAFC] text-[#0F172A] h-[44px] cursor-pointer focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-colors ${
+                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#E2E8F0]"
                                         }`}>
                                         <option value="">Tháng</option>
                                         {Array.from({ length: 12 }, (_, i) => {
@@ -459,8 +463,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <select
                                         value={regYear}
                                         onChange={(e) => setRegYear(e.target.value)}
-                                        className={`px-2 py-1.5 border rounded-lg text-xs bg-[#faf9fd] h-[38px] cursor-pointer ${
-                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        className={`px-3 py-2 border rounded-xl text-xs sm:text-sm bg-[#F8FAFC] text-[#0F172A] h-[44px] cursor-pointer focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-colors ${
+                                            regErrors.regDob ? "border-[#DC2626]" : "border-[#E2E8F0]"
                                         }`}>
                                         <option value="">Năm</option>
                                         {Array.from({ length: 55 }, (_, i) => {
@@ -482,15 +486,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {/* Email */}
                                 <div>
-                                    <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">
+                                    <label className="text-xs font-semibold text-[#0F172A] block mb-1.5">
                                         Email <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <input
                                         type="email"
                                         value={regEmail}
                                         onChange={(e) => setRegEmail(e.target.value)}
-                                        className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
-                                            regErrors.regEmail ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        placeholder="Nhập email"
+                                        className={`w-full px-3.5 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
+                                            regErrors.regEmail
+                                                ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
+                                                : "border-[#E2E8F0]"
                                         }`}
                                     />
                                     {regErrors.regEmail && (
@@ -502,7 +509,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
                                 {/* Số điện thoại */}
                                 <div>
-                                    <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">
+                                    <label className="text-xs font-semibold text-[#0F172A] block mb-1.5">
                                         Số điện thoại <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <input
@@ -520,8 +527,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                 "Số điện thoại phải gồm đúng 10 chữ số (ví dụ: 0912345678)",
                                             );
                                         }}
-                                        className={`w-full px-3 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
-                                            regErrors.regPhone ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                        placeholder="Nhập số điện thoại"
+                                        className={`w-full px-3.5 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
+                                            regErrors.regPhone
+                                                ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
+                                                : "border-[#E2E8F0]"
                                         }`}
                                     />
                                     {regErrors.regPhone && (
@@ -535,8 +545,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             {/* PHẦN 1 & 2: UPLOAD ẢNH CCCD MẶT TRƯỚC VÀ MẶT SAU */}
                             <div className="pt-2">
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-xs font-semibold text-[#1a1b1e] flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[#1b365d] text-[18px]">
+                                    <label className="text-xs font-semibold text-[#0F172A] flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-[#2563EB] text-[18px]">
                                             badge
                                         </span>
                                         <span>Ảnh CCCD (Mặt trước & Mặt sau)</span>{" "}
@@ -571,7 +581,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {/* CCCD Mặt trước */}
                                     <div>
-                                        <div className="text-[11px] font-medium text-[#44474e] mb-1 flex items-center justify-between">
+                                        <div className="text-[11px] font-medium text-[#64748B] mb-1 flex items-center justify-between">
                                             <span>Mặt trước</span>
                                             {cccdFront && (
                                                 <button
@@ -584,7 +594,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         </div>
 
                                         {cccdFront ? (
-                                            <div className="relative group rounded-xl border border-slate-200 bg-slate-50 overflow-hidden h-28 flex items-center justify-center shadow-2xs">
+                                            <div className="relative group rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] overflow-hidden h-28 flex items-center justify-center shadow-2xs">
                                                 <img
                                                     src={cccdFront}
                                                     alt="CCCD Mặt trước"
@@ -629,16 +639,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                 }}
                                                 className={`h-28 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-3 text-center ${
                                                     isDraggingFront
-                                                        ? "border-[#1b365d] bg-blue-50/50"
-                                                        : "border-slate-300 hover:border-[#1b365d] bg-[#faf9fd] hover:bg-blue-50/20"
+                                                        ? "border-[#2563EB] bg-blue-50/50"
+                                                        : "border-[#E2E8F0] hover:border-[#2563EB] bg-[#F8FAFC] hover:bg-blue-50/20"
                                                 }`}>
-                                                <span className="material-symbols-outlined text-slate-400 text-[24px] mb-1">
+                                                <span className="material-symbols-outlined text-[#64748B] text-[24px] mb-1">
                                                     add_a_photo
                                                 </span>
-                                                <p className="text-[11px] font-semibold text-[#1b365d]">
+                                                <p className="text-[11px] font-semibold text-[#2563EB]">
                                                     Tải ảnh mặt trước
                                                 </p>
-                                                <p className="text-[10px] text-slate-400 mt-0.5">
+                                                <p className="text-[10px] text-[#64748B] mt-0.5">
                                                     Kéo thả hoặc nhấn để chọn
                                                 </p>
                                             </div>
@@ -652,7 +662,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
                                     {/* CCCD Mặt sau */}
                                     <div>
-                                        <div className="text-[11px] font-medium text-[#44474e] mb-1 flex items-center justify-between">
+                                        <div className="text-[11px] font-medium text-[#64748B] mb-1 flex items-center justify-between">
                                             <span>Mặt sau</span>
                                             {cccdBack && (
                                                 <button
@@ -665,7 +675,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         </div>
 
                                         {cccdBack ? (
-                                            <div className="relative group rounded-xl border border-slate-200 bg-slate-50 overflow-hidden h-28 flex items-center justify-center shadow-2xs">
+                                            <div className="relative group rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] overflow-hidden h-28 flex items-center justify-center shadow-2xs">
                                                 <img
                                                     src={cccdBack}
                                                     alt="CCCD Mặt sau"
@@ -710,16 +720,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                 }}
                                                 className={`h-28 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-3 text-center ${
                                                     isDraggingBack
-                                                        ? "border-[#1b365d] bg-blue-50/50"
-                                                        : "border-slate-300 hover:border-[#1b365d] bg-[#faf9fd] hover:bg-blue-50/20"
+                                                        ? "border-[#2563EB] bg-blue-50/50"
+                                                        : "border-[#E2E8F0] hover:border-[#2563EB] bg-[#F8FAFC] hover:bg-blue-50/20"
                                                 }`}>
-                                                <span className="material-symbols-outlined text-slate-400 text-[24px] mb-1">
+                                                <span className="material-symbols-outlined text-[#64748B] text-[24px] mb-1">
                                                     add_a_photo
                                                 </span>
-                                                <p className="text-[11px] font-semibold text-[#1b365d]">
+                                                <p className="text-[11px] font-semibold text-[#2563EB]">
                                                     Tải ảnh mặt sau
                                                 </p>
-                                                <p className="text-[10px] text-slate-400 mt-0.5">
+                                                <p className="text-[10px] text-[#64748B] mt-0.5">
                                                     Kéo thả hoặc nhấn để chọn
                                                 </p>
                                             </div>
@@ -736,8 +746,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             {/* PHẦN 3: UPLOAD FILE PDF / WORD CV */}
                             <div className="pt-2">
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-xs font-semibold text-[#1a1b1e] flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[#1b365d] text-[18px]">
+                                    <label className="text-xs font-semibold text-[#0F172A] flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-[#2563EB] text-[18px]">
                                             description
                                         </span>
                                         <span>CV ứng tuyển (File PDF, Word)</span>{" "}
@@ -774,10 +784,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                 </span>
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-xs font-bold text-[#1a1b1e] truncate">
+                                                <p className="text-xs font-bold text-[#0F172A] truncate">
                                                     {cvFileName}
                                                 </p>
-                                                <div className="flex items-center gap-2 text-[11px] text-[#74777f]">
+                                                <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
                                                     <span>{cvFileSize}</span>
                                                     <span>•</span>
                                                     <span className="uppercase font-semibold text-[10px] bg-slate-200 px-1.5 py-0.5 rounded text-slate-700">
@@ -791,7 +801,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             <button
                                                 type="button"
                                                 onClick={() => cvFileInputRef.current?.click()}
-                                                className="p-1.5 text-slate-500 hover:text-[#1b365d] hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                                                className="p-1.5 text-[#64748B] hover:text-[#2563EB] hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
                                                 title="Thay file khác">
                                                 <span className="material-symbols-outlined text-[18px]">sync</span>
                                             </button>
@@ -824,16 +834,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         }}
                                         className={`py-4 px-3 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center ${
                                             isDraggingCv
-                                                ? "border-[#1b365d] bg-blue-50/50"
-                                                : "border-slate-300 hover:border-[#1b365d] bg-[#faf9fd] hover:bg-blue-50/20"
+                                                ? "border-[#2563EB] bg-blue-50/50"
+                                                : "border-[#E2E8F0] hover:border-[#2563EB] bg-[#F8FAFC] hover:bg-blue-50/20"
                                         }`}>
-                                        <div className="flex items-center gap-2 text-slate-400 mb-1">
+                                        <div className="flex items-center gap-2 text-[#64748B] mb-1">
                                             <span className="material-symbols-outlined text-[22px]">upload_file</span>
                                         </div>
-                                        <p className="text-[12px] font-semibold text-[#1b365d]">
+                                        <p className="text-[12px] font-semibold text-[#2563EB]">
                                             Tải lên CV cá nhân (PDF hoặc Word)
                                         </p>
-                                        <p className="text-[10px] text-slate-400 mt-0.5">
+                                        <p className="text-[10px] text-[#64748B] mt-0.5">
                                             Kéo thả file vào đây hoặc nhấn để chọn từ thiết bị
                                         </p>
                                     </div>
@@ -847,7 +857,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                                 {/* Mật khẩu */}
                                 <div>
-                                    <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">
+                                    <label className="text-xs font-semibold text-[#0F172A] block mb-1.5">
                                         Mật khẩu <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <div className="relative">
@@ -855,15 +865,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             type={showRegPassword ? "text" : "password"}
                                             value={regPassword}
                                             onChange={(e) => setRegPassword(e.target.value)}
+                                            placeholder="Nhập mật khẩu"
                                             maxLength={20}
-                                            className={`w-full pl-3 pr-9 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
-                                                regErrors.regPassword ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                            className={`w-full pl-3.5 pr-9 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
+                                                regErrors.regPassword
+                                                    ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
+                                                    : "border-[#E2E8F0]"
                                             }`}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowRegPassword(!showRegPassword)}
-                                            className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#74777f] hover:text-[#002046]">
+                                            className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#64748B] hover:text-[#2563EB] transition-colors">
                                             <span className="material-symbols-outlined text-[18px]">
                                                 {showRegPassword ? "visibility" : "visibility_off"}
                                             </span>
@@ -878,7 +891,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
                                 {/* Nhập lại mật khẩu */}
                                 <div>
-                                    <label className="text-xs font-semibold text-[#1a1b1e] block mb-1">
+                                    <label className="text-xs font-semibold text-[#0F172A] block mb-1.5">
                                         Nhập lại mật khẩu <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <div className="relative">
@@ -886,15 +899,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                             type={showRegConfirmPassword ? "text" : "password"}
                                             value={regConfirmPassword}
                                             onChange={(e) => setRegConfirmPassword(e.target.value)}
+                                            placeholder="Nhập lại mật khẩu"
                                             maxLength={20}
-                                            className={`w-full pl-3 pr-9 py-2 bg-[#faf9fd] border rounded-lg text-sm h-[38px] ${
-                                                regErrors.regConfirmPassword ? "border-[#DC2626]" : "border-[#c4c6cf]"
+                                            className={`w-full pl-3.5 pr-9 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
+                                                regErrors.regConfirmPassword
+                                                    ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
+                                                    : "border-[#E2E8F0]"
                                             }`}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
-                                            className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#74777f] hover:text-[#002046]">
+                                            className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#64748B] hover:text-[#2563EB] transition-colors">
                                             <span className="material-symbols-outlined text-[18px]">
                                                 {showRegConfirmPassword ? "visibility" : "visibility_off"}
                                             </span>
@@ -911,7 +927,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             <button
                                 type="submit"
                                 disabled={isProcessing}
-                                className="w-full bg-[#1b365d] hover:bg-[#002046] text-white font-semibold text-sm py-2.5 px-4 rounded-lg h-[42px] transition-colors mt-3 cursor-pointer shadow-xs disabled:opacity-50">
+                                className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-[15px] py-2.5 px-4 rounded-xl h-[46px] transition-colors mt-3 cursor-pointer shadow-xs disabled:opacity-50">
                                 {isProcessing ? "Đang xử lý..." : "Đăng ký"}
                             </button>
 
@@ -919,7 +935,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                 <button
                                     type="button"
                                     onClick={() => setMode("login")}
-                                    className="text-[#002046] text-xs font-bold hover:underline cursor-pointer">
+                                    className="text-[#2563EB] hover:text-[#1D4ED8] text-xs font-semibold hover:underline cursor-pointer">
                                     Đăng nhập
                                 </button>
                             </div>
@@ -930,21 +946,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 {/* MODE: REGISTER SUCCESS */}
                 {mode === "register_success" && (
                     <div className="text-center space-y-4 py-4">
-                        <div className="w-14 h-14 bg-[#c7ecc7] text-[#16A34A] rounded-full flex items-center justify-center mx-auto shadow-xs">
+                        <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-xs">
                             <span className="material-symbols-outlined text-3xl">check_circle</span>
                         </div>
-                        <h3 className="text-lg font-bold text-[#1a1b1e]">Gửi yêu cầu đăng ký thành công!</h3>
-                        <p className="text-xs text-[#44474e] leading-relaxed max-w-sm mx-auto">
+                        <h3 className="text-lg font-bold text-[#0F172A]">Gửi yêu cầu đăng ký thành công!</h3>
+                        <p className="text-xs text-[#64748B] leading-relaxed max-w-sm mx-auto">
                             Hồ sơ ứng tuyển và thông tin của bạn đang được Ban Quản trị xem xét phê duyệt. Vui lòng theo
                             dõi email để nhận thông báo kết quả.
                         </p>
-                        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#74777f]">
+                        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#64748B]">
                             Tự động chuyển đến trang đăng nhập sau{" "}
-                            <span className="font-bold text-[#1b365d]">{countdown}</span> giây
+                            <span className="font-bold text-[#2563EB]">{countdown}</span> giây
                         </div>
                         <button
                             onClick={() => setMode("login")}
-                            className="text-xs text-[#1b365d] font-bold hover:underline cursor-pointer block mx-auto">
+                            className="text-xs text-[#2563EB] hover:text-[#1D4ED8] font-semibold hover:underline cursor-pointer block mx-auto">
                             Chuyển sang trang đăng nhập ngay
                         </button>
                     </div>
@@ -954,19 +970,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             {/* Lightbox Preview Modal for CCCD Photos */}
             {previewImage && (
                 <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl border border-slate-200 max-w-xl w-full p-5 shadow-2xl space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div className="bg-white rounded-2xl border border-[#E2E8F0] max-w-xl w-full p-5 shadow-2xl space-y-4">
+                        <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[#1b365d] text-[20px]">badge</span>
-                                <h3 className="font-bold text-sm text-[#1b365d]">{previewImage.title}</h3>
+                                <span className="material-symbols-outlined text-[#2563EB] text-[20px]">badge</span>
+                                <h3 className="font-bold text-sm text-[#0F172A]">{previewImage.title}</h3>
                             </div>
                             <button
                                 onClick={() => setPreviewImage(null)}
-                                className="text-slate-400 hover:text-slate-600 p-1 rounded-full cursor-pointer">
+                                className="text-[#64748B] hover:text-[#0F172A] p-1 rounded-full cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
-                        <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-900 flex items-center justify-center max-h-[60vh]">
+                        <div className="rounded-xl overflow-hidden border border-[#E2E8F0] bg-slate-900 flex items-center justify-center max-h-[60vh]">
                             <img
                                 src={previewImage.url}
                                 alt={previewImage.title}
@@ -977,7 +993,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             <button
                                 type="button"
                                 onClick={() => setPreviewImage(null)}
-                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer">
+                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#0F172A] font-semibold text-xs rounded-xl transition-colors cursor-pointer">
                                 Đóng
                             </button>
                         </div>

@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { ViewTab } from "../../types";
-import { useSystemSettings } from "../../context/SystemSettingsContext";
 
 interface SidebarProps {
     currentTab: ViewTab;
@@ -25,8 +24,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     isCollapsed = false,
     onToggleCollapse,
 }) => {
-    const { t } = useSystemSettings();
-
     const isAdmin = userRole === "Admin";
 
     return (
@@ -44,7 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                         <div className="min-w-0">
                             <h1 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff] leading-tight tracking-tight whitespace-nowrap">
-                                {t("system_name")}
+                                Hệ thống Quản lý CTV
                             </h1>
                         </div>
                     </div>
@@ -68,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {isAdmin && (
                     <button
                         onClick={() => onSelectTab("accounts")}
-                        title={isCollapsed ? t("nav_accounts") : undefined}
+                        title={isCollapsed ? "Quản lý tài khoản" : undefined}
                         className={`flex items-center ${
                             isCollapsed ? "justify-center px-0 py-3" : "gap-3 px-3.5 py-3"
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
@@ -81,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             style={{ fontVariationSettings: currentTab === "accounts" ? "'FILL' 1" : "'FILL' 0" }}>
                             group
                         </span>
-                        {!isCollapsed && <span className="truncate">{t("nav_accounts")}</span>}
+                        {!isCollapsed && <span className="truncate">Quản lý tài khoản</span>}
                     </button>
                 )}
 
@@ -89,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {isAdmin && (
                     <button
                         onClick={() => onSelectTab("requests")}
-                        title={isCollapsed ? `${t("nav_requests")} (${pendingRequestsCount})` : undefined}
+                        title={isCollapsed ? `Yêu cầu đăng ký (${pendingRequestsCount})` : undefined}
                         className={`flex items-center ${
                             isCollapsed ? "justify-center px-0 py-3" : "justify-between px-3.5 py-3"
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
@@ -105,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 }}>
                                 person_add
                             </span>
-                            {!isCollapsed && <span className="truncate">{t("nav_requests")}</span>}
+                            {!isCollapsed && <span className="truncate">Yêu cầu đăng ký</span>}
                         </div>
                         {pendingRequestsCount > 0 && (
                             <span
@@ -124,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {!isAdmin && (
                     <button
                         onClick={() => onSelectTab("schedule")}
-                        title={isCollapsed ? t("nav_schedule") : undefined}
+                        title={isCollapsed ? "Lịch làm việc" : undefined}
                         className={`flex items-center ${
                             isCollapsed ? "justify-center px-0 py-3" : "gap-3 px-3.5 py-3"
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
@@ -137,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             style={{ fontVariationSettings: currentTab === "schedule" ? "'FILL' 1" : "'FILL' 0" }}>
                             calendar_month
                         </span>
-                        {!isCollapsed && <span className="truncate">{t("nav_my_schedule")}</span>}
+                        {!isCollapsed && <span className="truncate">Lịch làm việc</span>}
                     </button>
                 )}
 
@@ -145,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {isAdmin && (
                     <button
                         onClick={() => onSelectTab("meetings")}
-                        title={isCollapsed ? t("nav_summary") : undefined}
+                        title={isCollapsed ? "Lịch làm việc tổng hợp" : undefined}
                         className={`flex items-center ${
                             isCollapsed ? "justify-center px-0 py-3" : "gap-3 px-3.5 py-3"
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
@@ -158,14 +155,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             style={{ fontVariationSettings: currentTab === "meetings" ? "'FILL' 1" : "'FILL' 0" }}>
                             calendar_view_week
                         </span>
-                        {!isCollapsed && <span className="truncate">{t("nav_summary")}</span>}
+                        {!isCollapsed && <span className="truncate">Lịch làm việc tổng hợp</span>}
                     </button>
                 )}
 
                 {/* Hồ sơ cá nhân */}
                 <button
                     onClick={() => onSelectTab("profile")}
-                    title={isCollapsed ? t("nav_profile") : undefined}
+                    title={isCollapsed ? "Hồ sơ cá nhân" : undefined}
                     className={`flex items-center ${
                         isCollapsed ? "justify-center px-0 py-3" : "gap-3 px-3.5 py-3"
                     } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
@@ -178,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         style={{ fontVariationSettings: currentTab === "profile" ? "'FILL' 1" : "'FILL' 0" }}>
                         account_circle
                     </span>
-                    {!isCollapsed && <span className="truncate">{t("nav_profile")}</span>}
+                    {!isCollapsed && <span className="truncate">Hồ sơ cá nhân</span>}
                 </button>
             </nav>
 
@@ -212,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     <button
                         onClick={onLogout}
-                        title={t("logout")}
+                        title="Đăng xuất"
                         className={`flex items-center justify-center bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold transition-colors duration-200 cursor-pointer shrink-0 shadow-xs ${
                             isCollapsed
                                 ? "w-9 h-9 rounded-xl p-0"
@@ -221,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {isCollapsed ? (
                             <span className="material-symbols-outlined text-[20px]">logout</span>
                         ) : (
-                            <span>{t("logout")}</span>
+                            <span>Đăng xuất</span>
                         )}
                     </button>
                 </div>
