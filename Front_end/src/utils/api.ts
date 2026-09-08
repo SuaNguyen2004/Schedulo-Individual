@@ -1,4 +1,4 @@
-import type { MeetingItem, RegistrationRequest, ShiftSlot, UserAccount, WorkRoom } from "../types";
+import type { RegistrationRequest, ShiftSlot, UserAccount } from "../types";
 
 export interface BootstrapData {
     accounts: UserAccount[];
@@ -7,8 +7,6 @@ export interface BootstrapData {
     shifts: ShiftSlot[];
     /** Elapsed shifts frozen server-side, drives "Lịch sử làm việc". Never rewritten. */
     history: ShiftSlot[];
-    meetings: MeetingItem[];
-    rooms: WorkRoom[];
 }
 
 export async function fetchBootstrapData(signal?: AbortSignal): Promise<BootstrapData> {

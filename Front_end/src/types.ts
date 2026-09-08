@@ -6,19 +6,7 @@ export type RequestStatus = "Chờ duyệt" | "Đã duyệt" | "Từ chối";
 
 export type ShiftStatus = "Đã đăng ký" | "Chưa đăng ký" | "Chờ duyệt" | "Nghỉ";
 
-export type MeetingStatus = "Sắp diễn ra" | "Đang diễn ra" | "Đã kết thúc" | "Đã hủy";
-
-export type ParticipantStatus = "confirmed" | "pending" | "declined";
-
 export type ViewTab = "accounts" | "requests" | "schedule" | "meetings" | "profile";
-export type RoomStatus = "Hoạt động" | "Bảo trì";
-
-export interface WorkRoom {
-    id: string;
-    name: string;
-    descriptionAndLocation: string;
-    status: RoomStatus;
-}
 
 export type ContrastOption = "Thấp" | "Trung bình" | "Cao";
 export type AccentColorOption = "Trắng" | "Lục" | "Lam" | "Vàng" | "Đỏ" | "Cam" | "Tím";
@@ -109,42 +97,6 @@ export interface ShiftSlot {
     registrationId?: string;
     registrationStartDate?: string;
     registrationEndDate?: string;
-}
-
-export interface NotificationItem {
-    id: string;
-    title: string;
-    message: string;
-    time: string;
-    read: boolean;
-    type: "info" | "success" | "warning" | "danger";
-}
-
-export interface Participant {
-    id: string;
-    name: string;
-    role: string;
-    avatar?: string;
-    initials?: string;
-    status: ParticipantStatus;
-}
-
-export interface MeetingItem {
-    id: string;
-    title: string;
-    dateDisplay: string; // e.g. "Thứ Hai, 16/10/2023"
-    dateKey: string; // "2023-10-16"
-    dayIndex: number; // 0 to 6 (Thứ 2 đến Chủ Nhật)
-    startTime: string; // e.g. "08:30" or "14:00"
-    timeRange?: string; // e.g. "08:30 - 10:30"
-    location: string;
-    subLocation?: string;
-    organizer: string;
-    status: MeetingStatus;
-    statusColor: "info" | "warning" | "success" | "danger";
-    description: string[];
-    participants: Participant[];
-    isOnline?: boolean;
 }
 
 export * from "./utils/formatters";

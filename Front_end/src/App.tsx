@@ -1,15 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-    UserAccount,
-    UserRole,
-    RegistrationRequest,
-    ShiftSlot,
-    MeetingItem,
-    Participant,
-    ViewTab,
-    WorkRoom,
-    RoomStatus,
-} from "./types";
+import { UserAccount, UserRole, RegistrationRequest, ShiftSlot, ViewTab } from "./types";
 
 import { Sidebar } from "./components/Navigation/Sidebar";
 
@@ -122,38 +112,6 @@ export const App: React.FC = () => {
     // localStorage: history must always come from the server so a stale local copy can
     // never contradict it.
     const [history, setHistory] = useState<ShiftSlot[]>([]);
-    const [meetings, setMeetings] = useState<MeetingItem[]>([]);
-    const [rooms, setRooms] = useState<WorkRoom[]>([]);
-
-    // Workroom Operations
-    const handleAddRoom = (newRoomData: { name: string; descriptionAndLocation: string; status: RoomStatus }) => {
-        const newRoom: WorkRoom = {
-            id: `room-${Date.now()}`,
-            ...newRoomData,
-        };
-        setRooms((prev) => [...prev, newRoom]);
-    };
-
-    const handleUpdateRoom = (updatedRoom: WorkRoom) => {
-        setRooms((prev) => prev.map((r) => (r.id === updatedRoom.id ? updatedRoom : r)));
-    };
-
-    const handleDeleteRoom = (id: string) => {
-        setRooms((prev) => prev.filter((r) => r.id !== id));
-    };
-
-    const handleToggleRoomStatus = (id: string) => {
-        setRooms((prev) =>
-            prev.map((r) => {
-                if (r.id === id) {
-                    const nextStatus: RoomStatus = r.status === "Hoạt động" ? "Bảo trì" : "Hoạt động";
-                    showToast(`Đã chuyển trạng thái ${r.name} sang "${nextStatus}"`);
-                    return { ...r, status: nextStatus };
-                }
-                return r;
-            }),
-        );
-    };
 
     // Current logged in user details
     const [currentUser, setCurrentUser] = useState<UserAccount>(EMPTY_USER);
@@ -215,8 +173,6 @@ export const App: React.FC = () => {
                 setRequests(data.requests);
                 setShifts(data.shifts);
                 setHistory(data.history || []);
-                setMeetings(data.meetings);
-                setRooms(data.rooms);
                 const authenticatedEmail = window.localStorage.getItem(AUTH_USER_EMAIL_KEY);
                 const authenticatedAccount = data.accounts.find((account) => account.email === authenticatedEmail);
                 if (authenticatedAccount) {
@@ -270,8 +226,6 @@ export const App: React.FC = () => {
                         if (data.requests) setRequests(data.requests);
                         if (data.shifts) setShifts(data.shifts);
                         if (data.history) setHistory(data.history);
-                        if (data.meetings) setMeetings(data.meetings);
-                        if (data.rooms) setRooms(data.rooms);
                     }
                 })
                 .catch(() => {});
@@ -292,8 +246,6 @@ export const App: React.FC = () => {
                 if (freshBootstrapData.requests) setRequests(freshBootstrapData.requests);
                 if (freshBootstrapData.shifts) setShifts(freshBootstrapData.shifts);
                 if (freshBootstrapData.history) setHistory(freshBootstrapData.history);
-                if (freshBootstrapData.meetings) setMeetings(freshBootstrapData.meetings);
-                if (freshBootstrapData.rooms) setRooms(freshBootstrapData.rooms);
                 bootstrapRef.current = Promise.resolve(freshBootstrapData);
             }
         } catch {
@@ -591,17 +543,6 @@ export const App: React.FC = () => {
     const handleCancelShift = (shiftId: string) => {
         setShifts((prev) => prev.map((s) => (s.id === shiftId ? { ...s, status: "Chưa đăng ký" } : s)));
         showToast("Đã hủy đăng ký ca làm.");
-    };
-
-    // Meeting Operations
-    const handleCancelMeeting = (meetingId: string) => {
-        setMeetings((prev) => prev.filter((m) => m.id !== meetingId));
-        showToast("Đã hủy cuộc họp thành công.");
-    };
-
-    const handleSendNotification = (meetingId: string) => {
-        const meet = meetings.find((m) => m.id === meetingId);
-        showToast(`Đã gửi thông báo nhắc nhở cuộc họp "${meet?.title}" tới tất cả thành viên.`);
     };
 
     // Profile Skills
