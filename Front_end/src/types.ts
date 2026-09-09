@@ -8,9 +8,6 @@ export type ShiftStatus = "Đã đăng ký" | "Chưa đăng ký" | "Chờ duyệ
 
 export type ViewTab = "accounts" | "requests" | "schedule" | "meetings" | "profile";
 
-export type ContrastOption = "Thấp" | "Trung bình" | "Cao";
-export type AccentColorOption = "Trắng" | "Lục" | "Lam" | "Vàng" | "Đỏ" | "Cam" | "Tím";
-
 export interface UserAccount {
     id: string;
     stt: number;
@@ -37,8 +34,6 @@ export interface UserAccount {
     shiftsCompleted?: number;
     rating?: number;
     skills?: string[];
-    room?: string;
-    workRoom?: string;
     notes?: string;
     adminNote?: string;
 }
@@ -57,8 +52,6 @@ export interface RegistrationRequest {
     cccd?: string;
     address?: string;
     experience?: string;
-    room?: string;
-    workRoom?: string;
     cccdFront?: string;
     cccdBack?: string;
     cvFile?: string;
@@ -74,8 +67,6 @@ export interface AssignedCTV {
     phone?: string;
     cctvCode?: string;
     status: "Đã duyệt" | "Chờ duyệt";
-    room?: string;
-    taskContent?: string;
 }
 
 export interface ShiftSlot {
@@ -92,8 +83,6 @@ export interface ShiftSlot {
     targetCapacity?: number;
     notes?: string;
     workDate?: string; // ISO date (YYYY-MM-DD) for calendar navigation
-    room?: string;
-    workContent?: string;
     registrationId?: string;
     registrationStartDate?: string;
     registrationEndDate?: string;

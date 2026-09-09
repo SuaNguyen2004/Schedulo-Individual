@@ -811,8 +811,6 @@ app.get("/api/bootstrap", async (_req, res) => {
             requests,
             shifts,
             history: groupSchedules(history, "history"),
-            rooms: [],
-            meetings: [],
         });
     } catch (error) {
         res.status(500).json({ message: "Không thể tải dữ liệu từ database.", detail: error.message });
@@ -1001,21 +999,6 @@ async function promoteElapsedSchedulesToHistory(runner, userId = null) {
            AND (? IS NULL OR ws.user_id = ?)`,
         [scopedUserId, scopedUserId],
     );
-}
-
-function dayIndex(value) {
-    const date = new Date(`${value}T00:00:00`);
-    return (date.getDay() + 6) % 7;
-}
-
-function dayName(value) {
-    const index = dayIndex(value);
-    return index === 6 ? "Chủ Nhật" : `Thứ ${index + 2}`;
-}
-
-function shiftType(startTime) {
-    const hour = Number(String(startTime).slice(0, 2));
-    return hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
 }
 
 app.use((err, _req, res, _next) => {

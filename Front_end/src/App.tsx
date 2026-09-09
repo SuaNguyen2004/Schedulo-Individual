@@ -10,13 +10,11 @@ import { SummaryScheduleScreen } from "./components/Screens/SummaryScheduleScree
 import { RequestsScreen } from "./components/Screens/RequestsScreen";
 import { ProfileScreen } from "./components/Screens/ProfileScreen";
 
-import { CreateUserModal } from "./components/Modals/CreateUserModal";
 import { ViewRequestModal } from "./components/Modals/ViewRequestModal";
 import { ViewAccountDetailModal } from "./components/Modals/ViewAccountDetailModal";
 import { EditProfileModal } from "./components/Modals/EditProfileModal";
 import { ChangePasswordModal } from "./components/Modals/ChangePasswordModal";
 import { useSystemSettings } from "./context/SystemSettingsContext";
-import { parseStoredShifts } from "./utils/shiftStorage";
 import { formatDateOnly } from "./utils/formatters";
 import {
     fetchBootstrapData,
@@ -28,7 +26,6 @@ import {
 } from "./utils/api";
 import { approveRegistrationRequest, rejectRegistrationRequest, AuthenticatedUser } from "./utils/api";
 
-const SHIFTS_STORAGE_KEY = "schedulo_shifts";
 const AUTH_STORAGE_KEY = "schedulo_authenticated";
 const AUTH_USER_EMAIL_KEY = "schedulo_authenticated_email";
 const AUTH_USER_ID_KEY = "schedulo_authenticated_id";
@@ -62,22 +59,6 @@ const cleanupLocalStorage = () => {
 };
 cleanupLocalStorage();
 
-const loadStoredShifts = (): ShiftSlot[] => {
-    try {
-        const item = window.localStorage.getItem(SHIFTS_STORAGE_KEY);
-        if (!item || item === "undefined" || item === "null") {
-            window.localStorage.removeItem(SHIFTS_STORAGE_KEY);
-            return [];
-        }
-        const parsed = parseStoredShifts(item);
-        if (parsed !== null) return parsed;
-    } catch {
-        // Use an empty state when localStorage is unavailable.
-    }
-
-    return [];
-};
-
 const loadAuthenticationState = (): boolean => {
     try {
         return (
@@ -107,7 +88,7 @@ export const App: React.FC = () => {
     // App Data State
     const [accounts, setAccounts] = useState<UserAccount[]>([]);
     const [requests, setRequests] = useState<RegistrationRequest[]>([]);
-    const [shifts, setShifts] = useState<ShiftSlot[]>(loadStoredShifts);
+    const [shifts, setShifts] = useState<ShiftSlot[]>([]);
     // Elapsed shifts, served frozen by the API. Deliberately not persisted to
     // localStorage: history must always come from the server so a stale local copy can
     // never contradict it.
@@ -117,7 +98,6 @@ export const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<UserAccount>(EMPTY_USER);
 
     // Modal states
-    const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState<RegistrationRequest | null>(null);
     const [selectedAccountDetail, setSelectedAccountDetail] = useState<UserAccount | null>(null);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -151,18 +131,6 @@ export const App: React.FC = () => {
             showToast(toastMsg);
         }
     };
-
-    useEffect(() => {
-        try {
-            if (Array.isArray(shifts) && shifts.length > 0) {
-                window.localStorage.setItem(SHIFTS_STORAGE_KEY, JSON.stringify(shifts));
-            } else {
-                window.localStorage.removeItem(SHIFTS_STORAGE_KEY);
-            }
-        } catch {
-            // Ignore storage errors.
-        }
-    }, [shifts]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -528,7 +496,7 @@ export const App: React.FC = () => {
             if (selectedRequest?.id === id) {
                 setSelectedRequest(null);
             }
-            showToast(`Đã từ chối hồ sơ của ${req.name} và lưu vào database`);
+            showToast(`Đã từ chối hồ sơ của ${req.name}.`, "success");
         } catch (error) {
             showToast(error instanceof Error ? error.message : "Không thể từ chối hồ sơ");
         }
@@ -813,11 +781,6 @@ export const App: React.FC = () => {
             </div>
 
             {/* Global Modals */}
-            <CreateUserModal
-                isOpen={isCreateUserOpen}
-                onClose={() => setIsCreateUserOpen(false)}
-                onSubmit={handleCreateAccount}
-            />
 
             <ViewRequestModal
                 request={selectedRequest}
