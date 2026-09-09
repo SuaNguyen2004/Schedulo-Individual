@@ -32,7 +32,7 @@ const pool = mysql.createPool({
 });
 
 app.use(cors({ origin: "*" }));
-app.use(express.json({ limit: "50mb" }));
+app.use(express.json({ limit: "25mb" }));
 app.use("/image", express.static(imageDirectory));
 app.use("/CV", express.static(cvDirectory));
 
@@ -872,8 +872,19 @@ async function saveAttachment(attachment, userName = "", userId = "") {
     const data = decodeDataUrl(attachment.filePath);
 
     if (!data) {
-        throw new Error(`File ${attachment.fileName} không có nội dung hợp lệ.`);
+        throw new Error(`File ${attachment.fileName || ""} không có nội dung hợp lệ.`);
     }
+
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_CV_SIZE = 10 * 1024 * 1024; // 10MB
+
+    if (isImage && data.buffer.length > MAX_IMAGE_SIZE) {
+        throw new Error(`Dung lượng tệp ${attachment.fileName || "ảnh"} vượt quá giới hạn 5MB cho phép.`);
+    }
+    if (!isImage && data.buffer.length > MAX_CV_SIZE) {
+        throw new Error(`Dung lượng tệp CV ${attachment.fileName || ""} vượt quá giới hạn 10MB cho phép.`);
+    }
+
     await fs.promises.writeFile(filePath, data.buffer);
     return {
         fileName,

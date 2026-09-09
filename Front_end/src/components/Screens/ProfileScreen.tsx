@@ -44,9 +44,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_CV_SIZE = 10 * 1024 * 1024; // 10MB
+
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > MAX_IMAGE_SIZE) {
+                alert("Dung lượng ảnh đại diện không được vượt quá 5MB!");
+                e.target.value = "";
+                return;
+            }
             const reader = new FileReader();
             reader.onloadend = () => {
                 if (typeof reader.result === "string" && onUpdateAvatar) {
@@ -67,6 +75,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const handleCccdFrontSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > MAX_IMAGE_SIZE) {
+                alert("Dung lượng ảnh CCCD mặt trước không được vượt quá 5MB!");
+                e.target.value = "";
+                return;
+            }
             const reader = new FileReader();
             reader.onloadend = () => {
                 if (typeof reader.result === "string" && onUpdateCccdFront) {
@@ -87,6 +100,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const handleCccdBackSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > MAX_IMAGE_SIZE) {
+                alert("Dung lượng ảnh CCCD mặt sau không được vượt quá 5MB!");
+                e.target.value = "";
+                return;
+            }
             const reader = new FileReader();
             reader.onloadend = () => {
                 if (typeof reader.result === "string" && onUpdateCccdBack) {
@@ -107,6 +125,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const handleCvFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > MAX_CV_SIZE) {
+                alert("Dung lượng file CV không được vượt quá 10MB!");
+                e.target.value = "";
+                return;
+            }
             const reader = new FileReader();
             reader.onloadend = () => {
                 if (typeof reader.result === "string" && onUpdateCvFile) {

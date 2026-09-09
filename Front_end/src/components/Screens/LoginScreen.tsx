@@ -64,11 +64,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_CV_SIZE = 10 * 1024 * 1024; // 10MB
+
     // CCCD Front handlers
     const handleCccdFrontChange = (file?: File) => {
         if (!file) return;
         if (!file.type.startsWith("image/")) {
             setRegErrors((prev) => ({ ...prev, cccdFront: "Vui lòng chọn file hình ảnh (JPG, PNG, WebP)!" }));
+            return;
+        }
+        if (file.size > MAX_IMAGE_SIZE) {
+            setRegErrors((prev) => ({ ...prev, cccdFront: "Dung lượng ảnh CCCD mặt trước không được vượt quá 5MB!" }));
             return;
         }
         const reader = new FileReader();
@@ -90,6 +97,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         if (!file) return;
         if (!file.type.startsWith("image/")) {
             setRegErrors((prev) => ({ ...prev, cccdBack: "Vui lòng chọn file hình ảnh (JPG, PNG, WebP)!" }));
+            return;
+        }
+        if (file.size > MAX_IMAGE_SIZE) {
+            setRegErrors((prev) => ({ ...prev, cccdBack: "Dung lượng ảnh CCCD mặt sau không được vượt quá 5MB!" }));
             return;
         }
         const reader = new FileReader();
@@ -115,6 +126,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             setRegErrors((prev) => ({
                 ...prev,
                 cvFile: "Vui lòng chọn file định dạng PDF (.pdf) hoặc Word (.doc, .docx)!",
+            }));
+            return;
+        }
+        if (file.size > MAX_CV_SIZE) {
+            setRegErrors((prev) => ({
+                ...prev,
+                cvFile: "Dung lượng file CV không được vượt quá 10MB!",
             }));
             return;
         }
