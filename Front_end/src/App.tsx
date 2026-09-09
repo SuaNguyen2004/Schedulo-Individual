@@ -496,7 +496,7 @@ export const App: React.FC = () => {
             if (selectedRequest?.id === id) {
                 setSelectedRequest(null);
             }
-            showToast(`Đã từ chối hồ sơ của ${req.name}.`, "success");
+            showToast(`Đã từ chối hồ sơ của ${req.name}.`, "error");
         } catch (error) {
             showToast(error instanceof Error ? error.message : "Không thể từ chối hồ sơ");
         }

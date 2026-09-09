@@ -1,5 +1,9 @@
 .agents/
-node_modules/
-dist/
+**/node_modules/
+**/dist/
+*.zip
+*.tar.gz
 .env
-
+.env.local
+.DS_Store
+Thumbs.db

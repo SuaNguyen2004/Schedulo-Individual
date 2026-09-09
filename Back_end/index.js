@@ -31,14 +31,15 @@ const pool = mysql.createPool({
     dateStrings: true,
 });
 
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000" }));
+app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "50mb" }));
 app.use("/image", express.static(imageDirectory));
 app.use("/CV", express.static(cvDirectory));
 
-app.get("/", (_req, res) => {
-    res.send("Schedulo API is running. Open the Frontend at http://localhost:3001.");
-});
+const frontendDistDirectory = path.join(__dirname, "..", "Front_end", "dist");
+if (fs.existsSync(frontendDistDirectory)) {
+    app.use(express.static(frontendDistDirectory));
+}
 
 app.get("/api/health", async (_req, res) => {
     try {

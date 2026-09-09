@@ -1,0 +1,11 @@
+.git
+.gitignore
+.agents
+**/node_modules
+**/dist
+**/.DS_Store
+Back_end/image/*
+!Back_end/image/.gitkeep
+Back_end/CV/*
+!Back_end/CV/.gitkeep
+
