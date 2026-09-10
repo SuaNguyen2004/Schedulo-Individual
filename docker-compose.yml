@@ -29,8 +29,8 @@ services:
             - DB_NAME=schedule
             - PORT=4000
         volumes:
-            - ./Back_end/image:/app/Back_end/image
-            - ./Back_end/CV:/app/Back_end/CV
+            - ./image:/app/Back_end/image
+            - ./CV:/app/Back_end/CV
         depends_on:
             - mysqldb
 
