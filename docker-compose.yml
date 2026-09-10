@@ -16,7 +16,7 @@ services:
             - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
     backend:
-        image: suanguyen2004/schedulo-app:latest
+        image: suanguyen/schedulo-app:latest
         container_name: schedulo-app
         restart: always
         ports:
