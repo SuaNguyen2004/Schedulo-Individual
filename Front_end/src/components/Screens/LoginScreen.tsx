@@ -18,6 +18,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
     const [loginPassword, setLoginPassword] = useState("");
     const [showLoginPassword, setShowLoginPassword] = useState(false);
     const [loginError, setLoginError] = useState("");
+    const [loginFieldErrors, setLoginFieldErrors] = useState<{ email?: string; password?: string }>({});
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Register form state
@@ -175,18 +176,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
     const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoginError("");
-        if (!loginEmail) {
-            setLoginError("Vui lòng nhập trường này!");
-            return;
+        const fieldErrors: { email?: string; password?: string } = {};
+
+        if (!loginEmail.trim()) {
+            fieldErrors.email = "Vui lòng nhập email!";
         }
         if (!loginPassword) {
-            setLoginError("Vui lòng nhập trường này!");
+            fieldErrors.password = "Vui lòng nhập mật khẩu!";
+        }
+
+        if (Object.keys(fieldErrors).length > 0) {
+            setLoginFieldErrors(fieldErrors);
             return;
         }
 
+        setLoginFieldErrors({});
         setIsProcessing(true);
         try {
-            const user = await loginWithDatabase(loginEmail, loginPassword);
+            const user = await loginWithDatabase(loginEmail.trim(), loginPassword);
             onLoginSuccess(user);
         } catch (error) {
             setLoginError(error instanceof Error ? error.message : "Đăng nhập thất bại.");
@@ -358,11 +365,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                 <input
                                     type="email"
                                     value={loginEmail}
-                                    onChange={(e) => setLoginEmail(e.target.value)}
+                                    onChange={(e) => {
+                                        setLoginEmail(e.target.value);
+                                        if (loginFieldErrors.email) {
+                                            setLoginFieldErrors((prev) => ({ ...prev, email: undefined }));
+                                        }
+                                    }}
                                     placeholder="Nhập email"
                                     disabled={isProcessing}
-                                    className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] text-sm placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors"
+                                    className={`w-full px-3.5 py-2.5 bg-[#F8FAFC] border rounded-xl text-[#0F172A] text-sm placeholder-[#64748B] focus:outline-none focus:ring-2 h-[44px] transition-colors ${
+                                        loginFieldErrors.email
+                                            ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
+                                            : "border-[#E2E8F0] focus:border-[#2563EB] focus:ring-[#2563EB]/20"
+                                    }`}
                                 />
+                                {loginFieldErrors.email && (
+                                    <p className="text-[11px] text-[#DC2626] mt-1 font-medium">{loginFieldErrors.email}</p>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
@@ -371,11 +390,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <input
                                         type={showLoginPassword ? "text" : "password"}
                                         value={loginPassword}
-                                        onChange={(e) => setLoginPassword(e.target.value)}
+                                        onChange={(e) => {
+                                            setLoginPassword(e.target.value);
+                                            if (loginFieldErrors.password) {
+                                                setLoginFieldErrors((prev) => ({ ...prev, password: undefined }));
+                                            }
+                                        }}
                                         placeholder="Nhập mật khẩu"
                                         autoComplete="current-password"
                                         disabled={isProcessing}
-                                        className="w-full pl-3.5 pr-10 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] text-sm placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors"
+                                        className={`w-full pl-3.5 pr-10 py-2.5 bg-[#F8FAFC] border rounded-xl text-[#0F172A] text-sm placeholder-[#64748B] focus:outline-none focus:ring-2 h-[44px] transition-colors ${
+                                            loginFieldErrors.password
+                                                ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
+                                                : "border-[#E2E8F0] focus:border-[#2563EB] focus:ring-[#2563EB]/20"
+                                        }`}
                                     />
                                     <button
                                         type="button"
@@ -386,6 +414,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         </span>
                                     </button>
                                 </div>
+                                {loginFieldErrors.password && (
+                                    <p className="text-[11px] text-[#DC2626] mt-1 font-medium">{loginFieldErrors.password}</p>
+                                )}
                             </div>
 
                             <button
@@ -403,6 +434,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         onClick={() => {
                                             setMode("register");
                                             setRegErrors({});
+                                            setLoginFieldErrors({});
+                                            setLoginError("");
                                         }}
                                         className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold hover:underline cursor-pointer ml-1">
                                         Tạo tài khoản mới
