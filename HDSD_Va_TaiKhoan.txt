@@ -1,0 +1,14 @@
+========================================================
+    HUONG DAN SU DUNG & TAI KHOAN HETHONG SCHEDULO
+========================================================
+
+1. CAR CHAY PHAN MEM:
+   - Double-click (nhap dub) file: Chay_PhanMem.bat
+   - Trinh duyet se tu dong mo dia chi: http://localhost:4000
+
+2. TAI KHOAN DANG NHAP (ADMIN):
+   - Email: admin@gmail.com
+   - Mat khau: 123456
+
+3. LUU Y:
+   - Dam bao ung dung Docker Desktop dang mo va chay (icon con ca voi mau xanh).
