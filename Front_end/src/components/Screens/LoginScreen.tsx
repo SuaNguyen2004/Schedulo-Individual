@@ -55,6 +55,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
     const [regErrors, setRegErrors] = useState<{ [key: string]: string }>({});
 
+    const clearRegError = (key: string) => {
+        setRegErrors((prev) => {
+            if (!prev[key]) return prev;
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+    };
+
     // Countdown timer for register success
     const [countdown, setCountdown] = useState(5);
 
@@ -380,7 +389,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     }`}
                                 />
                                 {loginFieldErrors.email && (
-                                    <p className="text-[11px] text-[#DC2626] mt-1 font-medium">{loginFieldErrors.email}</p>
+                                    <p className="text-[11px] text-[#DC2626] mt-1 font-medium">
+                                        {loginFieldErrors.email}
+                                    </p>
                                 )}
                             </div>
 
@@ -415,7 +426,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     </button>
                                 </div>
                                 {loginFieldErrors.password && (
-                                    <p className="text-[11px] text-[#DC2626] mt-1 font-medium">{loginFieldErrors.password}</p>
+                                    <p className="text-[11px] text-[#DC2626] mt-1 font-medium">
+                                        {loginFieldErrors.password}
+                                    </p>
                                 )}
                             </div>
 
@@ -460,7 +473,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                 <input
                                     type="text"
                                     value={regName}
-                                    onChange={(e) => setRegName(e.target.value)}
+                                    onChange={(e) => {
+                                        setRegName(e.target.value);
+                                        clearRegError("regName");
+                                    }}
                                     placeholder="Nhập họ và tên"
                                     className={`w-full px-3.5 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
                                         regErrors.regName
@@ -481,7 +497,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                 <div className="grid grid-cols-3 gap-2">
                                     <select
                                         value={regDay}
-                                        onChange={(e) => setRegDay(e.target.value)}
+                                        onChange={(e) => {
+                                            setRegDay(e.target.value);
+                                            clearRegError("regDob");
+                                        }}
                                         className={`px-3 py-2 border rounded-xl text-xs sm:text-sm bg-[#F8FAFC] text-[#0F172A] h-[44px] cursor-pointer focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-colors ${
                                             regErrors.regDob ? "border-[#DC2626]" : "border-[#E2E8F0]"
                                         }`}>
@@ -497,7 +516,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     </select>
                                     <select
                                         value={regMonth}
-                                        onChange={(e) => setRegMonth(e.target.value)}
+                                        onChange={(e) => {
+                                            setRegMonth(e.target.value);
+                                            clearRegError("regDob");
+                                        }}
                                         className={`px-3 py-2 border rounded-xl text-xs sm:text-sm bg-[#F8FAFC] text-[#0F172A] h-[44px] cursor-pointer focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-colors ${
                                             regErrors.regDob ? "border-[#DC2626]" : "border-[#E2E8F0]"
                                         }`}>
@@ -513,7 +535,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     </select>
                                     <select
                                         value={regYear}
-                                        onChange={(e) => setRegYear(e.target.value)}
+                                        onChange={(e) => {
+                                            setRegYear(e.target.value);
+                                            clearRegError("regDob");
+                                        }}
                                         className={`px-3 py-2 border rounded-xl text-xs sm:text-sm bg-[#F8FAFC] text-[#0F172A] h-[44px] cursor-pointer focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-colors ${
                                             regErrors.regDob ? "border-[#DC2626]" : "border-[#E2E8F0]"
                                         }`}>
@@ -543,7 +568,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     <input
                                         type="email"
                                         value={regEmail}
-                                        onChange={(e) => setRegEmail(e.target.value)}
+                                        onChange={(e) => {
+                                            setRegEmail(e.target.value);
+                                            clearRegError("regEmail");
+                                        }}
                                         placeholder="Nhập email"
                                         className={`w-full px-3.5 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
                                             regErrors.regEmail
@@ -572,6 +600,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         onChange={(e) => {
                                             e.currentTarget.setCustomValidity("");
                                             setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                                            clearRegError("regPhone");
                                         }}
                                         onInvalid={(e) => {
                                             e.currentTarget.setCustomValidity(
@@ -915,7 +944,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         <input
                                             type={showRegPassword ? "text" : "password"}
                                             value={regPassword}
-                                            onChange={(e) => setRegPassword(e.target.value)}
+                                            onChange={(e) => {
+                                                setRegPassword(e.target.value);
+                                                clearRegError("regPassword");
+                                            }}
                                             placeholder="Nhập mật khẩu"
                                             maxLength={20}
                                             className={`w-full pl-3.5 pr-9 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
@@ -949,7 +981,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         <input
                                             type={showRegConfirmPassword ? "text" : "password"}
                                             value={regConfirmPassword}
-                                            onChange={(e) => setRegConfirmPassword(e.target.value)}
+                                            onChange={(e) => {
+                                                setRegConfirmPassword(e.target.value);
+                                                clearRegError("regConfirmPassword");
+                                            }}
                                             placeholder="Nhập lại mật khẩu"
                                             maxLength={20}
                                             className={`w-full pl-3.5 pr-9 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
