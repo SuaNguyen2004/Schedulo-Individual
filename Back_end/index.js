@@ -106,6 +106,9 @@ app.post("/api/auth/register", async (req, res) => {
     if (![name, email, phone, password].every((value) => typeof value === "string" && value.trim())) {
         return res.status(400).json({ message: "Vui lòng nhập đủ họ tên, email, số điện thoại và mật khẩu." });
     }
+    if (name.trim().length > 100) {
+        return res.status(400).json({ message: "Họ và tên không được vượt quá 100 ký tự." });
+    }
     if (password.length < 6 || password.length > 20) {
         return res.status(400).json({ message: "Mật khẩu phải từ 6 đến 20 ký tự." });
     }
@@ -297,6 +300,14 @@ app.patch("/api/profile", async (req, res) => {
     const { userId, name, email, phone, dob, avatar, cccdFront, cccdBack, cvFile, cvFileName } = req.body || {};
     if (!userId) {
         return res.status(400).json({ message: "Thiếu thông tin người dùng." });
+    }
+    if (name !== undefined) {
+        if (typeof name !== "string" || !name.trim()) {
+            return res.status(400).json({ message: "Vui lòng nhập họ và tên." });
+        }
+        if (name.trim().length > 100) {
+            return res.status(400).json({ message: "Họ và tên không được vượt quá 100 ký tự." });
+        }
     }
     try {
         const connection = await pool.getConnection();

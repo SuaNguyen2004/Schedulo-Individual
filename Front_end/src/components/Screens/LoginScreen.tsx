@@ -250,7 +250,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         e.preventDefault();
         const errors: { [key: string]: string } = {};
 
-        if (!regName.trim()) errors.regName = "Vui lòng nhập họ và tên!";
+        if (!regName.trim()) {
+            errors.regName = "Vui lòng nhập họ và tên!";
+        } else if (regName.trim().length > 100) {
+            errors.regName = "Họ và tên không được vượt quá 100 ký tự!";
+        }
         if (!regDay || !regMonth || !regYear) {
             errors.regDob = "Vui lòng chọn ngày sinh!";
         } else if (!isValidDateOfBirth(regDay, regMonth, regYear)) {
@@ -514,6 +518,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                 <input
                                     ref={regNameRef}
                                     type="text"
+                                    maxLength={100}
                                     value={regName}
                                     onChange={(e) => {
                                         setRegName(e.target.value);

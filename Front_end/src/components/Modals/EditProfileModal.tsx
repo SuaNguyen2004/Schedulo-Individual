@@ -62,6 +62,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
         setErrorMsg("");
         setLoading(true);
         try {
+            if (!name.trim()) {
+                setErrorMsg("Vui lòng nhập họ và tên!");
+                setLoading(false);
+                return;
+            }
+            if (name.trim().length > 100) {
+                setErrorMsg("Họ và tên không được vượt quá 100 ký tự!");
+                setLoading(false);
+                return;
+            }
             if (!/^[0-9]{10}$/.test(phone.trim())) {
                 setErrorMsg("Số điện thoại phải đúng 10 chữ số!");
                 setLoading(false);
@@ -75,8 +85,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                 }
             }
             const dob = dobDay && dobMonth && dobYear ? `${dobDay}/${dobMonth}/${dobYear}` : "";
-            await updateProfile(user.id, { name, email: user.email, phone, dob });
-            onSave({ name, email: user.email, phone, dob });
+            await updateProfile(user.id, { name: name.trim(), email: user.email, phone, dob });
+            onSave({ name: name.trim(), email: user.email, phone, dob });
             if (onShowToast) onShowToast("Đã cập nhật thông tin hồ sơ cá nhân.");
             onClose();
         } catch (err: any) {
@@ -114,8 +124,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                             </label>
                             <input
                                 type="text"
+                                maxLength={100}
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={(e) => {
+                                    setName(e.target.value);
+                                    setErrorMsg("");
+                                }}
                                 className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
                             />
                         </div>
