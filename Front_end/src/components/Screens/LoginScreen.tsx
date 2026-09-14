@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { RegistrationRequest } from "../../types";
 import { loginWithDatabase, registerWithDatabase, AuthenticatedUser } from "../../utils/api";
 import { isValidDateOfBirth } from "../../utils/formatters";
+import logoAmst from "../../img/LogoAMST.png";
 
 interface LoginScreenProps {
     onLoginSuccess: (user: AuthenticatedUser) => void;
@@ -384,13 +385,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 } bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8 flex flex-col relative shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-200 shrink-0`}>
                 {/* Header Branding */}
                 <div className="flex flex-col items-center mb-6">
-                    <div className="w-14 h-14 bg-[#2563EB] rounded-full flex items-center justify-center mb-3 shadow-xs">
-                        <span
-                            className="material-symbols-outlined text-white text-2xl"
-                            style={{ fontVariationSettings: "'FILL' 1" }}>
-                            assured_workload
-                        </span>
-                    </div>
+                    <img
+                        src={logoAmst}
+                        alt="Logo Viện Khoa học và Công nghệ Quân sự"
+                        className="w-16 h-16 object-contain mb-3 drop-shadow-xs"
+                    />
                     <span className="text-xs font-bold text-[#0F172A] uppercase tracking-wider text-center">
                         Viện Khoa học và Công nghệ Quân sự
                     </span>

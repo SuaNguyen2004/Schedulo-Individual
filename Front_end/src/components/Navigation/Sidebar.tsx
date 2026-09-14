@@ -1,5 +1,6 @@
 import React from "react";
 import { ViewTab } from "../../types";
+import logoAmst from "../../img/LogoAMST.png";
 
 interface SidebarProps {
     currentTab: ViewTab;
@@ -36,9 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`px-3 py-3.5 border-b border-[#E2E8F0] dark:border-[#c4c6cf] flex items-center shrink-0 ${isCollapsed ? "justify-center" : "justify-between gap-1.5"}`}>
                 {!isCollapsed && (
                     <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-9 h-9 rounded-lg bg-accent text-white flex items-center justify-center shadow-xs shrink-0 border border-white/20">
-                            <span className="material-symbols-outlined text-[20px]">badge</span>
-                        </div>
+                        <img src={logoAmst} alt="Logo AMST" className="w-9 h-9 object-contain shrink-0 rounded-lg" />
                         <div className="min-w-0">
                             <h1 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff] leading-tight tracking-tight whitespace-nowrap">
                                 Hệ thống Quản lý CTV
