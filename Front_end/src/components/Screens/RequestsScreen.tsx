@@ -248,14 +248,6 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                 <div className="h-[64px] shrink-0 border-t border-[#E2E8F0] bg-white flex items-center justify-between sm:justify-end px-4 xl:px-6 w-full">
                     {/* Desktop & Tablet Pagination (≥ 768px): Fixed Layout Numbered Buttons */}
                     <div className="hidden md:flex items-center gap-2">
-                        <button
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer shadow-2xs shrink-0"
-                            aria-label="Trang trước">
-                            <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-                        </button>
-
                         {getPaginationRange(currentPage, totalPages).map((item, idx) =>
                             typeof item === "number" ? (
                                 <button
@@ -276,14 +268,6 @@ export const RequestsScreen: React.FC<RequestsScreenProps> = ({
                                 </span>
                             ),
                         )}
-
-                        <button
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#E2E8F0] text-[#44474e] hover:bg-[#f4f3f7] transition-colors disabled:opacity-40 cursor-pointer shadow-2xs shrink-0"
-                            aria-label="Trang sau">
-                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                        </button>
                     </div>
 
                     {/* Mobile Pagination (≤ 767px): ‹ Trang X / Y › with fixed button and width sizes */}
