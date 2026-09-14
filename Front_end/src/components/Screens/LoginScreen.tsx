@@ -53,6 +53,39 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
     const cccdBackInputRef = useRef<HTMLInputElement>(null);
     const cvFileInputRef = useRef<HTMLInputElement>(null);
 
+    // Form input refs for auto-focusing and scrolling to errors
+    const regNameRef = useRef<HTMLInputElement>(null);
+    const regDayRef = useRef<HTMLSelectElement>(null);
+    const regEmailRef = useRef<HTMLInputElement>(null);
+    const regPhoneRef = useRef<HTMLInputElement>(null);
+    const cccdFrontBoxRef = useRef<HTMLDivElement>(null);
+    const cccdBackBoxRef = useRef<HTMLDivElement>(null);
+    const cvBoxRef = useRef<HTMLDivElement>(null);
+    const regPasswordRef = useRef<HTMLInputElement>(null);
+    const regConfirmPasswordRef = useRef<HTMLInputElement>(null);
+
+    const scrollToAndFocusField = (field: string) => {
+        setTimeout(() => {
+            let el: HTMLElement | null = null;
+            if (field === "regEmail") el = regEmailRef.current;
+            else if (field === "regPhone") el = regPhoneRef.current;
+            else if (field === "regName") el = regNameRef.current;
+            else if (field === "regDob") el = regDayRef.current;
+            else if (field === "cccdFront") el = cccdFrontBoxRef.current;
+            else if (field === "cccdBack") el = cccdBackBoxRef.current;
+            else if (field === "cvFile") el = cvBoxRef.current;
+            else if (field === "regPassword") el = regPasswordRef.current;
+            else if (field === "regConfirmPassword") el = regConfirmPasswordRef.current;
+
+            if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                if ("focus" in el && typeof (el as HTMLInputElement).focus === "function") {
+                    (el as HTMLInputElement).focus();
+                }
+            }
+        }, 80);
+    };
+
     const [regErrors, setRegErrors] = useState<{ [key: string]: string }>({});
 
     const clearRegError = (key: string) => {
@@ -242,6 +275,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
         if (Object.keys(errors).length > 0) {
             setRegErrors(errors);
+            const firstErrorField = Object.keys(errors)[0];
+            scrollToAndFocusField(firstErrorField);
             return;
         }
 
@@ -314,6 +349,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             .catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : "Không thể gửi yêu cầu đăng ký.";
                 const lower = message.toLowerCase();
+                let errorField = "regEmail";
                 if (
                     lower.includes("ngày sinh") ||
                     lower.includes("dob") ||
@@ -321,15 +357,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                     lower.includes("date value")
                 ) {
                     setRegErrors({ regDob: "Vui lòng nhập ngày sinh hợp lệ" });
+                    errorField = "regDob";
                 } else if (lower.includes("mật khẩu") || lower.includes("password")) {
                     setRegErrors({ regPassword: message });
+                    errorField = "regPassword";
                 } else if (lower.includes("số điện thoại") || lower.includes("sđt") || lower.includes("phone")) {
                     setRegErrors({ regPhone: message });
+                    errorField = "regPhone";
                 } else if (lower.includes("email")) {
                     setRegErrors({ regEmail: message });
+                    errorField = "regEmail";
                 } else {
                     setRegErrors({ regEmail: message });
+                    errorField = "regEmail";
                 }
+                scrollToAndFocusField(errorField);
             })
             .finally(() => setIsProcessing(false));
     };
@@ -471,6 +513,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     Họ và tên <span className="text-[#DC2626]">*</span>
                                 </label>
                                 <input
+                                    ref={regNameRef}
                                     type="text"
                                     value={regName}
                                     onChange={(e) => {
@@ -496,6 +539,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                 </label>
                                 <div className="grid grid-cols-3 gap-2">
                                     <select
+                                        ref={regDayRef}
                                         value={regDay}
                                         onChange={(e) => {
                                             setRegDay(e.target.value);
@@ -566,6 +610,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         Email <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <input
+                                        ref={regEmailRef}
                                         type="email"
                                         value={regEmail}
                                         onChange={(e) => {
@@ -592,6 +637,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                         Số điện thoại <span className="text-[#DC2626]">*</span>
                                     </label>
                                     <input
+                                        ref={regPhoneRef}
                                         type="tel"
                                         inputMode="numeric"
                                         pattern="[0-9]{10}"
@@ -660,7 +706,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {/* CCCD Mặt trước */}
-                                    <div>
+                                    <div ref={cccdFrontBoxRef}>
                                         <div className="text-[11px] font-medium text-[#64748B] mb-1 flex items-center justify-between">
                                             <span>Mặt trước</span>
                                             {cccdFront && (
@@ -741,7 +787,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     </div>
 
                                     {/* CCCD Mặt sau */}
-                                    <div>
+                                    <div ref={cccdBackBoxRef}>
                                         <div className="text-[11px] font-medium text-[#64748B] mb-1 flex items-center justify-between">
                                             <span>Mặt sau</span>
                                             {cccdBack && (
@@ -824,7 +870,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                             </div>
 
                             {/* PHẦN 3: UPLOAD FILE PDF / WORD CV */}
-                            <div className="pt-2">
+                            <div ref={cvBoxRef} className="pt-2">
                                 <div className="flex items-center justify-between mb-2">
                                     <label className="text-xs font-semibold text-[#0F172A] flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-[#2563EB] text-[18px]">
@@ -942,6 +988,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     </label>
                                     <div className="relative">
                                         <input
+                                            ref={regPasswordRef}
                                             type={showRegPassword ? "text" : "password"}
                                             value={regPassword}
                                             onChange={(e) => {
@@ -979,6 +1026,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                     </label>
                                     <div className="relative">
                                         <input
+                                            ref={regConfirmPasswordRef}
                                             type={showRegConfirmPassword ? "text" : "password"}
                                             value={regConfirmPassword}
                                             onChange={(e) => {
