@@ -1037,7 +1037,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                         </div>
                         <h3 className="text-lg font-bold text-[#0F172A]">Gửi yêu cầu đăng ký thành công!</h3>
                         <p className="text-xs text-[#64748B] leading-relaxed max-w-sm mx-auto">
-                            Hồ sơ ứng tuyển và thông tin của bạn đang được xem xét phê duyệt. Vui lòng liên hệ với Quản trị viên để yêu cầu chấp nhận.
+                            Hồ sơ ứng tuyển và thông tin của bạn đang được xem xét phê duyệt. Vui lòng liên hệ Quản trị
+                            viên để chấp nhận yêu cầu.
                         </p>
                         <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#64748B]">
                             Tự động chuyển đến trang đăng nhập sau{" "}
