@@ -250,6 +250,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         e.preventDefault();
         const errors: { [key: string]: string } = {};
 
+        if (!regName.trim()) errors.regName = "Vui lòng nhập họ và tên!";
         if (!regName.trim()) {
             errors.regName = "Vui lòng nhập họ và tên!";
         } else if (regName.trim().length > 100) {

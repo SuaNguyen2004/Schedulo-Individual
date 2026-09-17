@@ -85,6 +85,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                 }
             }
             const dob = dobDay && dobMonth && dobYear ? `${dobDay}/${dobMonth}/${dobYear}` : "";
+            await updateProfile(user.id, { name, email: user.email, phone, dob });
+            onSave({ name, email: user.email, phone, dob });
             await updateProfile(user.id, { name: name.trim(), email: user.email, phone, dob });
             onSave({ name: name.trim(), email: user.email, phone, dob });
             if (onShowToast) onShowToast("Đã cập nhật thông tin hồ sơ cá nhân.");
@@ -126,6 +128,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                                 type="text"
                                 maxLength={100}
                                 value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 onChange={(e) => {
                                     setName(e.target.value);
                                     setErrorMsg("");
