@@ -856,6 +856,10 @@ async function saveAttachment(attachment, userName = "", userId = "") {
         attachment.fileType === "AVATAR";
     const directory = isImage ? imageDirectory : cvDirectory;
     const extension = isImage ? ".jpg" : path.extname(attachment.fileName || "").toLowerCase() || ".pdf";
+    const allowedCvExtensions = [".pdf", ".doc", ".docx"];
+    if (!isImage && !allowedCvExtensions.includes(extension)) {
+        throw new Error("Vui lòng chọn file định dạng PDF (.pdf) hoặc Word (.doc, .docx)!");
+    }
     const safeUserName = sanitizeFileName(userName);
     const safeOriginalName = sanitizeFileName(path.basename(attachment.fileName || "cv"));
     const prefix =

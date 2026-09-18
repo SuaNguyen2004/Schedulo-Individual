@@ -37,6 +37,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const cccdFrontInputRef = useRef<HTMLInputElement>(null);
     const cccdBackInputRef = useRef<HTMLInputElement>(null);
     const cvFileInputRef = useRef<HTMLInputElement>(null);
+    const [cvError, setCvError] = useState<string>("");
 
     const formatFileSize = (bytes: number): string => {
         if (bytes < 1024) return `${bytes} B`;
@@ -125,11 +126,23 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const handleCvFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > MAX_CV_SIZE) {
-                alert("Dung lượng file CV không được vượt quá 10MB!");
+            const name = file.name.toLowerCase();
+            const isAllowed = name.endsWith(".pdf") || name.endsWith(".doc") || name.endsWith(".docx");
+            if (!isAllowed) {
+                const errMsg = "Vui lòng chọn file định dạng PDF (.pdf) hoặc Word (.doc, .docx)!";
+                setCvError(errMsg);
+                alert(errMsg);
                 e.target.value = "";
                 return;
             }
+            if (file.size > MAX_CV_SIZE) {
+                const errMsg = "Dung lượng file CV không được vượt quá 10MB!";
+                setCvError(errMsg);
+                alert(errMsg);
+                e.target.value = "";
+                return;
+            }
+            setCvError("");
             const reader = new FileReader();
             reader.onloadend = () => {
                 if (typeof reader.result === "string" && onUpdateCvFile) {
@@ -148,9 +161,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const cvDisplayName = user.cvFileName || (user.cvFile ? `CV_${user.name.replace(/\s+/g, "_")}.pdf` : "");
     const cvDisplaySize = user.cvFileSize || "";
     const hasCv = Boolean(user.cvFile || user.cvFileName);
-    const isPdf =
-        cvDisplayName.toLowerCase().endsWith(".pdf") ||
-        (!cvDisplayName.toLowerCase().endsWith(".doc") && !cvDisplayName.toLowerCase().endsWith(".docx"));
+    const isPdf = cvDisplayName.toLowerCase().endsWith(".pdf");
 
     return (
         <div className="space-y-5">
@@ -356,16 +367,18 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             </h3>
                             <div className="flex items-center gap-2 shrink-0 ml-auto">
                                 <button
+                                    type="button"
                                     onClick={onOpenChangePassword}
-                                    className="px-3.5 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap">
-                                    <span className="material-symbols-outlined text-[16px]">lock_reset</span>
-                                    <span>Đổi mật khẩu</span>
+                                    title="Đổi mật khẩu"
+                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs">
+                                    <span className="material-symbols-outlined text-[18px]">lock_reset</span>
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={onOpenEditProfile}
-                                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap">
-                                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                                    <span>Chỉnh sửa</span>
+                                    title="Chỉnh sửa"
+                                    className="w-8.5 h-8.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-xs">
+                                    <span className="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
                             </div>
                         </div>
@@ -497,21 +510,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                     onClick={() => {
                                                         if (user.cvFile) window.open(user.cvFile, "_blank");
                                                     }}
-                                                    className="px-3.5 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
+                                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                                     title="Xem CV trong tab mới">
-                                                    <span className="material-symbols-outlined text-[16px]">
+                                                    <span className="material-symbols-outlined text-[18px]">
                                                         visibility
                                                     </span>
-                                                    <span>Xem</span>
                                                 </button>
 
                                                 <button
                                                     type="button"
                                                     onClick={() => cvFileInputRef.current?.click()}
-                                                    className="px-3.5 py-1.5 bg-blue-50/80 hover:bg-blue-100/90 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
-                                                    title="Chọn file mới thay thế">
-                                                    <span className="material-symbols-outlined text-[16px]">sync</span>
-                                                    <span>Thay đổi</span>
+                                                    className="w-8.5 h-8.5 bg-blue-50/80 hover:bg-blue-100/90 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                                                    title="Thay đổi file CV">
+                                                    <span className="material-symbols-outlined text-[18px]">sync</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -533,6 +544,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                 </p>
                                             </div>
                                         </div>
+                                    )}
+
+                                    {cvError && (
+                                        <p className="mt-2 text-xs text-red-500 font-medium flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[16px]">error</span>
+                                            <span>{cvError}</span>
+                                        </p>
                                     )}
                                 </div>
                             )}
