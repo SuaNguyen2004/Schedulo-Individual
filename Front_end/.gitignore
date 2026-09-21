@@ -8,3 +8,14 @@ coverage/
 !.env.example
 diagram/
 *.md
+
+# Local test files & configs
+e2e/
+playwright.config.ts
+playwright-report/
+test-results/
+src/test/
+*.spec.ts
+*.spec.tsx
+*.test.ts
+*.test.tsx

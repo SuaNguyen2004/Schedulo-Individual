@@ -6,3 +6,20 @@
 **/.DS_Store
 *.zip
 *.tar.gz
+
+# Local test files & configurations
+e2e/
+**/e2e
+playwright.config.ts
+**/playwright.config.ts
+playwright-report/
+**/playwright-report
+test-results/
+**/test-results
+src/test
+**/src/test
+*.spec.ts
+*.spec.tsx
+*.test.ts
+*.test.tsx
+

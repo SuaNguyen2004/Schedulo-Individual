@@ -7,3 +7,19 @@
 .env.local
 .DS_Store
 Thumbs.db
+
+# Test files and configs (local only)
+e2e/
+**/e2e/
+playwright.config.ts
+**/playwright.config.ts
+playwright-report/
+**/playwright-report/
+test-results/
+**/test-results/
+src/test/
+**/src/test/
+*.spec.ts
+*.spec.tsx
+*.test.ts
+*.test.tsx
