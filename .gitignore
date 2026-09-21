@@ -23,3 +23,5 @@ src/test/
 *.spec.tsx
 *.test.ts
 *.test.tsx
+*.bat
+*.md

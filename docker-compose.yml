@@ -9,15 +9,17 @@ services:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: schedule
         ports:
-            - "3308:3306"
             - "3306:3306"
         volumes:
             - mysql_data:/var/lib/mysql
             - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
     backend:
-        image: suanguyen/schedulo-app:latest
-        container_name: schedulo-app
+        build:
+            context: ./Back_end
+            dockerfile: Dockerfile
+        image: schedulo-backend:latest
+        container_name: schedulo-backend
         restart: always
         ports:
             - "4000:4000"
@@ -29,10 +31,22 @@ services:
             - DB_NAME=schedule
             - PORT=4000
         volumes:
-            - ./Back_end/image:/app/Back_end/image
-            - ./Back_end/CV:/app/Back_end/CV
+            - ./Back_end/image:/app/image
+            - ./Back_end/CV:/app/CV
         depends_on:
             - mysqldb
+
+    frontend:
+        build:
+            context: ./Front_end
+            dockerfile: Dockerfile
+        image: schedulo-frontend:latest
+        container_name: schedulo-frontend
+        restart: always
+        ports:
+            - "8000:80"
+        depends_on:
+            - backend
 
 volumes:
     mysql_data:
