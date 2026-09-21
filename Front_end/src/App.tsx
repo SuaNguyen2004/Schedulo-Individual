@@ -23,6 +23,9 @@ import {
     toggleAccountStatus,
     resetPassword,
     deleteAccount,
+    logoutDatabase,
+    setAuthToken,
+    getAuthToken,
 } from "./utils/api";
 import { approveRegistrationRequest, rejectRegistrationRequest, AuthenticatedUser } from "./utils/api";
 
@@ -123,6 +126,7 @@ export const App: React.FC = () => {
     const clearAuthState = (toastMsg?: string) => {
         setIsLoggedIn(false);
         setCurrentUser(EMPTY_USER);
+        setAuthToken(null);
         window.localStorage.removeItem(AUTH_STORAGE_KEY);
         window.localStorage.removeItem(AUTH_USER_EMAIL_KEY);
         window.localStorage.removeItem(AUTH_USER_ID_KEY);
@@ -133,6 +137,9 @@ export const App: React.FC = () => {
     };
 
     useEffect(() => {
+        if (!loadAuthenticationState() || !getAuthToken()) {
+            return;
+        }
         const controller = new AbortController();
 
         const promise = fetchBootstrapData(controller.signal)
@@ -160,10 +167,12 @@ export const App: React.FC = () => {
                 console.warn("Không thể tải dữ liệu từ Backend, sử dụng dữ liệu cục bộ.", error);
 
                 // If there's an active session but bootstrap failed (e.g. database offline),
+                // If there's an active session but bootstrap failed (e.g. session expired or database offline),
                 // clear auth state and redirect to login screen
                 const authenticatedEmail = window.localStorage.getItem(AUTH_USER_EMAIL_KEY);
                 if (authenticatedEmail) {
                     clearAuthState("Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra lại!");
+                    clearAuthState("Phiên đăng nhập đã hết hạn hoặc không thể kết nối cơ sở dữ liệu.");
                 }
                 return null;
             });
@@ -172,6 +181,7 @@ export const App: React.FC = () => {
 
         return () => controller.abort();
     }, []);
+    }, [isLoggedIn]);
 
     // Monitor logged-in user status in real-time
     useEffect(() => {
@@ -186,6 +196,7 @@ export const App: React.FC = () => {
 
     // Periodic polling to sync account status live across sessions
     useEffect(() => {
+        if (!isLoggedIn || !getAuthToken()) return;
         const checkStatus = () => {
             fetchBootstrapData()
                 .then((data) => {
@@ -202,9 +213,14 @@ export const App: React.FC = () => {
         const interval = setInterval(checkStatus, 3000);
         return () => clearInterval(interval);
     }, []);
+    }, [isLoggedIn]);
 
     // Handlers
     const handleLoginSuccess = async (user: AuthenticatedUser) => {
+        if (user.token) {
+            setAuthToken(user.token);
+        }
+
         // Always fetch fresh bootstrap data from backend on login to get real-time account status
         let freshBootstrapData: import("./utils/api").BootstrapData | null = null;
         try {
@@ -251,6 +267,7 @@ export const App: React.FC = () => {
     };
 
     const handleLogout = () => {
+        logoutDatabase().catch(() => {});
         clearAuthState("Đã đăng xuất khỏi hệ thống");
     };
 

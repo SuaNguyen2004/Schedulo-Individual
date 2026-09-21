@@ -1,5 +1,36 @@
 import type { RegistrationRequest, ShiftSlot, UserAccount } from "../types";
 
+const TOKEN_KEY = "schedulo_auth_token";
+
+export function getAuthToken(): string | null {
+    try {
+        return localStorage.getItem(TOKEN_KEY);
+    } catch {
+        return null;
+    }
+}
+
+export function setAuthToken(token: string | null): void {
+    try {
+        if (token) {
+            localStorage.setItem(TOKEN_KEY, token);
+        } else {
+            localStorage.removeItem(TOKEN_KEY);
+        }
+    } catch {
+        // Ignore storage errors
+    }
+}
+
+function authHeaders(): Record<string, string> {
+    const token = getAuthToken();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+}
+
 export interface BootstrapData {
     accounts: UserAccount[];
     requests: RegistrationRequest[];
@@ -11,6 +42,12 @@ export interface BootstrapData {
 
 export async function fetchBootstrapData(signal?: AbortSignal): Promise<BootstrapData> {
     const response = await fetch("/api/bootstrap", { signal });
+    const headers: Record<string, string> = {};
+    const token = getAuthToken();
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+    const response = await fetch("/api/bootstrap", { signal, headers });
     if (!response.ok) throw new Error(`Bootstrap request failed: ${response.status}`);
     return response.json() as Promise<BootstrapData>;
 }
@@ -21,6 +58,7 @@ export interface AuthenticatedUser {
     email: string;
     role: "ADMIN" | "CTV";
     status: "ACTIVE" | "PENDING";
+    token?: string;
 }
 
 export async function loginWithDatabase(email: string, password: string): Promise<AuthenticatedUser> {
@@ -34,6 +72,25 @@ export async function loginWithDatabase(email: string, password: string): Promis
         throw new Error(data?.message || "Đăng nhập thất bại.");
     }
     return response.json() as Promise<AuthenticatedUser>;
+    const user = (await response.json()) as AuthenticatedUser;
+    if (user.token) {
+        setAuthToken(user.token);
+    }
+    return user;
+}
+
+export async function logoutDatabase(): Promise<void> {
+    const token = getAuthToken();
+    try {
+        if (token) {
+            await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: authHeaders(),
+            });
+        }
+    } finally {
+        setAuthToken(null);
+    }
 }
 
 export interface RegistrationPayload {
@@ -77,6 +134,7 @@ export async function saveShiftRegistrations(payload: ShiftRegistrationPayload):
     const response = await fetch("/api/shifts/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify(payload),
     });
     if (!response.ok) {
@@ -89,6 +147,7 @@ async function reviewRegistrationRequest(id: string, adminId: string, action: "a
     const response = await fetch(`/api/registration-requests/${encodeURIComponent(id)}/${action}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ adminId }),
     });
     if (!response.ok) {
@@ -109,6 +168,7 @@ export async function changePassword(userId: string, oldPassword: string, newPas
     const response = await fetch("/api/auth/change-password", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ userId, oldPassword, newPassword }),
     });
     if (!response.ok) {
@@ -121,6 +181,7 @@ export async function resetPassword(userId: string, newPassword: string): Promis
     const response = await fetch("/api/auth/reset-password", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ userId, newPassword }),
     });
     if (!response.ok) {
@@ -153,6 +214,7 @@ export async function updateProfile(userId: string, profile: ProfileUpdatePayloa
     const response = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ userId, ...profile }),
     });
     if (!response.ok) {
@@ -166,6 +228,7 @@ export async function saveAdminNotes(userId: string, notes: string): Promise<voi
     const response = await fetch("/api/admin/notes", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ userId, notes }),
     });
     if (!response.ok) {
@@ -178,6 +241,7 @@ export async function toggleAccountStatus(userId: string, status: "active" | "di
     const response = await fetch(`/api/users/${encodeURIComponent(userId)}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ status }),
     });
     if (!response.ok) {
@@ -189,6 +253,7 @@ export async function toggleAccountStatus(userId: string, status: "active" | "di
 export async function deleteAccount(userId: string): Promise<void> {
     const response = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
         method: "DELETE",
+        headers: authHeaders(),
     });
     if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { message?: string } | null;
