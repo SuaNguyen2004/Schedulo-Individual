@@ -33,6 +33,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
             newErrors.newPassword = "Vui lòng nhập mật khẩu mới!";
         } else if (newPassword.length < 6 || newPassword.length > 20) {
             newErrors.newPassword = "Mật khẩu mới phải từ 6 đến 20 ký tự!";
+        } else if (newPassword.length < 6 || newPassword.length > 64) {
+            newErrors.newPassword = "Mật khẩu mới phải từ 6 đến 64 ký tự!";
         }
         if (!confirmPassword.trim()) {
             newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu mới!";

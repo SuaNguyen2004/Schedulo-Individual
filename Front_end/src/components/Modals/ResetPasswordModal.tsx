@@ -39,8 +39,8 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!password.trim()) return;
-    if (password.trim().length < 6 || password.trim().length > 20) {
-      const msg = "Mật khẩu mới phải từ 6 đến 20 ký tự.";
+    if (password.trim().length < 6 || password.trim().length > 64) {
+      const msg = "Mật khẩu mới phải từ 6 đến 64 ký tự.";
       setErrorMsg(msg);
       return;
     }

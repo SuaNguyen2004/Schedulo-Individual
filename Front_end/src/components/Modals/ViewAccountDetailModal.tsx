@@ -847,12 +847,14 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
 
             {/* WORK HISTORY MODAL */}
             {showWorkHistory && (
-                <div className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-150">
-                    <div className="bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-2xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col my-auto">
-                        {/* Header matching image */}
-                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <span className="material-symbols-outlined text-[24px] text-blue-600 dark:text-blue-400">
+                <div className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
+                    <div className="bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-4 max-h-[92vh] flex flex-col my-auto">
+                        {/* Header matching CTV work history view */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className="material-symbols-outlined text-[22px] text-blue-700 dark:text-blue-300"
+                                    aria-hidden="true">
                                     calendar_month
                                 </span>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
@@ -860,120 +862,145 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 </h3>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3">
                                 <div
-                                    className="inline-flex min-h-10 items-center rounded-xl border border-slate-200 bg-slate-100/90 p-1 shadow-2xs dark:border-slate-700 dark:bg-slate-900"
+                                    className="inline-flex min-h-10 sm:min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900"
                                     role="group"
                                     aria-label="Chuyển tháng">
                                     <button
                                         type="button"
                                         onClick={() => changeHistoryMonth(-1)}
-                                        className="flex min-h-8 min-w-8 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                        className="flex min-h-8 min-w-8 sm:min-h-9 sm:min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
                                         aria-label="Xem tháng trước">
-                                        <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                                        <span
+                                            className="material-symbols-outlined text-[18px] sm:text-[20px]"
+                                            aria-hidden="true">
+                                            chevron_left
+                                        </span>
                                     </button>
-                                    <span className="min-w-[120px] px-2 text-center text-xs font-bold text-slate-900 dark:text-slate-100">
+                                    <span
+                                        className="min-w-[110px] sm:min-w-[120px] px-2 text-center text-xs font-bold text-slate-900 dark:text-slate-100"
+                                        aria-live="polite">
                                         Tháng {historyDate.getMonth() + 1}, {historyDate.getFullYear()}
                                     </span>
                                     <button
                                         type="button"
                                         onClick={() => changeHistoryMonth(1)}
-                                        className="flex min-h-8 min-w-8 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                        className="flex min-h-8 min-w-8 sm:min-h-9 sm:min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
                                         aria-label="Xem tháng sau">
-                                        <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                                        <span
+                                            className="material-symbols-outlined text-[18px] sm:text-[20px]"
+                                            aria-hidden="true">
+                                            chevron_right
+                                        </span>
                                     </button>
                                 </div>
 
                                 <button
                                     type="button"
                                     onClick={() => setShowWorkHistory(false)}
-                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
-                                    <span className="material-symbols-outlined text-[20px]">close</span>
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer"
+                                    aria-label="Đóng">
+                                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                                        close
+                                    </span>
                                 </button>
                             </div>
                         </div>
 
-                        {/* Grid calendar */}
-                        <div className="overflow-y-auto overflow-x-auto flex-1 pr-3 sm:pr-4 pb-2">
-                            <div className="min-w-[780px] space-y-3 mr-1">
+                        {/* Grid calendar - perfectly matching CTV schedule workspace responsiveness */}
+                        <div className="overflow-y-auto flex-1 w-full pr-1 pb-1">
+                            <div className="w-full">
                                 {/* 5 Column Weekday Header */}
-                                <div className="grid grid-cols-5 gap-3">
+                                <div className="mb-2 sm:mb-3 grid grid-cols-5 gap-1.5 sm:gap-3 text-center">
                                     {["THỨ 2", "THỨ 3", "THỨ 4", "THỨ 5", "THỨ 6"].map((dayName, idx) => (
                                         <div
                                             key={idx}
-                                            className="rounded-xl border border-slate-200/80 bg-slate-100/90 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-[#1f2023] dark:text-slate-200">
+                                            className="rounded-xl border border-slate-200/80 bg-slate-100 py-1.5 px-1 sm:py-2.5 sm:px-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-[#1f2023] dark:text-slate-200">
                                             {dayName}
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Weeks Rows */}
-                                <div className="space-y-3">
+                                <div className="space-y-1.5 sm:space-y-3">
                                     {monthWeeks.map((week, weekIndex) => (
-                                        <div key={weekIndex} className="grid grid-cols-5 gap-3">
+                                        <div key={weekIndex} className="grid grid-cols-5 gap-1.5 sm:gap-3">
                                             {week.map((date, dayIndex) => {
                                                 if (!date) {
                                                     return (
                                                         <div
                                                             key={dayIndex}
-                                                            className="min-h-[140px] rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 opacity-40 dark:border-slate-800/60 dark:bg-[#1f2023]/30"
+                                                            className="min-h-[88px] sm:min-h-[110px] rounded-xl border border-dashed border-slate-200 bg-slate-50/50 opacity-40 dark:border-slate-800/60 dark:bg-[#1f2023]/30"
+                                                            aria-hidden="true"
                                                         />
                                                     );
                                                 }
 
                                                 const dateISO = toISODate(date);
                                                 const isToday = dateISO === todayISO;
+                                                const isPast = dateISO < todayISO;
                                                 const dayStr = formatShortDate(date);
-                                                const morningShift = getHistoryShift(date, "morning");
-                                                const afternoonShift = getHistoryShift(date, "afternoon");
+                                                const morningShift = isPast ? getHistoryShift(date, "morning") : null;
+                                                const afternoonShift = isPast
+                                                    ? getHistoryShift(date, "afternoon")
+                                                    : null;
 
                                                 return (
                                                     <div
                                                         key={dateISO}
-                                                        className={`flex min-h-[140px] flex-col justify-start rounded-2xl border p-3 transition-all ${
+                                                        className={`flex min-h-[88px] sm:min-h-[110px] flex-col rounded-xl border p-1.5 sm:p-2.5 transition-all ${
                                                             isToday
-                                                                ? "border-blue-600 bg-white ring-2 ring-blue-600/30 dark:border-blue-500 dark:bg-slate-900"
+                                                                ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20"
                                                                 : "border-slate-200/90 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#222327] dark:hover:border-slate-700"
                                                         }`}>
-                                                        <div className="mb-2.5 flex items-center justify-center gap-1.5 text-center">
-                                                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center gap-1 border-b border-slate-100 pb-1 sm:pb-1.5 text-center dark:border-slate-800/80">
+                                                            <span className="flex items-center justify-center gap-1 text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
                                                                 {dayStr}
+                                                                {isToday && (
+                                                                    <span className="rounded bg-blue-700 px-1 py-0.2 text-[9px] font-bold text-white sm:px-1.5 sm:py-0.5 sm:text-[10px] leading-tight">
+                                                                        Hôm nay
+                                                                    </span>
+                                                                )}
                                                             </span>
-                                                            {isToday && (
-                                                                <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                                                                    Hôm nay
-                                                                </span>
-                                                            )}
                                                         </div>
 
-                                                        <div className="space-y-2 flex-1">
+                                                        <div className="space-y-1 sm:space-y-1.5 min-h-[56px] flex flex-col justify-start">
                                                             {morningShift ? (
-                                                                <div className="flex w-full items-center gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 shadow-xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200">
+                                                                <div
+                                                                    key={`${dateISO}-morning`}
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                    title={`Ca Sáng, ${dayStr}`}>
                                                                     <span
-                                                                        className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400"
+                                                                        className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
                                                                         aria-hidden="true">
                                                                         wb_sunny
                                                                     </span>
-                                                                    <span className="text-amber-900 dark:text-amber-100">
-                                                                        Ca Sáng
-                                                                    </span>
                                                                 </div>
                                                             ) : afternoonShift ? (
-                                                                <div className="h-[38px]" aria-hidden="true" />
+                                                                <div
+                                                                    className="h-[28px] sm:h-[32px]"
+                                                                    aria-hidden="true"
+                                                                />
                                                             ) : null}
 
-                                                            {afternoonShift && (
-                                                                <div className="flex w-full items-center gap-2 rounded-xl border border-purple-200/90 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900 shadow-xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200">
+                                                            {afternoonShift ? (
+                                                                <div
+                                                                    key={`${dateISO}-afternoon`}
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                    title={`Ca Chiều, ${dayStr}`}>
                                                                     <span
-                                                                        className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400"
+                                                                        className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
                                                                         aria-hidden="true">
                                                                         wb_twilight
                                                                     </span>
-                                                                    <span className="text-purple-900 dark:text-purple-100">
-                                                                        Ca Chiều
-                                                                    </span>
                                                                 </div>
-                                                            )}
+                                                            ) : morningShift ? (
+                                                                <div
+                                                                    className="h-[28px] sm:h-[32px]"
+                                                                    aria-hidden="true"
+                                                                />
+                                                            ) : null}
                                                         </div>
                                                     </div>
                                                 );

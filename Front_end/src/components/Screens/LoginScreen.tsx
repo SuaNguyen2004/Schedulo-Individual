@@ -236,7 +236,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         setLoginFieldErrors({});
         setIsProcessing(true);
         try {
-            const user = await loginWithDatabase(loginEmail.trim(), loginPassword);
+            const user = await loginWithDatabase(loginEmail.toLowerCase().trim(), loginPassword);
             onLoginSuccess(user);
         } catch (error) {
             setLoginError(error instanceof Error ? error.message : "Đăng nhập thất bại.");
@@ -269,8 +269,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         if (!cvFile) errors.cvFile = "Vui lòng tải file CV lên!";
         if (!regPassword) {
             errors.regPassword = "Vui lòng nhập mật khẩu!";
-        } else if (regPassword.length < 6 || regPassword.length > 20) {
-            errors.regPassword = "Mật khẩu phải từ 6 đến 20 ký tự!";
+        } else if (regPassword.length < 6 || regPassword.length > 64) {
+            errors.regPassword = "Mật khẩu phải từ 6 đến 64 ký tự!";
         }
 
         if (!regConfirmPassword) {

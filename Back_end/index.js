@@ -9,7 +9,18 @@ const crypto = require("crypto");
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "schedulo_secure_jwt_secret_key_2026";
+let JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET === "schedulo_secure_jwt_secret_key_2026") {
+    if (process.env.NODE_ENV === "production") {
+        console.error("FATAL: JWT_SECRET must be securely configured in environment!");
+        process.exit(1);
+    } else {
+        console.warn(
+            "WARNING: JWT_SECRET not configured or using weak default. Generating an ephemeral secret for this session.",
+        );
+        JWT_SECRET = crypto.randomBytes(32).toString("hex");
+    }
+}
 
 function signToken(payload, expiresInSeconds = 7 * 24 * 60 * 60) {
     const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
@@ -41,9 +52,43 @@ function verifyToken(token) {
     }
 }
 
-function requireAuth(req, res, next) {
+function extractToken(req) {
     const authHeader = req.headers["authorization"] || "";
-    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+    if (authHeader.startsWith("Bearer ")) {
+        return authHeader.slice(7).trim();
+    }
+    if (req.query && typeof req.query.token === "string" && req.query.token.trim()) {
+        return req.query.token.trim();
+    }
+    if (req.headers?.cookie) {
+        const match = req.headers.cookie.match(/(?:^|;\s*)schedulo_token=([^;]+)/);
+        if (match) {
+            try {
+                return decodeURIComponent(match[1]);
+            } catch {
+                return match[1];
+            }
+        }
+    }
+    return null;
+}
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST || "127.0.0.1",
+    port: Number(process.env.DB_PORT || 3306),
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "root",
+    database: process.env.DB_NAME || "schedule",
+    waitForConnections: true,
+    connectionLimit: 10,
+    charset: "utf8mb4",
+    // Return DATE/DATETIME as plain strings so no implicit UTC conversion can
+    // shift a work_date by one day when the server runs in a non-UTC timezone.
+    dateStrings: true,
+});
+
+async function requireAuth(req, res, next) {
+    const token = extractToken(req);
     if (!token) {
         return res.status(401).json({ message: "Vui lòng đăng nhập để truy cập tài nguyên này." });
     }
@@ -53,8 +98,27 @@ function requireAuth(req, res, next) {
             .status(401)
             .json({ message: "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại." });
     }
-    req.user = user;
-    next();
+    try {
+        const [rows] = await pool.execute("SELECT id, role, status FROM users WHERE id = ? LIMIT 1", [user.id]);
+        const dbUser = rows[0];
+        if (!dbUser || dbUser.status !== "active") {
+            return res.status(403).json({
+                message:
+                    dbUser && dbUser.status === "disabled"
+                        ? "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ Admin để được hỗ trợ."
+                        : "Tài khoản không tồn tại hoặc chưa được kích hoạt.",
+                disabled: dbUser?.status === "disabled",
+            });
+        }
+        req.user = {
+            ...user,
+            role: String(dbUser.role || "").toLowerCase(),
+            status: dbUser.status,
+        };
+        next();
+    } catch (err) {
+        return res.status(500).json({ message: "Lỗi kiểm tra phiên xác thực.", detail: err.message });
+    }
 }
 
 function requireAdmin(req, res, next) {
@@ -76,25 +140,119 @@ const imageDirectory = path.join(__dirname, "image");
 const cvDirectory = path.join(__dirname, "CV");
 fs.mkdirSync(imageDirectory, { recursive: true });
 fs.mkdirSync(cvDirectory, { recursive: true });
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || "127.0.0.1",
-    port: Number(process.env.DB_PORT || 3308),
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "root",
-    database: process.env.DB_NAME || "schedule",
-    waitForConnections: true,
-    connectionLimit: 10,
-    charset: "utf8mb4",
-    // Return DATE/DATETIME as plain strings so no implicit UTC conversion can
-    // shift a work_date by one day when the server runs in a non-UTC timezone.
-    dateStrings: true,
-});
 
 app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "25mb" }));
-app.use("/image", express.static(imageDirectory));
-app.use("/CV", express.static(cvDirectory));
+
+// Secure file access for images (CCCD images strictly protected, avatars public)
+app.get("/image/:fileName", async (req, res) => {
+    const rawFileName = req.params.fileName || "";
+    const sanitizedFileName = path.basename(rawFileName);
+    const targetPath = path.resolve(imageDirectory, sanitizedFileName);
+
+    // Prevent directory traversal
+    if (!targetPath.startsWith(path.resolve(imageDirectory))) {
+        return res.status(403).json({ message: "Truy cập bị từ chối." });
+    }
+    if (!fs.existsSync(targetPath)) {
+        return res.status(404).json({ message: "Không tìm thấy hình ảnh." });
+    }
+
+    // Avatar images are public profile photos
+    const isAvatar = sanitizedFileName.startsWith("avatar-") || sanitizedFileName === "avatar.jpg";
+    if (isAvatar) {
+        return res.sendFile(targetPath);
+    }
+
+    // ID card (CCCD) images are strictly confidential: require authentication
+    const token = extractToken(req);
+    if (!token) {
+        return res.status(401).json({ message: "Vui lòng đăng nhập để xem hình ảnh này." });
+    }
+    const user = verifyToken(token);
+    if (!user) {
+        return res.status(401).json({ message: "Phiên đăng nhập không hợp lệ hoặc đã hết hạn." });
+    }
+
+    try {
+        const [rows] = await pool.execute("SELECT id, role, status FROM users WHERE id = ? LIMIT 1", [user.id]);
+        const dbUser = rows[0];
+        if (!dbUser || dbUser.status !== "active") {
+            return res.status(403).json({ message: "Tài khoản không có quyền truy cập." });
+        }
+
+        const isAdmin = String(dbUser.role || "").toLowerCase() === "admin";
+        if (isAdmin) {
+            return res.sendFile(targetPath);
+        }
+
+        // Collaborators may only view their own CCCD
+        const [profileRows] = await pool.execute(
+            `SELECT user_id FROM user_profiles
+             WHERE user_id = ? AND (id_card_front_url LIKE ? OR id_card_back_url LIKE ?) LIMIT 1`,
+            [user.id, `%${sanitizedFileName}%`, `%${sanitizedFileName}%`],
+        );
+        if (profileRows.length > 0) {
+            return res.sendFile(targetPath);
+        }
+
+        return res.status(403).json({ message: "Bạn không có quyền xem hình ảnh CCCD này." });
+    } catch (err) {
+        return res.status(500).json({ message: "Lỗi kiểm tra quyền truy cập file.", detail: err.message });
+    }
+});
+
+// Secure file access for CV documents (Confidential: Admin or owner only)
+app.get("/CV/:fileName", async (req, res) => {
+    const rawFileName = req.params.fileName || "";
+    const sanitizedFileName = path.basename(rawFileName);
+    const targetPath = path.resolve(cvDirectory, sanitizedFileName);
+
+    // Prevent directory traversal
+    if (!targetPath.startsWith(path.resolve(cvDirectory))) {
+        return res.status(403).json({ message: "Truy cập bị từ chối." });
+    }
+    if (!fs.existsSync(targetPath)) {
+        return res.status(404).json({ message: "Không tìm thấy tài liệu CV." });
+    }
+
+    // All CV files are confidential: require authentication
+    const token = extractToken(req);
+    if (!token) {
+        return res.status(401).json({ message: "Vui lòng đăng nhập để tải hoặc xem tài liệu CV." });
+    }
+    const user = verifyToken(token);
+    if (!user) {
+        return res.status(401).json({ message: "Phiên đăng nhập không hợp lệ hoặc đã hết hạn." });
+    }
+
+    try {
+        const [rows] = await pool.execute("SELECT id, role, status FROM users WHERE id = ? LIMIT 1", [user.id]);
+        const dbUser = rows[0];
+        if (!dbUser || dbUser.status !== "active") {
+            return res.status(403).json({ message: "Tài khoản không có quyền truy cập." });
+        }
+
+        const isAdmin = String(dbUser.role || "").toLowerCase() === "admin";
+        if (isAdmin) {
+            return res.sendFile(targetPath);
+        }
+
+        // Collaborators may only view their own CV
+        const [profileRows] = await pool.execute(
+            `SELECT user_id FROM user_profiles
+             WHERE user_id = ? AND cv_url LIKE ? LIMIT 1`,
+            [user.id, `%${sanitizedFileName}%`],
+        );
+        if (profileRows.length > 0) {
+            return res.sendFile(targetPath);
+        }
+
+        return res.status(403).json({ message: "Bạn không có quyền xem tài liệu CV này." });
+    } catch (err) {
+        return res.status(500).json({ message: "Lỗi kiểm tra quyền truy cập file.", detail: err.message });
+    }
+});
 
 const frontendDistDirectory = path.join(__dirname, "..", "Front_end", "dist");
 if (fs.existsSync(frontendDistDirectory)) {
@@ -107,11 +265,56 @@ app.get("/api/health", async (_req, res) => {
         res.json({ status: "ok", database: "connected" });
     } catch (error) {
         res.status(503).json({ status: "error", database: "disconnected", message: error.message });
+        res.status(503).json(formatError("Hệ thống database đang mất kết nối.", error));
     }
 });
 
+const loginAttempts = new Map();
+const LOGIN_RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_LOGIN_ATTEMPTS = 10;
+
+function checkLoginRateLimit(ip) {
+    const now = Date.now();
+    const entry = loginAttempts.get(ip);
+    if (!entry) return true;
+    if (now - entry.firstAttempt > LOGIN_RATE_LIMIT_WINDOW_MS) {
+        loginAttempts.delete(ip);
+        return true;
+    }
+    return entry.count < MAX_LOGIN_ATTEMPTS;
+}
+
+function recordFailedLogin(ip) {
+    const now = Date.now();
+    const entry = loginAttempts.get(ip);
+    if (!entry || now - entry.firstAttempt > LOGIN_RATE_LIMIT_WINDOW_MS) {
+        loginAttempts.set(ip, { count: 1, firstAttempt: now });
+    } else {
+        entry.count += 1;
+    }
+}
+
+function clearLoginAttempts(ip) {
+    loginAttempts.delete(ip);
+}
+
+function formatError(message, error) {
+    if (process.env.NODE_ENV === "production") {
+        return { message };
+    }
+    return { message, detail: error?.message || String(error) };
+}
+
 app.post("/api/auth/login", async (req, res) => {
-    const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+    const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
+
+    if (!checkLoginRateLimit(clientIp)) {
+        return res
+            .status(429)
+            .json({ message: "Bạn đã thử đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 5 phút." });
+    }
+
+    const email = typeof req.body?.email === "string" ? req.body.email.toLowerCase().trim() : "";
     const password = typeof req.body?.password === "string" ? req.body.password : "";
 
     if (!email || !password) {
@@ -123,19 +326,20 @@ app.post("/api/auth/login", async (req, res) => {
         return res.status(400).json({ message: "Email không đúng định dạng hợp lệ." });
     }
 
-    if (password.length > 128) {
-        return res.status(400).json({ message: "Mật khẩu không được vượt quá 128 ký tự." });
+    if (password.length > 64) {
+        return res.status(400).json({ message: "Mật khẩu không được vượt quá 64 ký tự." });
     }
 
     try {
         const [rows] = await pool.execute(
             `SELECT u.id, u.email, u.password_hash, u.role, u.status, p.full_name
              FROM users u LEFT JOIN user_profiles p ON p.user_id = u.id
-             WHERE u.email = ? LIMIT 1`,
+             WHERE LOWER(u.email) = ? LIMIT 1`,
             [email],
         );
         const user = rows[0];
         if (!user) {
+            recordFailedLogin(clientIp);
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
         }
 
@@ -157,12 +361,17 @@ app.post("/api/auth/login", async (req, res) => {
 
         const passwordMatches = await bcrypt.compare(password, user.password_hash);
         if (!passwordMatches) {
+            recordFailedLogin(clientIp);
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
         }
 
         if (userStatus !== "active") {
+            recordFailedLogin(clientIp);
             return res.status(401).json({ message: "Email hoặc mật khẩu không chính xác." });
         }
+
+        // Reset rate limit on successful authentication
+        clearLoginAttempts(clientIp);
 
         const token = signToken({
             id: String(user.id),
@@ -170,6 +379,9 @@ app.post("/api/auth/login", async (req, res) => {
             role: userRole === "admin" ? "admin" : "collaborator",
             status: "active",
         });
+
+        res.setHeader("Set-Cookie", `schedulo_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax; HttpOnly`);
+        res.setHeader("Set-Cookie", `schedulo_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax; HttpOnly`);
 
         return res.json({
             id: String(user.id),
@@ -181,10 +393,12 @@ app.post("/api/auth/login", async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ message: "Không thể xác thực tài khoản.", detail: error.message });
+        return res.status(500).json(formatError("Không thể xác thực tài khoản.", error));
     }
 });
 
 app.post("/api/auth/logout", requireAuth, (_req, res) => {
+    res.setHeader("Set-Cookie", "schedulo_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly");
     return res.json({ message: "Đăng xuất thành công." });
 });
 
@@ -202,8 +416,8 @@ app.post("/api/auth/register", async (req, res) => {
     if (!emailRegex.test(email.trim())) {
         return res.status(400).json({ message: "Email không đúng định dạng hợp lệ." });
     }
-    if (password.length < 6 || password.length > 20) {
-        return res.status(400).json({ message: "Mật khẩu phải từ 6 đến 20 ký tự." });
+    if (password.length < 6 || password.length > 64) {
+        return res.status(400).json({ message: "Mật khẩu phải từ 6 đến 64 ký tự." });
     }
     if (!dobValue || typeof dobValue !== "string" || !dobValue.trim()) {
         return res.status(400).json({ message: "Vui lòng chọn ngày sinh." });
@@ -229,7 +443,7 @@ app.post("/api/auth/register", async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        const normalizedEmail = email.trim();
+        const normalizedEmail = email.toLowerCase().trim();
         const normalizedPhone = phone.trim();
 
         // users.email is UNIQUE, and a rejected application is the one case where that
@@ -346,8 +560,8 @@ app.patch("/api/auth/reset-password", requireAdmin, async (req, res) => {
     if (!userId || typeof newPassword !== "string") {
         return res.status(400).json({ message: "Thiếu thông tin cần thiết." });
     }
-    if (newPassword.length < 6 || newPassword.length > 20) {
-        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 20 ký tự." });
+    if (newPassword.length < 6 || newPassword.length > 64) {
+        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 64 ký tự." });
     }
     try {
         const newHash = await bcrypt.hash(newPassword, 12);
@@ -360,7 +574,7 @@ app.patch("/api/auth/reset-password", requireAdmin, async (req, res) => {
         }
         return res.json({ message: "Đặt lại mật khẩu thành công." });
     } catch (error) {
-        return res.status(500).json({ message: "Không thể đặt lại mật khẩu.", detail: error.message });
+        return res.status(500).json(formatError("Không thể đặt lại mật khẩu.", error));
     }
 });
 
@@ -373,8 +587,8 @@ app.patch("/api/auth/change-password", requireAuth, async (req, res) => {
     if (String(req.user.id) !== String(userId) && req.user.role.toLowerCase() !== "admin") {
         return res.status(403).json({ message: "Bạn không có quyền đổi mật khẩu của tài khoản này." });
     }
-    if (newPassword.length < 6 || newPassword.length > 20) {
-        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 20 ký tự." });
+    if (newPassword.length < 6 || newPassword.length > 64) {
+        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 64 ký tự." });
     }
     try {
         const [rows] = await pool.execute("SELECT id, password_hash FROM users WHERE id = ? LIMIT 1", [String(userId)]);
@@ -393,7 +607,7 @@ app.patch("/api/auth/change-password", requireAuth, async (req, res) => {
         ]);
         return res.json({ message: "Đổi mật khẩu thành công." });
     } catch (error) {
-        return res.status(500).json({ message: "Không thể đổi mật khẩu.", detail: error.message });
+        return res.status(500).json(formatError("Không thể đổi mật khẩu.", error));
     }
 });
 
@@ -754,10 +968,12 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
         // registration window is rewritten.
         await promoteElapsedSchedulesToHistory(connection, userId);
 
-        // Replace the whole registration window.
+        // Replace the registration window.
+        // Only rewrite/cancel schedules from today onward, preserving elapsed days of the current week
+        const effectiveStartDate = rangeStart < today ? today : rangeStart;
         await connection.execute("DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?", [
             userId,
-            toIsoDate(rangeStart),
+            toIsoDate(effectiveStartDate),
         ]);
 
         let inserted = 0;
@@ -768,7 +984,7 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
             );
             const shiftTypeIdByCode = new Map(shiftTypeRows.map((row) => [row.code, row.id]));
 
-            for (let cursor = new Date(rangeStart); cursor <= rangeEnd; cursor.setDate(cursor.getDate() + 1)) {
+            for (let cursor = new Date(effectiveStartDate); cursor <= rangeEnd; cursor.setDate(cursor.getDate() + 1)) {
                 const jsDay = (cursor.getDay() + 6) % 7; // 0 = Monday
                 if (jsDay > 4) continue; // Only Mon-Fri
 
@@ -801,10 +1017,7 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
             console.error("Rollback failed:", rollbackError.message);
         }
         console.error("/api/shifts/register error:", error.message);
-        return res.status(500).json({
-            message: "Không thể lưu lịch làm việc.",
-            detail: error.message,
-        });
+        return res.status(500).json(formatError("Không thể lưu lịch làm việc.", error));
     } finally {
         connection.release();
     }
@@ -905,7 +1118,7 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
                     stt: index + 1,
                     name: user.full_name || "",
                     email: user.email,
-                    phone: user.phone || "",
+                    phone: canViewSensitive ? user.phone || "" : user.phone ? maskPhone(user.phone) : "",
                     initials: (user.full_name || "")
                         .split(/\s+/)
                         .map((part) => part[0])
@@ -915,7 +1128,7 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
                     role: normalizedRole === "admin" ? "Admin" : "Cộng tác viên",
                     status: normalizedStatus === "active" ? "Kích hoạt" : "Vô hiệu hóa",
                     registerDate: formatDate(user.created_at),
-                    dob: formatDate(user.date_of_birth),
+                    dob: canViewSensitive ? formatDate(user.date_of_birth) : "",
                     notes: canViewSensitive ? user.admin_note || undefined : undefined,
                 };
             });
@@ -948,12 +1161,12 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
                       notes: user.admin_note || undefined,
                   }));
 
-        const shifts = groupSchedules(schedules);
+        const shifts = groupSchedules(schedules, "schedule", req.user);
         res.json({
             accounts,
             requests,
             shifts,
-            history: groupSchedules(history, "history"),
+            history: groupSchedules(history, "history", req.user),
         });
     } catch (error) {
         res.status(500).json({ message: "Không thể tải dữ liệu từ database.", detail: error.message });
@@ -1004,8 +1217,6 @@ async function saveAttachment(attachment, userName = "", userId = "") {
     if (!isImage && !allowedCvExtensions.includes(extension)) {
         throw new Error("Vui lòng chọn file định dạng PDF (.pdf) hoặc Word (.doc, .docx)!");
     }
-    const safeUserName = sanitizeFileName(userName);
-    const safeOriginalName = sanitizeFileName(path.basename(attachment.fileName || "cv"));
     const prefix =
         attachment.fileType === "ID_CARD_FRONT"
             ? "id-card-front"
@@ -1013,20 +1224,11 @@ async function saveAttachment(attachment, userName = "", userId = "") {
               ? "id-card-back"
               : attachment.fileType === "AVATAR"
                 ? "avatar"
-                : "";
+                : "cv";
 
-    let userSuffix = "";
-    if (userId) {
-        userSuffix = safeUserName && safeUserName !== "file" ? `-${safeUserName}-${userId}` : `-${userId}`;
-    } else {
-        userSuffix = safeUserName && safeUserName !== "file" ? `-${safeUserName}` : `-${Date.now()}`;
-    }
-
-    const fileName = isImage
-        ? `${prefix}${userSuffix}${extension}`
-        : userId
-          ? `${safeOriginalName.replace(/\.[^/.]+$/, "")}-${userId}${extension}`
-          : safeOriginalName;
+    // Use random UUID for unique, unguessable file names (prevents collision S-09 and enumeration S-03)
+    const fileId = crypto.randomUUID();
+    const fileName = `${prefix}-${fileId}${extension}`;
     const filePath = path.join(directory, fileName);
     const data = decodeDataUrl(attachment.filePath);
 
@@ -1070,10 +1272,18 @@ function sanitizeFileName(value) {
     );
 }
 
-function groupSchedules(schedules, idPrefix = "schedule") {
+function maskPhone(phone) {
+    if (!phone || typeof phone !== "string") return "";
+    const clean = phone.trim();
+    if (clean.length <= 6) return "***";
+    return `${clean.slice(0, 3)}****${clean.slice(-3)}`;
+}
+
+function groupSchedules(schedules, idPrefix = "schedule", reqUser = null) {
     // Schedules already carry concrete work_date + shift_code; just group by
     // the same (workDate, shiftType) tuple for the frontend grid. Used for both
     // work_schedules and work_history rows, hence the caller-supplied id prefix.
+    const isAdmin = String(reqUser?.role || "").toLowerCase() === "admin";
     const grouped = new Map();
     for (const schedule of schedules) {
         const workDateISO = toIsoDate(schedule.work_date);
@@ -1081,6 +1291,9 @@ function groupSchedules(schedules, idPrefix = "schedule") {
         const dateObj = new Date(`${workDateISO}T00:00:00`);
         const dayIndex = (dateObj.getDay() + 6) % 7;
         const isMorning = schedule.shift_code === "morning";
+        const isSelf = String(schedule.user_id) === String(reqUser?.id);
+        const canViewPhone = isAdmin || isSelf;
+
         const shift = grouped.get(key) || {
             id: `${idPrefix}-${key}`,
             dayIndex,
@@ -1097,7 +1310,7 @@ function groupSchedules(schedules, idPrefix = "schedule") {
             id: String(schedule.user_id),
             name: schedule.full_name,
             ...(schedule.avatar_url ? { avatar: schedule.avatar_url } : {}),
-            phone: schedule.phone || "",
+            phone: canViewPhone ? schedule.phone || "" : schedule.phone ? maskPhone(schedule.phone) : "",
             status: "Đã duyệt",
         });
         grouped.set(key, shift);

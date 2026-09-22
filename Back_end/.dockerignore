@@ -1,0 +1,8 @@
+node_modules
+.env
+image/*
+!image/.gitkeep
+CV/*
+!CV/.gitkeep
+*.log
+

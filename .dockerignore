@@ -23,3 +23,11 @@ src/test
 *.test.ts
 *.test.tsx
 
+.env
+Back_end/.env
+Back_end/image/*
+!Back_end/image/.gitkeep
+Back_end/CV/*
+!Back_end/CV/.gitkeep
+
+

@@ -155,7 +155,13 @@ export const App: React.FC = () => {
                         clearAuthState("Tài khoản của bạn đã bị vô hiệu hoá. Vui lòng liên hệ Admin!");
                     } else {
                         setCurrentUser(authenticatedAccount);
-                        setCurrentTab(authenticatedAccount.role === "Admin" ? "accounts" : "schedule");
+                        setCurrentTab((prev) =>
+                            prev === "profile" || prev === "requests" || prev === "meetings"
+                                ? prev
+                                : authenticatedAccount.role === "Admin"
+                                  ? "accounts"
+                                  : "schedule",
+                        );
                     }
                 } else if (authenticatedEmail) {
                     clearAuthState();
@@ -191,10 +197,11 @@ export const App: React.FC = () => {
         }
     }, [accounts, isLoggedIn, currentUser.id, currentUser.email]);
 
-    // Periodic polling to sync account status live across sessions
+    // Periodic polling to sync account status live across sessions (optimized interval + pause on background tab)
     useEffect(() => {
         if (!isLoggedIn || !getAuthToken()) return;
         const checkStatus = () => {
+            if (typeof document !== "undefined" && document.hidden) return;
             fetchBootstrapData()
                 .then((data) => {
                     if (data?.accounts && Array.isArray(data.accounts)) {
@@ -207,8 +214,19 @@ export const App: React.FC = () => {
                 .catch(() => {});
         };
 
-        const interval = setInterval(checkStatus, 3000);
-        return () => clearInterval(interval);
+        const interval = setInterval(checkStatus, 15000);
+
+        const handleVisibilityChange = () => {
+            if (typeof document !== "undefined" && !document.hidden) {
+                checkStatus();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, [isLoggedIn]);
 
     // Handlers
