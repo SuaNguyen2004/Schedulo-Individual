@@ -166,12 +166,10 @@ export const App: React.FC = () => {
                 if (error instanceof DOMException && error.name === "AbortError") return;
                 console.warn("Không thể tải dữ liệu từ Backend, sử dụng dữ liệu cục bộ.", error);
 
-                // If there's an active session but bootstrap failed (e.g. database offline),
                 // If there's an active session but bootstrap failed (e.g. session expired or database offline),
                 // clear auth state and redirect to login screen
                 const authenticatedEmail = window.localStorage.getItem(AUTH_USER_EMAIL_KEY);
                 if (authenticatedEmail) {
-                    clearAuthState("Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra lại!");
                     clearAuthState("Phiên đăng nhập đã hết hạn hoặc không thể kết nối cơ sở dữ liệu.");
                 }
                 return null;
@@ -180,7 +178,6 @@ export const App: React.FC = () => {
         bootstrapRef.current = promise;
 
         return () => controller.abort();
-    }, []);
     }, [isLoggedIn]);
 
     // Monitor logged-in user status in real-time
@@ -212,7 +209,6 @@ export const App: React.FC = () => {
 
         const interval = setInterval(checkStatus, 3000);
         return () => clearInterval(interval);
-    }, []);
     }, [isLoggedIn]);
 
     // Handlers

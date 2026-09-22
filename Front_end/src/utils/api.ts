@@ -41,7 +41,6 @@ export interface BootstrapData {
 }
 
 export async function fetchBootstrapData(signal?: AbortSignal): Promise<BootstrapData> {
-    const response = await fetch("/api/bootstrap", { signal });
     const headers: Record<string, string> = {};
     const token = getAuthToken();
     if (token) {
@@ -71,7 +70,6 @@ export async function loginWithDatabase(email: string, password: string): Promis
         const data = (await response.json().catch(() => null)) as { message?: string } | null;
         throw new Error(data?.message || "Đăng nhập thất bại.");
     }
-    return response.json() as Promise<AuthenticatedUser>;
     const user = (await response.json()) as AuthenticatedUser;
     if (user.token) {
         setAuthToken(user.token);
@@ -133,7 +131,6 @@ export interface ShiftRegistrationPayload {
 export async function saveShiftRegistrations(payload: ShiftRegistrationPayload): Promise<void> {
     const response = await fetch("/api/shifts/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         headers: authHeaders(),
         body: JSON.stringify(payload),
     });
@@ -146,7 +143,6 @@ export async function saveShiftRegistrations(payload: ShiftRegistrationPayload):
 async function reviewRegistrationRequest(id: string, adminId: string, action: "approve" | "reject"): Promise<void> {
     const response = await fetch(`/api/registration-requests/${encodeURIComponent(id)}/${action}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         headers: authHeaders(),
         body: JSON.stringify({ adminId }),
     });
@@ -167,7 +163,6 @@ export function rejectRegistrationRequest(id: string, adminId: string): Promise<
 export async function changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
     const response = await fetch("/api/auth/change-password", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         headers: authHeaders(),
         body: JSON.stringify({ userId, oldPassword, newPassword }),
     });
@@ -180,7 +175,6 @@ export async function changePassword(userId: string, oldPassword: string, newPas
 export async function resetPassword(userId: string, newPassword: string): Promise<void> {
     const response = await fetch("/api/auth/reset-password", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         headers: authHeaders(),
         body: JSON.stringify({ userId, newPassword }),
     });
@@ -213,7 +207,6 @@ export interface ProfileUpdateResponse {
 export async function updateProfile(userId: string, profile: ProfileUpdatePayload): Promise<ProfileUpdateResponse> {
     const response = await fetch("/api/profile", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         headers: authHeaders(),
         body: JSON.stringify({ userId, ...profile }),
     });
@@ -227,7 +220,6 @@ export async function updateProfile(userId: string, profile: ProfileUpdatePayloa
 export async function saveAdminNotes(userId: string, notes: string): Promise<void> {
     const response = await fetch("/api/admin/notes", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         headers: authHeaders(),
         body: JSON.stringify({ userId, notes }),
     });
@@ -240,7 +232,6 @@ export async function saveAdminNotes(userId: string, notes: string): Promise<voi
 export async function toggleAccountStatus(userId: string, status: "active" | "disabled"): Promise<void> {
     const response = await fetch(`/api/users/${encodeURIComponent(userId)}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         headers: authHeaders(),
         body: JSON.stringify({ status }),
     });
