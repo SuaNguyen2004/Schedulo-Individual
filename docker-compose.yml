@@ -30,7 +30,7 @@ services:
             - DB_PASSWORD=root
             - DB_NAME=schedule
             - PORT=4000
-            - JWT_SECRET=${JWT_SECRET:-9332323b81bda060b0f4bef9c8cf3b3f6ef4af192940d23d0624a7bf678cc8c0}
+            - JWT_SECRET=${JWT_SECRET}
         volumes:
             - ./Back_end/image:/app/image
             - ./Back_end/CV:/app/CV

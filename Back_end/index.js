@@ -24,8 +24,11 @@ if (!JWT_SECRET || JWT_SECRET === "schedulo_secure_jwt_secret_key_2026") {
 
 function signToken(payload, expiresInSeconds = 7 * 24 * 60 * 60) {
     const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-    const exp = Math.floor(Date.now() / 1000) + expiresInSeconds;
-    const body = Buffer.from(JSON.stringify({ ...payload, exp })).toString("base64url");
+    const nowMs = Date.now();
+    const exp = Math.floor(nowMs / 1000) + expiresInSeconds;
+    const body = Buffer.from(JSON.stringify({ ...payload, iat: Math.floor(nowMs / 1000), iatMs: nowMs, exp })).toString(
+        "base64url",
+    );
     const signature = crypto.createHmac("sha256", JWT_SECRET).update(`${header}.${body}`).digest("base64url");
     return `${header}.${body}.${signature}`;
 }
@@ -87,6 +90,8 @@ const pool = mysql.createPool({
     dateStrings: true,
 });
 
+const passwordChangedTimes = new Map();
+
 async function requireAuth(req, res, next) {
     const token = extractToken(req);
     if (!token) {
@@ -97,6 +102,13 @@ async function requireAuth(req, res, next) {
         return res
             .status(401)
             .json({ message: "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại." });
+    }
+    const changedTime = passwordChangedTimes.get(String(user.id));
+    if (changedTime) {
+        const tokenTime = user.iatMs || (user.iat ? user.iat * 1000 : 0);
+        if (tokenTime < changedTime) {
+            return res.status(401).json({ message: "Mật khẩu đã được thay đổi. Vui lòng đăng nhập lại." });
+        }
     }
     try {
         const [rows] = await pool.execute("SELECT id, role, status FROM users WHERE id = ? LIMIT 1", [user.id]);
@@ -117,7 +129,7 @@ async function requireAuth(req, res, next) {
         };
         next();
     } catch (err) {
-        return res.status(500).json({ message: "Lỗi kiểm tra phiên xác thực.", detail: err.message });
+        return res.status(500).json(formatError("Lỗi kiểm tra phiên xác thực.", err));
     }
 }
 
@@ -141,7 +153,40 @@ const cvDirectory = path.join(__dirname, "CV");
 fs.mkdirSync(imageDirectory, { recursive: true });
 fs.mkdirSync(cvDirectory, { recursive: true });
 
-app.use(cors({ origin: "*" }));
+const allowedOrigins = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4000",
+    "http://127.0.0.1:4000",
+];
+
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (
+                !origin ||
+                allowedOrigins.includes(origin) ||
+                origin.startsWith("http://localhost:") ||
+                origin.startsWith("http://127.0.0.1:")
+            ) {
+                return callback(null, true);
+            }
+            return callback(new Error("CORS policy does not allow access from this origin."));
+        },
+        credentials: true,
+    }),
+);
+
+app.use((_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    next();
+});
+
 app.use(express.json({ limit: "25mb" }));
 
 // Secure file access for images (CCCD images strictly protected, avatars public)
@@ -198,7 +243,7 @@ app.get("/image/:fileName", async (req, res) => {
 
         return res.status(403).json({ message: "Bạn không có quyền xem hình ảnh CCCD này." });
     } catch (err) {
-        return res.status(500).json({ message: "Lỗi kiểm tra quyền truy cập file.", detail: err.message });
+        return res.status(500).json(formatError("Lỗi kiểm tra quyền truy cập file.", err));
     }
 });
 
@@ -250,7 +295,7 @@ app.get("/CV/:fileName", async (req, res) => {
 
         return res.status(403).json({ message: "Bạn không có quyền xem tài liệu CV này." });
     } catch (err) {
-        return res.status(500).json({ message: "Lỗi kiểm tra quyền truy cập file.", detail: err.message });
+        return res.status(500).json(formatError("Lỗi kiểm tra quyền truy cập file.", err));
     }
 });
 
@@ -262,10 +307,9 @@ if (fs.existsSync(frontendDistDirectory)) {
 app.get("/api/health", async (_req, res) => {
     try {
         await pool.query("SELECT 1");
-        res.json({ status: "ok", database: "connected" });
+        return res.json({ status: "ok", database: "connected" });
     } catch (error) {
-        res.status(503).json({ status: "error", database: "disconnected", message: error.message });
-        res.status(503).json(formatError("Hệ thống database đang mất kết nối.", error));
+        return res.status(503).json(formatError("Hệ thống database đang mất kết nối.", error));
     }
 });
 
@@ -296,6 +340,31 @@ function recordFailedLogin(ip) {
 
 function clearLoginAttempts(ip) {
     loginAttempts.delete(ip);
+}
+
+const registrationAttempts = new Map();
+const REGISTRATION_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_REGISTRATION_ATTEMPTS = 20;
+
+function checkRegistrationRateLimit(ip) {
+    const now = Date.now();
+    const entry = registrationAttempts.get(ip);
+    if (!entry) return true;
+    if (now - entry.firstAttempt > REGISTRATION_RATE_LIMIT_WINDOW_MS) {
+        registrationAttempts.delete(ip);
+        return true;
+    }
+    return entry.count < MAX_REGISTRATION_ATTEMPTS;
+}
+
+function recordRegistrationAttempt(ip) {
+    const now = Date.now();
+    const entry = registrationAttempts.get(ip);
+    if (!entry || now - entry.firstAttempt > REGISTRATION_RATE_LIMIT_WINDOW_MS) {
+        registrationAttempts.set(ip, { count: 1, firstAttempt: now });
+    } else {
+        entry.count += 1;
+    }
 }
 
 function formatError(message, error) {
@@ -381,7 +450,6 @@ app.post("/api/auth/login", async (req, res) => {
         });
 
         res.setHeader("Set-Cookie", `schedulo_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax; HttpOnly`);
-        res.setHeader("Set-Cookie", `schedulo_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax; HttpOnly`);
 
         return res.json({
             id: String(user.id),
@@ -392,7 +460,6 @@ app.post("/api/auth/login", async (req, res) => {
             token,
         });
     } catch (error) {
-        return res.status(500).json({ message: "Không thể xác thực tài khoản.", detail: error.message });
         return res.status(500).json(formatError("Không thể xác thực tài khoản.", error));
     }
 });
@@ -403,6 +470,12 @@ app.post("/api/auth/logout", requireAuth, (_req, res) => {
 });
 
 app.post("/api/auth/register", async (req, res) => {
+    const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
+    if (!checkRegistrationRateLimit(clientIp)) {
+        return res.status(429).json({ message: "Bạn đã gửi quá nhiều yêu cầu đăng ký. Vui lòng thử lại sau ít phút." });
+    }
+    recordRegistrationAttempt(clientIp);
+
     const { name, email, phone, password, attachments = [] } = req.body || {};
     const dobValue = req.body?.dob || req.body?.dateOfBirth;
 
@@ -422,10 +495,14 @@ app.post("/api/auth/register", async (req, res) => {
     if (!dobValue || typeof dobValue !== "string" || !dobValue.trim()) {
         return res.status(400).json({ message: "Vui lòng chọn ngày sinh." });
     }
-    if (!parseDate(dobValue)) {
+    const parsedDob = parseDate(dobValue);
+    if (!parsedDob) {
         return res
             .status(400)
             .json({ message: "Vui lòng nhập ngày sinh hợp lệ (định dạng DD/MM/YYYY hoặc YYYY-MM-DD)." });
+    }
+    if (!isValidAge(parsedDob)) {
+        return res.status(400).json({ message: "Độ tuổi cộng tác viên phải từ 16 đến 80 tuổi." });
     }
     const hasIdFront =
         Array.isArray(attachments) && attachments.some((a) => a.fileType === "ID_CARD_FRONT" && a.filePath);
@@ -439,6 +516,7 @@ app.post("/api/auth/register", async (req, res) => {
         return res.status(400).json({ message: "Vui lòng tải file CV lên." });
     }
 
+    const newlySavedFiles = [];
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
@@ -489,6 +567,7 @@ app.post("/api/auth/register", async (req, res) => {
         for (const attachment of Array.isArray(attachments) ? attachments : []) {
             if (!attachment?.fileType || !attachment?.filePath) continue;
             const stored = await saveAttachment(attachment, name.trim());
+            newlySavedFiles.push(stored.filePath);
             if (attachment.fileType === "ID_CARD_FRONT") idCardFrontUrl = stored.filePath;
             else if (attachment.fileType === "ID_CARD_BACK") idCardBackUrl = stored.filePath;
             else if (attachment.fileType === "CV") cvUrl = stored.filePath;
@@ -529,19 +608,41 @@ app.post("/api/auth/register", async (req, res) => {
                 id_card_front_url = COALESCE(incoming.id_card_front_url, user_profiles.id_card_front_url),
                 id_card_back_url = COALESCE(incoming.id_card_back_url, user_profiles.id_card_back_url),
                 cv_url = COALESCE(incoming.cv_url, user_profiles.cv_url)`,
-            [userId, name.trim(), normalizedPhone, parseDate(dobValue), idCardFrontUrl, idCardBackUrl, cvUrl],
+            [userId, name.trim(), normalizedPhone, parsedDob, idCardFrontUrl, idCardBackUrl, cvUrl],
         );
 
         await connection.commit();
         return res.status(201).json({ id: String(userId), status: "PENDING" });
     } catch (error) {
-        await connection.rollback();
+        try {
+            await connection.rollback();
+        } catch (_) {}
+        for (const relPath of newlySavedFiles) {
+            try {
+                const cleanPath = decodeURIComponent(relPath.replace(/^\/(image|CV)\//, ""));
+                const dir = relPath.startsWith("/image") ? imageDirectory : cvDirectory;
+                const absPath = path.resolve(dir, cleanPath);
+                if (absPath.startsWith(path.resolve(dir)) && fs.existsSync(absPath)) {
+                    fs.unlinkSync(absPath);
+                }
+            } catch (_) {}
+        }
+        if (
+            error.message &&
+            (error.message.includes("không phải định dạng") ||
+                error.message.includes("không đúng định dạng") ||
+                error.message.includes("vượt quá giới hạn") ||
+                error.message.includes("không có nội dung hợp lệ") ||
+                error.message.includes("Vui lòng chọn file"))
+        ) {
+            return res.status(400).json({ message: error.message });
+        }
         if (error.code === "ER_DUP_ENTRY") {
             // Only users.email is unique among the columns written here, so this is a
             // concurrent submission for the same email.
             return res.status(409).json({ message: "Email này đã được sử dụng." });
         }
-        return res.status(500).json({ message: "Không thể lưu yêu cầu đăng ký.", detail: error.message });
+        return res.status(500).json(formatError("Không thể lưu yêu cầu đăng ký.", error));
     } finally {
         connection.release();
     }
@@ -564,6 +665,14 @@ app.patch("/api/auth/reset-password", requireAdmin, async (req, res) => {
         return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 64 ký tự." });
     }
     try {
+        const [targetUsers] = await pool.execute("SELECT id, role FROM users WHERE id = ? LIMIT 1", [String(userId)]);
+        const target = targetUsers[0];
+        if (!target) {
+            return res.status(404).json({ message: "Tài khoản không tồn tại." });
+        }
+        if (target.role === "admin" && String(target.id) !== String(req.user.id)) {
+            return res.status(403).json({ message: "Không thể đặt lại mật khẩu cho tài khoản Quản trị viên khác." });
+        }
         const newHash = await bcrypt.hash(newPassword, 12);
         const [result] = await pool.execute("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?", [
             newHash,
@@ -572,6 +681,7 @@ app.patch("/api/auth/reset-password", requireAdmin, async (req, res) => {
         if (result.affectedRows !== 1) {
             return res.status(404).json({ message: "Tài khoản không tồn tại." });
         }
+        passwordChangedTimes.set(String(userId), Date.now());
         return res.json({ message: "Đặt lại mật khẩu thành công." });
     } catch (error) {
         return res.status(500).json(formatError("Không thể đặt lại mật khẩu.", error));
@@ -605,6 +715,7 @@ app.patch("/api/auth/change-password", requireAuth, async (req, res) => {
             newHash,
             String(userId),
         ]);
+        passwordChangedTimes.set(String(userId), Date.now());
         return res.json({ message: "Đổi mật khẩu thành công." });
     } catch (error) {
         return res.status(500).json(formatError("Không thể đổi mật khẩu.", error));
@@ -627,6 +738,22 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             return res.status(400).json({ message: "Họ và tên không được vượt quá 100 ký tự." });
         }
     }
+    let parsedDob = undefined;
+    if (dob !== undefined) {
+        if (dob && typeof dob === "string" && dob.trim()) {
+            parsedDob = parseDate(dob);
+            if (!parsedDob) {
+                return res
+                    .status(400)
+                    .json({ message: "Vui lòng nhập ngày sinh hợp lệ (định dạng DD/MM/YYYY hoặc YYYY-MM-DD)." });
+            }
+            if (!isValidAge(parsedDob)) {
+                return res.status(400).json({ message: "Độ tuổi cộng tác viên phải từ 16 đến 80 tuổi." });
+            }
+        } else {
+            parsedDob = null;
+        }
+    }
     try {
         const connection = await pool.getConnection();
         try {
@@ -642,19 +769,21 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                 }
             }
 
-            if (email && typeof email === "string" && email.trim()) {
-                const [existingEmail] = await connection.execute("SELECT id FROM users WHERE email = ? AND id != ?", [
-                    email.trim(),
+            if (email !== undefined) {
+                const [targetUsers] = await connection.execute("SELECT email FROM users WHERE id = ?", [
                     String(userId),
                 ]);
-                if (existingEmail.length > 0) {
+                const currentEmail = targetUsers[0]?.email;
+                if (
+                    currentEmail &&
+                    typeof email === "string" &&
+                    email.trim().toLowerCase() !== currentEmail.toLowerCase()
+                ) {
                     await connection.rollback();
-                    return res.status(409).json({ message: "Email này đã được tài khoản khác sử dụng." });
+                    return res
+                        .status(400)
+                        .json({ message: "Email là tên đăng nhập cố định và không được phép thay đổi." });
                 }
-                await connection.execute("UPDATE users SET email = ?, updated_at = NOW() WHERE id = ?", [
-                    email.trim(),
-                    String(userId),
-                ]);
             }
 
             if (phone !== undefined && typeof phone === "string" && phone.trim()) {
@@ -734,7 +863,7 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             }
             if (dob !== undefined) {
                 setClauses.push("date_of_birth = ?");
-                onDupVals.push(parseDate(dob) || null);
+                onDupVals.push(parsedDob !== undefined ? parsedDob : null);
             }
 
             if (fileUpdates.avatar_url !== undefined) {
@@ -758,7 +887,12 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                 const hasTextFields = name !== undefined || phone !== undefined || dob !== undefined;
                 if (hasTextFields) {
                     const insertCols = ["user_id", "full_name", "phone", "date_of_birth"];
-                    const insertVals = [String(userId), name || "", phone || "", parseDate(dob) || null];
+                    const insertVals = [
+                        String(userId),
+                        name || "",
+                        phone || "",
+                        parsedDob !== undefined ? parsedDob : null,
+                    ];
                     const fileInsertCols = [];
                     const fileInsertVals = [];
                     if (fileUpdates.avatar_url !== undefined) {
@@ -808,7 +942,17 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             connection.release();
         }
     } catch (error) {
-        return res.status(500).json({ message: "Không thể cập nhật hồ sơ.", detail: error.message });
+        if (
+            error.message &&
+            (error.message.includes("không phải định dạng") ||
+                error.message.includes("không đúng định dạng") ||
+                error.message.includes("vượt quá giới hạn") ||
+                error.message.includes("không có nội dung hợp lệ") ||
+                error.message.includes("Vui lòng chọn file"))
+        ) {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json(formatError("Không thể cập nhật hồ sơ.", error));
     }
 });
 
@@ -824,7 +968,7 @@ app.patch("/api/admin/notes", requireAdmin, async (req, res) => {
         ]);
         return res.json({ message: "Đã lưu ghi chú." });
     } catch (error) {
-        return res.status(500).json({ message: "Không thể lưu ghi chú.", detail: error.message });
+        return res.status(500).json(formatError("Không thể lưu ghi chú.", error));
     }
 });
 
@@ -859,7 +1003,7 @@ app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
         try {
             await connection.rollback();
         } catch (_) {}
-        return res.status(500).json({ message: "Không thể cập nhật trạng thái.", detail: error.message });
+        return res.status(500).json(formatError("Không thể cập nhật trạng thái.", error));
     } finally {
         connection.release();
     }
@@ -897,7 +1041,7 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
         try {
             await connection.rollback();
         } catch (_) {}
-        return res.status(500).json({ message: "Không thể xóa tài khoản.", detail: error.message });
+        return res.status(500).json(formatError("Không thể xóa tài khoản.", error));
     } finally {
         connection.release();
     }
@@ -1025,7 +1169,7 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
 
 async function reviewRegistrationRequest(req, res, status, action) {
     const userId = Number(req.params.id);
-    const adminId = Number(req.body?.adminId);
+    const adminId = Number(req.user?.id);
     if (!Number.isInteger(userId) || !Number.isInteger(adminId)) {
         return res.status(400).json({ message: "Thông tin duyệt hồ sơ không hợp lệ." });
     }
@@ -1046,7 +1190,7 @@ async function reviewRegistrationRequest(req, res, status, action) {
         void action;
         return res.json({ id: String(userId), status });
     } catch (error) {
-        return res.status(500).json({ message: "Không thể cập nhật trạng thái hồ sơ.", detail: error.message });
+        return res.status(500).json(formatError("Không thể cập nhật trạng thái hồ sơ.", error));
     }
 }
 
@@ -1169,7 +1313,7 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
             history: groupSchedules(history, "history", req.user),
         });
     } catch (error) {
-        res.status(500).json({ message: "Không thể tải dữ liệu từ database.", detail: error.message });
+        res.status(500).json(formatError("Không thể tải dữ liệu từ database.", error));
     }
 });
 
@@ -1206,6 +1350,24 @@ function parseDate(value) {
     return null;
 }
 
+function isValidAge(dobIsoStr, minAge = 16, maxAge = 80) {
+    if (!dobIsoStr || typeof dobIsoStr !== "string") return false;
+    const parts = dobIsoStr.split("-");
+    if (parts.length !== 3) return false;
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    const d = parseInt(parts[2], 10);
+    const birthDate = new Date(y, m - 1, d);
+    if (Number.isNaN(birthDate.getTime())) return false;
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age >= minAge && age <= maxAge;
+}
+
 async function saveAttachment(attachment, userName = "", userId = "") {
     const isImage =
         attachment.fileType === "ID_CARD_FRONT" ||
@@ -1236,6 +1398,17 @@ async function saveAttachment(attachment, userName = "", userId = "") {
         throw new Error(`File ${attachment.fileName || ""} không có nội dung hợp lệ.`);
     }
 
+    if (isImage && !isImageBuffer(data.buffer)) {
+        throw new Error(
+            `Tệp ${attachment.fileName || "ảnh"} không phải định dạng hình ảnh hợp lệ (chỉ chấp nhận JPG, PNG, WebP).`,
+        );
+    }
+    if (!isImage && !isCvDocumentBuffer(data.buffer)) {
+        throw new Error(
+            `Tệp CV ${attachment.fileName || ""} không đúng định dạng tài liệu hợp lệ (chỉ chấp nhận PDF, DOC, DOCX).`,
+        );
+    }
+
     const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
     const MAX_CV_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -1252,6 +1425,31 @@ async function saveAttachment(attachment, userName = "", userId = "") {
         filePath: `/${isImage ? "image" : "CV"}/${encodeURIComponent(fileName)}`,
         fileSize: data.buffer.length,
     };
+}
+
+function isImageBuffer(buf) {
+    if (!buf || buf.length < 4) return false;
+    // JPEG: FF D8 FF
+    if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return true;
+    // PNG: 89 50 4E 47
+    if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return true;
+    // WebP: RIFF....WEBP
+    if (buf.length >= 12 && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP")
+        return true;
+    // GIF: GIF87a or GIF89a
+    if (buf.toString("ascii", 0, 3) === "GIF") return true;
+    return false;
+}
+
+function isCvDocumentBuffer(buf) {
+    if (!buf || buf.length < 4) return false;
+    // PDF: %PDF
+    if (buf.toString("ascii", 0, 4) === "%PDF") return true;
+    // DOCX / ZIP: PK\x03\x04 or PK\x05\x06
+    if (buf[0] === 0x50 && buf[1] === 0x4b && (buf[2] === 0x03 || buf[2] === 0x05)) return true;
+    // Legacy DOC (MS Compound File): D0 CF 11 E0
+    if (buf.length >= 8 && buf[0] === 0xd0 && buf[1] === 0xcf && buf[2] === 0x11 && buf[3] === 0xe0) return true;
+    return false;
 }
 
 function decodeDataUrl(value) {
@@ -1399,7 +1597,7 @@ app.use((err, _req, res, _next) => {
             detail: "Ảnh CCCD và file CV vượt quá giới hạn cho phép. Vui lòng giảm kích thước ảnh hoặc thử lại.",
         });
     }
-    return res.status(500).json({ message: "Lỗi máy chủ.", detail: err && err.message ? err.message : String(err) });
+    return res.status(500).json(formatError("Lỗi máy chủ.", err));
 });
 
 app.listen(port, () => {

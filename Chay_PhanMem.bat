@@ -10,6 +10,12 @@ REM 1. Kiem tra xem Docker Desktop da duoc bat chua
 docker info >nul 2>&1
 if errorlevel 1 goto DOCKER_ERROR
 
+REM 2. Tu dong tao khoa bao mat JWT_SECRET trong .env neu chua ton tai
+if not exist ".env" (
+    echo [Khoi tao] Dang tao file .env voi khoa JWT_SECRET ngau nhien...
+    powershell -NoProfile -Command "$bytes = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); $hex = ($bytes | ForEach-Object { '{0:x2}' -f $_ }) -join ''; 'JWT_SECRET=' + $hex | Out-File -Encoding ascii .env"
+)
+
 echo [1/3] Dang khoi chay cac dich vu bang Docker Compose...
 docker compose up -d
 if errorlevel 1 goto COMPOSE_ERROR
