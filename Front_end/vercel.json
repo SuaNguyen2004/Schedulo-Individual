@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://schedulo-individual.onrender.com/api/:path*"
+    },
+    {
+      "source": "/image/:path*",
+      "destination": "https://schedulo-individual.onrender.com/image/:path*"
+    },
+    {
+      "source": "/CV/:path*",
+      "destination": "https://schedulo-individual.onrender.com/CV/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
