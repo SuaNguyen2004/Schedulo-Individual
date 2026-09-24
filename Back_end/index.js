@@ -85,6 +85,7 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     charset: "utf8mb4",
+    ssl: process.env.DB_SSL === "true" ? { minVersion: "TLSv1.2", rejectUnauthorized: false } : undefined,
     // Return DATE/DATETIME as plain strings so no implicit UTC conversion can
     // shift a work_date by one day when the server runs in a non-UTC timezone.
     dateStrings: true,
@@ -170,7 +171,9 @@ app.use(
                 allowedOrigins.includes(origin) ||
                 origin.startsWith("http://localhost:") ||
                 origin.startsWith("http://127.0.0.1:") ||
-                origin.endsWith(".trycloudflare.com")
+                origin.endsWith(".trycloudflare.com") ||
+                origin.endsWith(".vercel.app") ||
+                (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
             ) {
                 return callback(null, true);
             }
