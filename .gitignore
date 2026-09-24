@@ -8,6 +8,7 @@
 .DS_Store
 Thumbs.db
 cloudflared.exe
+.IMG WEB/
 
 # Test files and configs (local only)
 e2e/

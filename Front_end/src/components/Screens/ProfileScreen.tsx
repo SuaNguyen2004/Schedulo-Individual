@@ -164,7 +164,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const isPdf = cvDisplayName.toLowerCase().endsWith(".pdf");
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-5 pb-8">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -479,7 +479,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                     </h4>
 
                                     {hasCv ? (
-                                        <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-[#1a1b1e] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                                        <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-[#1a1b1e] flex items-center justify-between gap-3 shadow-2xs">
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <div
                                                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${

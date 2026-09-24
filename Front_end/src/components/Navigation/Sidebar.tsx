@@ -12,6 +12,7 @@ interface SidebarProps {
     userAvatar?: string;
     isCollapsed?: boolean;
     onToggleCollapse?: () => void;
+    onCloseMobile?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -24,14 +25,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     userAvatar = "",
     isCollapsed = false,
     onToggleCollapse,
+    onCloseMobile,
 }) => {
     const isAdmin = userRole === "Admin";
 
     return (
         <aside
-            className={`bg-[#f4f3f7] dark:bg-[#1a1b1e] h-screen max-h-screen overflow-hidden fixed left-0 top-0 border-r border-[#E2E8F0] dark:border-[#c4c6cf] flex flex-col z-20 transition-all duration-300 ease-in-out ${
-                isCollapsed ? "w-[72px]" : "w-[280px]"
-            }`}>
+            className={`bg-[#f4f3f7] dark:bg-[#1a1b1e] h-full max-h-full overflow-hidden border-r border-[#E2E8F0] dark:border-[#c4c6cf] flex flex-col transition-all duration-300 ease-in-out w-full`}>
             {/* Header */}
             <div
                 className={`px-3 py-3.5 border-b border-[#E2E8F0] dark:border-[#c4c6cf] flex items-center shrink-0 ${isCollapsed ? "justify-center" : "justify-between gap-1.5"}`}>
@@ -46,11 +46,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                 )}
 
+                {/* Mobile Close Button */}
+                {onCloseMobile && (
+                    <button
+                        onClick={onCloseMobile}
+                        title="Đóng menu"
+                        className="md:hidden p-1.5 text-[#44474e] dark:text-[#c4c6cf] hover:text-[#002046] dark:hover:text-white hover:bg-[#e9e8ec] dark:hover:bg-[#2c2d33] rounded-lg transition-colors cursor-pointer shrink-0">
+                        <span className="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                )}
+
                 {onToggleCollapse && (
                     <button
                         onClick={onToggleCollapse}
                         title={isCollapsed ? "Mở rộng Sidebar" : "Thu gọn Sidebar"}
-                        className="p-1 text-[#44474e] dark:text-[#c4c6cf] hover:text-[#002046] dark:hover:text-white hover:bg-[#e9e8ec] dark:hover:bg-[#2c2d33] rounded-md transition-colors cursor-pointer shrink-0">
+                        className="hidden md:flex p-1 text-[#44474e] dark:text-[#c4c6cf] hover:text-[#002046] dark:hover:text-white hover:bg-[#e9e8ec] dark:hover:bg-[#2c2d33] rounded-md transition-colors cursor-pointer shrink-0">
                         <span className="material-symbols-outlined text-[20px]">
                             {isCollapsed ? "side_navigation" : "first_page"}
                         </span>
@@ -179,7 +189,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </nav>
 
             {/* User Profile Widget Footer with Direct Logout */}
-            <div className="p-3 border-t border-[#E2E8F0] dark:border-[#c4c6cf] shrink-0">
+            <div className="p-3 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-[#E2E8F0] dark:border-[#3b3d45] shrink-0 bg-[#ebe9ef] dark:bg-[#202125]">
                 <div
                     className={`flex items-center ${
                         isCollapsed ? "flex-col gap-2 justify-center" : "justify-between gap-2"
@@ -199,9 +209,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {!isCollapsed && (
                             <div className="min-w-0">
                                 <h4 className="text-xs font-bold text-[#1a1b1e] dark:text-white truncate">
-                                    {userName}
+                                    {userName || "Người dùng"}
                                 </h4>
-                                <p className="text-[10px] text-[#74777f] dark:text-[#c4c6cf] truncate">{userRole}</p>
+                                <p className="text-[10px] text-[#74777f] dark:text-[#c4c6cf] truncate">
+                                    {userRole || "Cộng tác viên"}
+                                </p>
                             </div>
                         )}
                     </div>
@@ -209,16 +221,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                         onClick={onLogout}
                         title="Đăng xuất"
-                        className={`flex items-center justify-center bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold transition-colors duration-200 cursor-pointer shrink-0 shadow-xs ${
-                            isCollapsed
-                                ? "w-9 h-9 rounded-xl p-0"
-                                : "px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap"
+                        className={`flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold transition-colors duration-200 cursor-pointer shrink-0 shadow-xs ${
+                            isCollapsed ? "w-9 h-9 rounded-xl p-0" : "px-3 py-1.5 rounded-xl text-xs whitespace-nowrap"
                         }`}>
-                        {isCollapsed ? (
-                            <span className="material-symbols-outlined text-[20px]">logout</span>
-                        ) : (
-                            <span>Đăng xuất</span>
-                        )}
+                        <span className="material-symbols-outlined text-[18px]">logout</span>
+                        {!isCollapsed && <span>Đăng xuất</span>}
                     </button>
                 </div>
             </div>

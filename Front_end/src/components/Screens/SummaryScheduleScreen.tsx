@@ -725,14 +725,15 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                         }`}>
                                                         {/* Day Cell Header */}
                                                         <div className="flex items-center justify-center border-b border-slate-100 dark:border-slate-800/80 pb-1 mb-1.5 sm:pb-1.5 sm:mb-2">
-                                                            <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
-                                                                <span>{cell.dateShort}</span>
-                                                                {cell.isToday && (
-                                                                    <span className="rounded bg-blue-700 px-1 py-0.2 text-[9px] font-bold text-white sm:px-1.5 sm:py-0.5 sm:text-[10px] leading-tight">
-                                                                        Hôm nay
-                                                                    </span>
-                                                                )}
-                                                            </span>
+                                                            {cell.isToday ? (
+                                                                <span className="inline-flex items-center justify-center rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-white shadow-2xs">
+                                                                    {cell.dateShort}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                                    {cell.dateShort}
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         {/* Shift Buttons inside Day Cell */}

@@ -954,15 +954,16 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                                 ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20"
                                                                 : "border-slate-200/90 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#222327] dark:hover:border-slate-700"
                                                         }`}>
-                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center gap-1 border-b border-slate-100 pb-1 sm:pb-1.5 text-center dark:border-slate-800/80">
-                                                            <span className="flex items-center justify-center gap-1 text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
-                                                                {dayStr}
-                                                                {isToday && (
-                                                                    <span className="rounded bg-blue-700 px-1 py-0.2 text-[9px] font-bold text-white sm:px-1.5 sm:py-0.5 sm:text-[10px] leading-tight">
-                                                                        Hôm nay
-                                                                    </span>
-                                                                )}
-                                                            </span>
+                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center border-b border-slate-100 pb-1 sm:pb-1.5 text-center dark:border-slate-800/80">
+                                                            {isToday ? (
+                                                                <span className="inline-flex items-center justify-center rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-white shadow-2xs">
+                                                                    {dayStr}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                                    {dayStr}
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         <div className="space-y-1 sm:space-y-1.5 min-h-[56px] flex flex-col justify-start">
