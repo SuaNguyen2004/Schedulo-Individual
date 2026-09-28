@@ -24,7 +24,9 @@ export function setAuthToken(token: string | null): void {
 
 export function getAuthorizedFileUrl(url: string | null | undefined): string {
     if (!url) return "";
-    if (url.startsWith("data:") || url.startsWith("blob:")) return url;
+    if (url.startsWith("data:") || url.startsWith("blob:") || url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+    }
     const token = getAuthToken();
     if (!token) return url;
     const separator = url.includes("?") ? "&" : "?";

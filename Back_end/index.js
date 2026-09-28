@@ -6,8 +6,38 @@ const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const cloudinary = require("cloudinary").v2;
 
 dotenv.config();
+
+function isCloudinaryConfigured() {
+    return Boolean(
+        process.env.CLOUDINARY_URL ||
+        (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)
+    );
+}
+
+if (isCloudinaryConfigured()) {
+    if (process.env.CLOUDINARY_URL) {
+        cloudinary.config({ url: process.env.CLOUDINARY_URL });
+    } else {
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+    }
+}
+
+function uploadStreamToCloudinary(buffer, options = {}) {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        });
+        stream.end(buffer);
+    });
+}
 
 let JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET || JWT_SECRET === "schedulo_secure_jwt_secret_key_2026") {
@@ -623,6 +653,9 @@ app.post("/api/auth/register", async (req, res) => {
         } catch (_) {}
         for (const relPath of newlySavedFiles) {
             try {
+                if (typeof relPath === "string" && (relPath.startsWith("http://") || relPath.startsWith("https://"))) {
+                    continue;
+                }
                 const cleanPath = decodeURIComponent(relPath.replace(/^\/(image|CV)\//, ""));
                 const dir = relPath.startsWith("/image") ? imageDirectory : cvDirectory;
                 const absPath = path.resolve(dir, cleanPath);
@@ -1421,6 +1454,33 @@ async function saveAttachment(attachment, userName = "", userId = "") {
     }
     if (!isImage && data.buffer.length > MAX_CV_SIZE) {
         throw new Error(`Dung lượng tệp CV ${attachment.fileName || ""} vượt quá giới hạn 10MB cho phép.`);
+    }
+
+    if (isCloudinaryConfigured()) {
+        try {
+            const folder = isImage ? "schedulo/images" : "schedulo/cv";
+            const uploadOptions = {
+                folder,
+                public_id: isImage ? `${prefix}-${fileId}` : `${prefix}-${fileId}${extension}`,
+                resource_type: isImage ? "image" : "raw",
+                overwrite: true,
+            };
+
+            const cloudinaryResult = await uploadStreamToCloudinary(data.buffer, uploadOptions);
+            if (cloudinaryResult && cloudinaryResult.secure_url) {
+                try {
+                    await fs.promises.writeFile(filePath, data.buffer);
+                } catch (_) {}
+
+                return {
+                    fileName,
+                    filePath: cloudinaryResult.secure_url,
+                    fileSize: data.buffer.length,
+                };
+            }
+        } catch (cloudinaryError) {
+            console.warn("Cloudinary upload failed, falling back to local disk storage:", cloudinaryError.message);
+        }
     }
 
     await fs.promises.writeFile(filePath, data.buffer);
