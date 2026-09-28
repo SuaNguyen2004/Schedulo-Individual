@@ -64,10 +64,19 @@ cleanupLocalStorage();
 
 const loadAuthenticationState = (): boolean => {
     try {
-        return (
-            window.localStorage.getItem(AUTH_STORAGE_KEY) === "true" &&
-            Boolean(window.localStorage.getItem(AUTH_USER_EMAIL_KEY))
-        );
+        const hasAuth = window.localStorage.getItem(AUTH_STORAGE_KEY) === "true";
+        const hasEmail = Boolean(window.localStorage.getItem(AUTH_USER_EMAIL_KEY));
+        const hasToken = Boolean(getAuthToken());
+        if (!hasAuth || !hasEmail || !hasToken) {
+            if (hasAuth || hasEmail || hasToken) {
+                window.localStorage.removeItem(AUTH_STORAGE_KEY);
+                window.localStorage.removeItem(AUTH_USER_EMAIL_KEY);
+                window.localStorage.removeItem(AUTH_USER_ID_KEY);
+                setAuthToken(null);
+            }
+            return false;
+        }
+        return true;
     } catch {
         return false;
     }
@@ -78,6 +87,7 @@ export const App: React.FC = () => {
 
     // Auth state
     const [isLoggedIn, setIsLoggedIn] = useState(loadAuthenticationState);
+    const [isRestoringSession, setIsRestoringSession] = useState(loadAuthenticationState);
 
     // Active view tab
     const [currentTab, setCurrentTab] = useState<ViewTab>("accounts");
@@ -125,6 +135,7 @@ export const App: React.FC = () => {
 
     const clearAuthState = (toastMsg?: string) => {
         setIsLoggedIn(false);
+        setIsRestoringSession(false);
         setCurrentUser(EMPTY_USER);
         setAuthToken(null);
         window.localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -138,6 +149,10 @@ export const App: React.FC = () => {
 
     useEffect(() => {
         if (!loadAuthenticationState() || !getAuthToken()) {
+            if (isLoggedIn) {
+                clearAuthState();
+            }
+            setIsRestoringSession(false);
             return;
         }
         const controller = new AbortController();
@@ -179,6 +194,9 @@ export const App: React.FC = () => {
                     clearAuthState("Phiên đăng nhập đã hết hạn hoặc không thể kết nối cơ sở dữ liệu.");
                 }
                 return null;
+            })
+            .finally(() => {
+                setIsRestoringSession(false);
             });
 
         bootstrapRef.current = promise;
@@ -259,6 +277,7 @@ export const App: React.FC = () => {
         }
 
         setIsLoggedIn(true);
+        setIsRestoringSession(false);
         window.localStorage.setItem(AUTH_STORAGE_KEY, "true");
         window.localStorage.setItem(AUTH_USER_EMAIL_KEY, user.email);
         window.localStorage.setItem(AUTH_USER_ID_KEY, user.id);
@@ -563,14 +582,47 @@ export const App: React.FC = () => {
 
     const pendingRequestsCount = requests.filter((r) => r.status === "Chờ duyệt").length;
 
+    if (isRestoringSession) {
+        return (
+            <div
+                className={`min-h-screen min-h-dvh flex flex-col items-center justify-center bg-[#faf9fd] text-[#1a1b1e] ${
+                    isDarkMode ? "dark bg-[#121316] text-[#e2e2e6]" : ""
+                }`}>
+                <div className="flex flex-col items-center gap-4 p-8">
+                    <div className="w-14 h-14 rounded-2xl bg-[#002046] flex items-center justify-center text-white shadow-xl animate-pulse">
+                        <span className="material-symbols-outlined text-[32px]">calendar_clock</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 border-2 border-[#002046] dark:border-[#9ecaff] border-t-transparent dark:border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            Đang kết nối và đồng bộ dữ liệu...
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (!isLoggedIn) {
         return (
-            <LoginScreen
-                onLoginSuccess={handleLoginSuccess}
-                onRequestRegister={(newRequest) => {
-                    setRequests((prev) => [newRequest, ...prev]);
-                }}
-            />
+            <>
+                {toast && (
+                    <div className="fixed bottom-6 right-6 z-[100] bg-[#002046] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-xl flex items-center gap-2.5 animate-in slide-in-from-bottom-3 duration-200">
+                        {toast.type === "error" ? (
+                            <span className="material-symbols-outlined text-[18px] text-red-500">cancel</span>
+                        ) : (
+                            <span className="material-symbols-outlined text-[18px] text-[#16A34A]">check_circle</span>
+                        )}
+                        <span>{toast.message}</span>
+                    </div>
+                )}
+                <LoginScreen
+                    onLoginSuccess={handleLoginSuccess}
+                    onRequestRegister={(newRequest) => {
+                        setRequests((prev) => [newRequest, ...prev]);
+                    }}
+                />
+            </>
         );
     }
 

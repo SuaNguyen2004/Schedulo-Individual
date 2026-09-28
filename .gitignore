@@ -26,3 +26,4 @@ src/test/
 *.test.tsx
 *.bat
 *.md
+sql/
