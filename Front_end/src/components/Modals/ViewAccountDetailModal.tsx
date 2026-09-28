@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { UserAccount, ShiftSlot } from "../../types";
 import { formatPhoneNumber, formatDateOnly } from "../../utils/formatters";
+import { getAuthorizedFileUrl } from "../../utils/api";
 
 interface ViewAccountDetailModalProps {
     account: UserAccount | null;
@@ -417,7 +418,9 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    if (account.cvFile) window.open(account.cvFile, "_blank");
+                                                    if (account.cvFile) {
+                                                        window.open(getAuthorizedFileUrl(account.cvFile), "_blank");
+                                                    }
                                                 }}
                                                 className="px-3 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
                                                 title="Xem CV trong tab mới">

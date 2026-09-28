@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { RegistrationRequest } from "../../types";
 import { formatPhoneNumber, formatDateOnly } from "../../utils/formatters";
+import { getAuthorizedFileUrl } from "../../utils/api";
 
 interface ViewRequestModalProps {
     request: RegistrationRequest | null;
@@ -16,7 +17,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
 
     const handleViewCV = () => {
         if (request.cvFile) {
-            window.open(request.cvFile, "_blank", "noopener,noreferrer");
+            window.open(getAuthorizedFileUrl(request.cvFile), "_blank", "noopener,noreferrer");
             return;
         }
 

@@ -22,6 +22,15 @@ export function setAuthToken(token: string | null): void {
     }
 }
 
+export function getAuthorizedFileUrl(url: string | null | undefined): string {
+    if (!url) return "";
+    if (url.startsWith("data:") || url.startsWith("blob:")) return url;
+    const token = getAuthToken();
+    if (!token) return url;
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}token=${encodeURIComponent(token)}`;
+}
+
 function authHeaders(): Record<string, string> {
     const token = getAuthToken();
     const headers: Record<string, string> = { "Content-Type": "application/json" };

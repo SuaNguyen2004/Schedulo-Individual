@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { UserAccount } from "../../types";
 import { formatPhoneNumber } from "../../utils/formatters";
+import { getAuthorizedFileUrl } from "../../utils/api";
 
 interface ProfileScreenProps {
     user: UserAccount;
@@ -508,7 +509,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        if (user.cvFile) window.open(user.cvFile, "_blank");
+                                                        if (user.cvFile) {
+                                                            window.open(getAuthorizedFileUrl(user.cvFile), "_blank");
+                                                        }
                                                     }}
                                                     className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                                     title="Xem CV trong tab mới">
