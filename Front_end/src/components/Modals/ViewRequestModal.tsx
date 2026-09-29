@@ -12,16 +12,12 @@ interface ViewRequestModalProps {
 
 export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onClose, onApprove, onReject }) => {
     const [previewImg, setPreviewImg] = useState<{ title: string; url: string } | null>(null);
-    const [previewCvModal, setPreviewCvModal] = useState<{ title: string; url: string } | null>(null);
 
     if (!request) return null;
 
     const handleViewCV = () => {
         if (request.cvFile) {
-            setPreviewCvModal({
-                title: request.cvFileName || "Hồ sơ ứng tuyển (CV)",
-                url: getAuthorizedFileUrl(request.cvFile),
-            });
+            window.open(getAuthorizedFileUrl(request.cvFile), "_blank", "noopener,noreferrer");
             return;
         }
 
@@ -318,50 +314,6 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                 src={previewImg.url}
                                 alt={previewImg.title}
                                 className="w-full h-auto object-contain max-h-[60vh]"
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* CV DOCUMENT LIGHTBOX PREVIEW MODAL */}
-            {previewCvModal && (
-                <div
-                    className="fixed inset-0 z-70 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
-                    onClick={() => setPreviewCvModal(null)}>
-                    <div
-                        className="bg-white dark:bg-[#25262b] rounded-2xl max-w-4xl w-full h-[85vh] p-4 sm:p-5 border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col"
-                        onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-200 dark:border-slate-700 shrink-0">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
-                                <span className="material-symbols-outlined text-red-600">
-                                    picture_as_pdf
-                                </span>
-                                <span className="truncate">{previewCvModal.title}</span>
-                            </h3>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <a
-                                    href={previewCvModal.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
-                                    title="Mở trong tab mới">
-                                    <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-                                    <span className="hidden sm:inline">Mở tab mới</span>
-                                </a>
-                                <button
-                                    onClick={() => setPreviewCvModal(null)}
-                                    className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                                    <span className="material-symbols-outlined text-[20px]">close</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex-1 w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                            <iframe
-                                src={previewCvModal.url}
-                                title={previewCvModal.title}
-                                className="w-full h-full border-0"
                             />
                         </div>
                     </div>
