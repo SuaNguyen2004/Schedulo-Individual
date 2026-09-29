@@ -506,19 +506,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
                                             {/* Action Buttons: Xem & Thay đổi */}
                                             <div className="flex items-center gap-2 shrink-0">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (user.cvFile) {
-                                                            window.open(getAuthorizedFileUrl(user.cvFile), "_blank", "noopener,noreferrer");
-                                                        }
-                                                    }}
-                                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                                                <a
+                                                    href={user.cvFile ? getAuthorizedFileUrl(user.cvFile) : "#"}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs no-underline"
                                                     title="Xem CV trong tab mới">
                                                     <span className="material-symbols-outlined text-[18px]">
                                                         visibility
                                                     </span>
-                                                </button>
+                                                </a>
 
                                                 <button
                                                     type="button"

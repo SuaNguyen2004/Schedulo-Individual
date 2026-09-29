@@ -415,20 +415,17 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                         </div>
 
                                         <div className="flex items-center gap-1.5 shrink-0">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    if (account.cvFile) {
-                                                        window.open(getAuthorizedFileUrl(account.cvFile), "_blank", "noopener,noreferrer");
-                                                    }
-                                                }}
-                                                className="px-3 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
+                                            <a
+                                                href={account.cvFile ? getAuthorizedFileUrl(account.cvFile) : "#"}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-3 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap no-underline"
                                                 title="Xem CV trong tab mới">
                                                 <span className="material-symbols-outlined text-[16px]">
                                                     visibility
                                                 </span>
                                                 <span>Xem</span>
-                                            </button>
+                                            </a>
                                         </div>
                                     </div>
                                 ) : (

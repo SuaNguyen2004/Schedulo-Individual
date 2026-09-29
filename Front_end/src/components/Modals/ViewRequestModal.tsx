@@ -15,15 +15,6 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
 
     if (!request) return null;
 
-    const handleViewCV = () => {
-        if (request.cvFile) {
-            window.open(getAuthorizedFileUrl(request.cvFile), "_blank", "noopener,noreferrer");
-            return;
-        }
-
-        alert(`Đang mở tài liệu: ${request.cvFileName || "CV"}`);
-    };
-
     const fallbackContent = [
         "HỒ SƠ ĐĂNG KÝ CỘNG TÁC VIÊN",
         "",
@@ -224,15 +215,17 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
 
                                     <div className="flex shrink-0 items-center gap-1.5">
                                         <div className="group relative">
-                                            <button
-                                                type="button"
-                                                onClick={handleViewCV}
+                                            <a
+                                                href={request.cvFile ? getAuthorizedFileUrl(request.cvFile) : downloadHref}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                                 aria-label="Xem file"
-                                                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-2xs transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
+                                                title="Xem CV trong tab mới"
+                                                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-2xs transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 no-underline">
                                                 <span className="material-symbols-outlined text-[18px]">
                                                     visibility
                                                 </span>
-                                            </button>
+                                            </a>
                                             <span
                                                 role="tooltip"
                                                 className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
