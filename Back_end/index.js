@@ -35,6 +35,7 @@ function uploadStreamToCloudinary(buffer, options = {}) {
             if (error) return reject(error);
             resolve(result);
         });
+        stream.on("error", (err) => reject(err));
         stream.end(buffer);
     });
 }
@@ -402,8 +403,11 @@ function recordRegistrationAttempt(ip) {
 }
 
 function formatError(message, error) {
+    if (error) {
+        console.error(`[ERROR] ${message}:`, error);
+    }
     if (process.env.NODE_ENV === "production") {
-        return { message };
+        return { message, detail: error?.message };
     }
     return { message, detail: error?.message || String(error) };
 }
@@ -550,54 +554,44 @@ app.post("/api/auth/register", async (req, res) => {
         return res.status(400).json({ message: "Vui lòng tải file CV lên." });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPhone = phone.trim();
+
+    // Check email uniqueness before starting transaction
+    const [existingUsers] = await pool.execute("SELECT id, status FROM users WHERE email = ? LIMIT 1", [
+        normalizedEmail,
+    ]);
+    const existingUser = existingUsers[0];
+    const rejectedUser = existingUser && existingUser.status === "rejected" ? existingUser : null;
+
+    if (existingUser && !rejectedUser) {
+        return res.status(409).json({ message: "Email này đã được sử dụng." });
+    }
+
+    // Check phone uniqueness before starting transaction
+    const [existingPhones] = await pool.execute(
+        `SELECT up.user_id, u.status
+         FROM user_profiles up
+         JOIN users u ON u.id = up.user_id
+         WHERE up.phone = ? LIMIT 1`,
+        [normalizedPhone],
+    );
+    const existingPhone = existingPhones[0];
+    const isSameRejectedUser =
+        rejectedUser && existingPhone && String(existingPhone.user_id) === String(rejectedUser.id);
+    const phoneOwnerIsActiveOrPending = existingPhone && existingPhone.status !== "rejected";
+
+    if (existingPhone && !isSameRejectedUser && phoneOwnerIsActiveOrPending) {
+        return res.status(409).json({ message: "Số điện thoại này đã được sử dụng." });
+    }
+
     const newlySavedFiles = [];
-    const connection = await pool.getConnection();
+    let idCardFrontUrl = null;
+    let idCardBackUrl = null;
+    let cvUrl = null;
+
     try {
-        await connection.beginTransaction();
-
-        const normalizedEmail = email.toLowerCase().trim();
-        const normalizedPhone = phone.trim();
-
-        // users.email is UNIQUE, and a rejected application is the one case where that
-        // row does not represent a usable account: the applicant never got past review,
-        // so the email must be free again. Reuse the row instead of inserting a
-        // duplicate — that is what previously raised ER_DUP_ENTRY and surfaced as
-        // "Email hoặc số điện thoại đã được sử dụng". Reusing the same row also releases
-        // the old phone number, since the profile is overwritten in place.
-        const [existingUsers] = await connection.execute("SELECT id, status FROM users WHERE email = ? FOR UPDATE", [
-            normalizedEmail,
-        ]);
-        const existingUser = existingUsers[0];
-        const rejectedUser = existingUser && existingUser.status === "rejected" ? existingUser : null;
-
-        if (existingUser && !rejectedUser) {
-            await connection.rollback();
-            return res.status(409).json({ message: "Email này đã được sử dụng." });
-        }
-
-        const [existingPhones] = await connection.execute(
-            `SELECT up.user_id, u.status
-             FROM user_profiles up
-             JOIN users u ON u.id = up.user_id
-             WHERE up.phone = ? FOR UPDATE`,
-            [normalizedPhone],
-        );
-        const existingPhone = existingPhones[0];
-        const isSameRejectedUser =
-            rejectedUser && existingPhone && String(existingPhone.user_id) === String(rejectedUser.id);
-        const phoneOwnerIsActiveOrPending = existingPhone && existingPhone.status !== "rejected";
-
-        if (existingPhone && !isSameRejectedUser && phoneOwnerIsActiveOrPending) {
-            await connection.rollback();
-            return res.status(409).json({ message: "Số điện thoại này đã được sử dụng." });
-        }
-
-        const passwordHash = await bcrypt.hash(password, 12);
-
-        // Save attachments to disk (still returns /image and /CV public paths)
-        let idCardFrontUrl = null;
-        let idCardBackUrl = null;
-        let cvUrl = null;
+        // Save attachments (Cloudinary or local disk) BEFORE opening DB transaction to prevent idle timeout
         for (const attachment of Array.isArray(attachments) ? attachments : []) {
             if (!attachment?.fileType || !attachment?.filePath) continue;
             const stored = await saveAttachment(attachment, name.trim());
@@ -607,50 +601,58 @@ app.post("/api/auth/register", async (req, res) => {
             else if (attachment.fileType === "CV") cvUrl = stored.filePath;
         }
 
+        const passwordHash = await bcrypt.hash(password, 12);
+
+        // Fast atomic database transaction strictly for saving records
+        const connection = await pool.getConnection();
         let userId;
-        if (rejectedUser) {
-            // Re-open the record as a brand new submission: drop the previous review
-            // verdict and re-stamp created_at so the admin queue shows this application's
-            // own date instead of the rejected one's.
-            await connection.execute(
-                `UPDATE users
-                 SET password_hash = ?, role = 'collaborator', status = 'pending', admin_note = NULL,
-                     approved_by = NULL, approved_at = NULL, created_at = NOW(), updated_at = NOW()
-                 WHERE id = ?`,
-                [passwordHash, rejectedUser.id],
-            );
-            userId = rejectedUser.id;
-        } else {
-            const [result] = await connection.execute(
-                "INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'collaborator', 'pending')",
-                [normalizedEmail, passwordHash],
-            );
-            userId = result.insertId;
-        }
-
-        // user_profiles.user_id is UNIQUE, so one upsert covers both a first-time
-        // applicant and a re-applicant whose profile row already exists. COALESCE keeps
-        // a previously uploaded file when the new submission does not re-attach it.
-        await connection.execute(
-            `INSERT INTO user_profiles
-                (user_id, full_name, phone, date_of_birth, id_card_front_url, id_card_back_url, cv_url)
-             VALUES (?, ?, ?, ?, ?, ?, ?) AS incoming
-             ON DUPLICATE KEY UPDATE
-                full_name = incoming.full_name,
-                phone = incoming.phone,
-                date_of_birth = incoming.date_of_birth,
-                id_card_front_url = COALESCE(incoming.id_card_front_url, user_profiles.id_card_front_url),
-                id_card_back_url = COALESCE(incoming.id_card_back_url, user_profiles.id_card_back_url),
-                cv_url = COALESCE(incoming.cv_url, user_profiles.cv_url)`,
-            [userId, name.trim(), normalizedPhone, parsedDob, idCardFrontUrl, idCardBackUrl, cvUrl],
-        );
-
-        await connection.commit();
-        return res.status(201).json({ id: String(userId), status: "PENDING" });
-    } catch (error) {
         try {
-            await connection.rollback();
-        } catch (_) {}
+            await connection.beginTransaction();
+
+            if (rejectedUser) {
+                await connection.execute(
+                    `UPDATE users
+                     SET password_hash = ?, role = 'collaborator', status = 'pending', admin_note = NULL,
+                         approved_by = NULL, approved_at = NULL, created_at = NOW(), updated_at = NOW()
+                     WHERE id = ?`,
+                    [passwordHash, rejectedUser.id],
+                );
+                userId = rejectedUser.id;
+            } else {
+                const [result] = await connection.execute(
+                    "INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'collaborator', 'pending')",
+                    [normalizedEmail, passwordHash],
+                );
+                userId = result.insertId;
+            }
+
+            // Universal VALUES(col) syntax 100% compatible with MySQL 5.7+, 8.0, and TiDB Cloud
+            await connection.execute(
+                `INSERT INTO user_profiles
+                    (user_id, full_name, phone, date_of_birth, id_card_front_url, id_card_back_url, cv_url)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    full_name = VALUES(full_name),
+                    phone = VALUES(phone),
+                    date_of_birth = VALUES(date_of_birth),
+                    id_card_front_url = COALESCE(VALUES(id_card_front_url), user_profiles.id_card_front_url),
+                    id_card_back_url = COALESCE(VALUES(id_card_back_url), user_profiles.id_card_back_url),
+                    cv_url = COALESCE(VALUES(cv_url), user_profiles.cv_url)`,
+                [userId, name.trim(), normalizedPhone, parsedDob, idCardFrontUrl, idCardBackUrl, cvUrl],
+            );
+
+            await connection.commit();
+            return res.status(201).json({ id: String(userId), status: "PENDING" });
+        } catch (dbError) {
+            try {
+                await connection.rollback();
+            } catch (_) {}
+            throw dbError;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error("[REGISTER ERROR]", error);
         for (const relPath of newlySavedFiles) {
             try {
                 if (typeof relPath === "string" && (relPath.startsWith("http://") || relPath.startsWith("https://"))) {
@@ -675,13 +677,9 @@ app.post("/api/auth/register", async (req, res) => {
             return res.status(400).json({ message: error.message });
         }
         if (error.code === "ER_DUP_ENTRY") {
-            // Only users.email is unique among the columns written here, so this is a
-            // concurrent submission for the same email.
             return res.status(409).json({ message: "Email này đã được sử dụng." });
         }
         return res.status(500).json(formatError("Không thể lưu yêu cầu đăng ký.", error));
-    } finally {
-        connection.release();
     }
 });
 

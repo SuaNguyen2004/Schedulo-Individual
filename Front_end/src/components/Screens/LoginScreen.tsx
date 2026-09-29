@@ -64,11 +64,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
     const cvBoxRef = useRef<HTMLDivElement>(null);
     const regPasswordRef = useRef<HTMLInputElement>(null);
     const regConfirmPasswordRef = useRef<HTMLInputElement>(null);
+    const generalErrorRef = useRef<HTMLParagraphElement>(null);
 
     const scrollToAndFocusField = (field: string) => {
         setTimeout(() => {
             let el: HTMLElement | null = null;
-            if (field === "regEmail") el = regEmailRef.current;
+            if (field === "general") el = generalErrorRef.current;
+            else if (field === "regEmail") el = regEmailRef.current;
             else if (field === "regPhone") el = regPhoneRef.current;
             else if (field === "regName") el = regNameRef.current;
             else if (field === "regDob") el = regDayRef.current;
@@ -355,7 +357,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             .catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : "Không thể gửi yêu cầu đăng ký.";
                 const lower = message.toLowerCase();
-                let errorField = "regEmail";
+                let errorField = "general";
                 if (
                     lower.includes("ngày sinh") ||
                     lower.includes("dob") ||
@@ -373,9 +375,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 } else if (lower.includes("email")) {
                     setRegErrors({ regEmail: message });
                     errorField = "regEmail";
+                } else if (lower.includes("họ và tên") || lower.includes("họ tên")) {
+                    setRegErrors({ regName: message });
+                    errorField = "regName";
+                } else if (lower.includes("cccd") || lower.includes("ảnh")) {
+                    setRegErrors({ cccdFront: message });
+                    errorField = "cccdFront";
+                } else if (lower.includes("cv") || lower.includes("tài liệu")) {
+                    setRegErrors({ cvFile: message });
+                    errorField = "cvFile";
                 } else {
-                    setRegErrors({ regEmail: message });
-                    errorField = "regEmail";
+                    setRegErrors({ general: message });
+                    errorField = "general";
                 }
                 scrollToAndFocusField(errorField);
             })
@@ -509,6 +520,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 {mode === "register" && (
                     <div>
                         <h1 className="text-xl font-bold text-[#0F172A] text-center mb-5">Đăng ký tài khoản</h1>
+
+                        {regErrors.general && (
+                            <p
+                                ref={generalErrorRef}
+                                className="text-xs font-semibold text-[#DC2626] mb-4 text-center bg-[#FEF2F2] border border-[#FCA5A5] p-2.5 rounded-lg">
+                                {regErrors.general}
+                            </p>
+                        )}
 
                         <form onSubmit={handleRegisterSubmit} className="space-y-4">
                             {/* Họ và tên */}
