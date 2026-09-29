@@ -216,7 +216,9 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                     <div className="flex shrink-0 items-center gap-1.5">
                                         <div className="group relative">
                                             <a
-                                                href={request.cvFile ? getAuthorizedFileUrl(request.cvFile) : downloadHref}
+                                                href={
+                                                    request.cvFile ? getAuthorizedFileUrl(request.cvFile) : downloadHref
+                                                }
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 aria-label="Xem file"
