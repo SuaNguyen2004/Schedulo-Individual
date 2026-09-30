@@ -44,3 +44,18 @@ export function isValidDateOfBirth(day: string, month: string, year: string): bo
   const date = new Date(y, m - 1, d);
   return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
 }
+
+export function getUserInitials(name?: string, initials?: string): string {
+  if (initials && initials.trim()) {
+    return initials.trim().toUpperCase();
+  }
+  if (!name || !name.trim()) return "US";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "US";
+  return parts
+    .map((part) => part[0])
+    .join("")
+    .slice(-2)
+    .toUpperCase();
+}
+

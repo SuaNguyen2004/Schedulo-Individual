@@ -1,6 +1,7 @@
 import React from "react";
 import { ViewTab } from "../../types";
 import logoAmst from "../../img/LogoAMST.png";
+import { getUserInitials } from "../../utils/formatters";
 
 interface SidebarProps {
     currentTab: ViewTab;
@@ -10,6 +11,7 @@ interface SidebarProps {
     userName?: string;
     userRole?: string;
     userAvatar?: string;
+    userInitials?: string;
     isCollapsed?: boolean;
     onToggleCollapse?: () => void;
     onCloseMobile?: () => void;
@@ -23,6 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     userName = "",
     userRole = "",
     userAvatar = "",
+    userInitials = "",
     isCollapsed = false,
     onToggleCollapse,
     onCloseMobile,
@@ -202,8 +205,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 className="w-9 h-9 rounded-full object-cover border border-white dark:border-[#3b3d45] shadow-2xs shrink-0"
                             />
                         ) : (
-                            <div className="w-9 h-9 rounded-full bg-accent text-white font-bold flex items-center justify-center text-xs shrink-0">
-                                {(userName || "").slice(0, 2).toUpperCase() || "US"}
+                            <div className="w-9 h-9 rounded-full bg-[#1b365d] text-white font-bold flex items-center justify-center text-xs shrink-0 border border-white/20 shadow-2xs">
+                                {getUserInitials(userName, userInitials)}
                             </div>
                         )}
                         {!isCollapsed && (

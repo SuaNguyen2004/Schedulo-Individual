@@ -15,7 +15,7 @@ import { ViewAccountDetailModal } from "./components/Modals/ViewAccountDetailMod
 import { EditProfileModal } from "./components/Modals/EditProfileModal";
 import { ChangePasswordModal } from "./components/Modals/ChangePasswordModal";
 import { useSystemSettings } from "./context/SystemSettingsContext";
-import { formatDateOnly } from "./utils/formatters";
+import { formatDateOnly, getUserInitials } from "./utils/formatters";
 import {
     fetchBootstrapData,
     updateProfile,
@@ -291,6 +291,7 @@ export const App: React.FC = () => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                initials: getUserInitials(user.name),
                 role: user.role === "ADMIN" ? "Admin" : "Cộng tác viên",
                 status: "Kích hoạt",
             });
@@ -572,9 +573,12 @@ export const App: React.FC = () => {
 
     const handleSaveProfile = (updated: Partial<UserAccount>) => {
         setCurrentUser((prev) => {
-            const next = { ...prev, ...updated };
+            const nextInitials = updated.name ? getUserInitials(updated.name) : (updated.initials ?? prev.initials);
+            const next = { ...prev, ...updated, ...(nextInitials ? { initials: nextInitials } : {}) };
             setAccounts((prevAccounts) =>
-                prevAccounts.map((acc) => (acc.id === next.id ? { ...acc, ...updated } : acc)),
+                prevAccounts.map((acc) =>
+                    acc.id === next.id ? { ...acc, ...updated, ...(nextInitials ? { initials: nextInitials } : {}) } : acc,
+                ),
             );
             return next;
         });
@@ -657,6 +661,7 @@ export const App: React.FC = () => {
                     userName={currentUser.name}
                     userRole={currentUser.role}
                     userAvatar={currentUser.avatar}
+                    userInitials={currentUser.initials}
                     isCollapsed={isSidebarCollapsed}
                     onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                 />
@@ -683,6 +688,7 @@ export const App: React.FC = () => {
                         userName={currentUser.name}
                         userRole={currentUser.role}
                         userAvatar={currentUser.avatar}
+                        userInitials={currentUser.initials}
                         isCollapsed={false}
                         onCloseMobile={() => setIsMobileMenuOpen(false)}
                     />

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { UserAccount } from "../../types";
-import { formatPhoneNumber } from "../../utils/formatters";
+import { formatPhoneNumber, getUserInitials } from "../../utils/formatters";
 import { getAuthorizedFileUrl } from "../../utils/api";
 
 interface ProfileScreenProps {
@@ -206,7 +206,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 />
                             ) : (
                                 <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#1b365d] text-white flex items-center justify-center text-2xl sm:text-3xl font-bold border-4 border-white dark:border-[#1a1b1e] shadow-md transition-all group-hover:brightness-90">
-                                    {user.initials || user.name.slice(0, 2).toUpperCase()}
+                                    {getUserInitials(user.name, user.initials)}
                                 </div>
                             )}
 
