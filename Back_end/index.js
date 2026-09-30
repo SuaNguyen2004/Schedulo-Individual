@@ -773,20 +773,27 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             return res.status(400).json({ message: "Họ và tên không được vượt quá 100 ký tự." });
         }
     }
+    if (phone !== undefined) {
+        if (typeof phone !== "string" || !phone.trim()) {
+            return res.status(400).json({ message: "Vui lòng nhập số điện thoại." });
+        }
+        if (!/^[0-9]{10}$/.test(phone.trim())) {
+            return res.status(400).json({ message: "Số điện thoại phải đúng 10 chữ số." });
+        }
+    }
     let parsedDob = undefined;
     if (dob !== undefined) {
-        if (dob && typeof dob === "string" && dob.trim()) {
-            parsedDob = parseDate(dob);
-            if (!parsedDob) {
-                return res
-                    .status(400)
-                    .json({ message: "Vui lòng nhập ngày sinh hợp lệ (định dạng DD/MM/YYYY hoặc YYYY-MM-DD)." });
-            }
-            if (!isValidAge(parsedDob)) {
-                return res.status(400).json({ message: "Độ tuổi cộng tác viên phải từ 16 đến 80 tuổi." });
-            }
-        } else {
-            parsedDob = null;
+        if (typeof dob !== "string" || !dob.trim()) {
+            return res.status(400).json({ message: "Vui lòng chọn ngày sinh." });
+        }
+        parsedDob = parseDate(dob);
+        if (!parsedDob) {
+            return res
+                .status(400)
+                .json({ message: "Vui lòng nhập ngày sinh hợp lệ (định dạng DD/MM/YYYY hoặc YYYY-MM-DD)." });
+        }
+        if (!isValidAge(parsedDob)) {
+            return res.status(400).json({ message: "Độ tuổi cộng tác viên phải từ 16 đến 80 tuổi." });
         }
     }
     try {

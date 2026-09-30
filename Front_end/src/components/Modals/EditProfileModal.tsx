@@ -72,23 +72,41 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                 setLoading(false);
                 return;
             }
+            if (!phone.trim()) {
+                setErrorMsg("Vui lòng nhập số điện thoại!");
+                setLoading(false);
+                return;
+            }
             if (!/^[0-9]{10}$/.test(phone.trim())) {
                 setErrorMsg("Số điện thoại phải đúng 10 chữ số!");
                 setLoading(false);
                 return;
             }
-            if (dobDay || dobMonth || dobYear) {
-                if (!dobDay || !dobMonth || !dobYear || !isValidDateOfBirth(dobDay, dobMonth, dobYear)) {
-                    setErrorMsg("Vui lòng nhập ngày sinh hợp lệ");
-                    setLoading(false);
-                    return;
-                }
+            if (!dobDay || !dobMonth || !dobYear) {
+                setErrorMsg("Vui lòng chọn ngày sinh!");
+                setLoading(false);
+                return;
             }
-            const dob = dobDay && dobMonth && dobYear ? `${dobDay}/${dobMonth}/${dobYear}` : "";
-            await updateProfile(user.id, { name, email: user.email, phone, dob });
-            onSave({ name, email: user.email, phone, dob });
-            await updateProfile(user.id, { name: name.trim(), email: user.email, phone, dob });
-            onSave({ name: name.trim(), email: user.email, phone, dob });
+            if (!isValidDateOfBirth(dobDay, dobMonth, dobYear)) {
+                setErrorMsg("Vui lòng nhập ngày sinh hợp lệ (định dạng DD/MM/YYYY)!");
+                setLoading(false);
+                return;
+            }
+            const birthDate = new Date(parseInt(dobYear, 10), parseInt(dobMonth, 10) - 1, parseInt(dobDay, 10));
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age < 16 || age > 80) {
+                setErrorMsg("Độ tuổi cộng tác viên phải từ 16 đến 80 tuổi!");
+                setLoading(false);
+                return;
+            }
+            const dob = `${dobDay}/${dobMonth}/${dobYear}`;
+            await updateProfile(user.id, { name: name.trim(), email: user.email, phone: phone.trim(), dob });
+            onSave({ name: name.trim(), email: user.email, phone: phone.trim(), dob });
             if (onShowToast) onShowToast("Đã cập nhật thông tin hồ sơ cá nhân.");
             onClose();
         } catch (err: any) {
@@ -122,7 +140,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
-                                Họ và tên
+                                Họ và tên <span className="text-[#DC2626]">*</span>
                             </label>
                             <input
                                 type="text"
@@ -138,12 +156,15 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
 
                         <div>
                             <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
-                                Số điện thoại
+                                Số điện thoại <span className="text-[#DC2626]">*</span>
                             </label>
                             <input
                                 type="tel"
                                 value={phone}
-                                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                                onChange={(e) => {
+                                    setPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                                    setErrorMsg("");
+                                }}
                                 placeholder="0901234567"
                                 className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
                             />
@@ -152,12 +173,15 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
 
                     <div>
                         <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
-                            Ngày sinh
+                            Ngày sinh <span className="text-[#DC2626]">*</span>
                         </label>
                         <div className="grid grid-cols-3 gap-3 w-full">
                             <select
                                 value={dobDay}
-                                onChange={(e) => setDobDay(e.target.value)}
+                                onChange={(e) => {
+                                    setDobDay(e.target.value);
+                                    setErrorMsg("");
+                                }}
                                 className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer">
                                 <option value="">Ngày</option>
                                 {Array.from({ length: 31 }, (_, i) => {
@@ -171,7 +195,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                             </select>
                             <select
                                 value={dobMonth}
-                                onChange={(e) => setDobMonth(e.target.value)}
+                                onChange={(e) => {
+                                    setDobMonth(e.target.value);
+                                    setErrorMsg("");
+                                }}
                                 className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer">
                                 <option value="">Tháng</option>
                                 {Array.from({ length: 12 }, (_, i) => {
@@ -185,7 +212,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                             </select>
                             <select
                                 value={dobYear}
-                                onChange={(e) => setDobYear(e.target.value)}
+                                onChange={(e) => {
+                                    setDobYear(e.target.value);
+                                    setErrorMsg("");
+                                }}
                                 className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer">
                                 <option value="">Năm</option>
                                 {Array.from({ length: 55 }, (_, i) => {
