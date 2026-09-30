@@ -118,28 +118,29 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#25262b] rounded-xl border border-[#E2E8F0] dark:border-[#3b3d45] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center justify-between p-5 border-b border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023]">
-                    <h3 className="text-lg font-bold text-[#1a1b1e] dark:text-[#d6e3ff]">
+            <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <h3 className="text-base font-bold text-[#0F172A]">
                         Chỉnh sửa thông tin cá nhân
                     </h3>
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                        className="w-8 h-8 rounded-xl flex items-center justify-center text-[#64748B] hover:text-[#0F172A] hover:bg-slate-200/60 transition-colors cursor-pointer">
                         <span className="material-symbols-outlined text-[20px]">close</span>
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto" noValidate>
                     {errorMsg && (
-                        <div className="p-2.5 bg-[#ffdad6] text-[#ba1a1a] text-xs font-semibold rounded flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[16px]">error</span>
+                        <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] text-[#DC2626] text-xs font-semibold rounded-xl flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[18px]">error</span>
                             <span>{errorMsg}</span>
                         </div>
                     )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
+                            <label className="block text-xs font-semibold text-[#0F172A] mb-1.5">
                                 Họ và tên <span className="text-[#DC2626]">*</span>
                             </label>
                             <input
@@ -150,12 +151,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                                     setName(e.target.value);
                                     setErrorMsg("");
                                 }}
-                                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
+                                placeholder="Nhập họ và tên"
+                                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
+                            <label className="block text-xs font-semibold text-[#0F172A] mb-1.5">
                                 Số điện thoại <span className="text-[#DC2626]">*</span>
                             </label>
                             <input
@@ -166,13 +168,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                                     setErrorMsg("");
                                 }}
                                 placeholder="0901234567"
-                                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none"
+                                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] mb-1">
+                        <label className="block text-xs font-semibold text-[#0F172A] mb-1.5">
                             Ngày sinh <span className="text-[#DC2626]">*</span>
                         </label>
                         <div className="grid grid-cols-3 gap-3 w-full">
@@ -182,16 +184,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                                     setDobDay(e.target.value);
                                     setErrorMsg("");
                                 }}
-                                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer">
+                                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors cursor-pointer">
                                 <option value="">Ngày</option>
-                                {Array.from({ length: 31 }, (_, i) => {
-                                    const d = String(i + 1).padStart(2, "0");
-                                    return (
-                                        <option key={d} value={d}>
-                                            {d}
-                                        </option>
-                                    );
-                                })}
+                                {dayOptions.map((d) => (
+                                    <option key={d.value} value={d.value}>
+                                        {d.label}
+                                    </option>
+                                ))}
                             </select>
                             <select
                                 value={dobMonth}
@@ -199,16 +198,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                                     setDobMonth(e.target.value);
                                     setErrorMsg("");
                                 }}
-                                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer">
+                                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors cursor-pointer">
                                 <option value="">Tháng</option>
-                                {Array.from({ length: 12 }, (_, i) => {
-                                    const m = String(i + 1).padStart(2, "0");
-                                    return (
-                                        <option key={m} value={m}>
-                                            {m}
-                                        </option>
-                                    );
-                                })}
+                                {monthOptions.map((m) => (
+                                    <option key={m.value} value={m.value}>
+                                        {m.label}
+                                    </option>
+                                ))}
                             </select>
                             <select
                                 value={dobYear}
@@ -216,31 +212,28 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, user
                                     setDobYear(e.target.value);
                                     setErrorMsg("");
                                 }}
-                                className="w-full px-3 py-2 border border-[#c4c6cf] dark:border-[#3b3d45] bg-white dark:bg-[#1e1f23] rounded text-sm text-[#1a1b1e] dark:text-white focus:border-[#002046] dark:focus:border-blue-500 outline-none h-[38px] cursor-pointer">
+                                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors cursor-pointer">
                                 <option value="">Năm</option>
-                                {Array.from({ length: 55 }, (_, i) => {
-                                    const y = String(1970 + i);
-                                    return (
-                                        <option key={y} value={y}>
-                                            {y}
-                                        </option>
-                                    );
-                                })}
+                                {yearOptions.map((y) => (
+                                    <option key={y.value} value={y.value}>
+                                        {y.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-[#E2E8F0] dark:border-[#3b3d45] flex items-center justify-end gap-3">
+                    <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-end gap-3">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 border border-[#E2E8F0] dark:border-[#3b3d45] rounded text-xs font-semibold text-[#44474e] dark:text-[#c4c6cf] hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                            className="px-5 py-2.5 border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 rounded-xl text-sm font-semibold h-[42px] transition-colors cursor-pointer">
                             Hủy
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-4 py-2 bg-accent hover:opacity-90 text-white rounded text-xs font-semibold transition-colors cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                            className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-sm font-semibold h-[42px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs">
                             {loading ? "Đang lưu..." : "Lưu thay đổi"}
                         </button>
                     </div>
