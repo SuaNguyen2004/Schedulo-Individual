@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 html,
 body {
     height: 100%;
@@ -15,76 +13,6 @@ body {
     --accent-hover: #1d4ed8;
     --accent-light: #eff6ff;
     --accent-text: #ffffff;
-}
-
-/* Dark Mode Global Overrides */
-html.dark {
-    color-scheme: dark;
-    background-color: #121318 !important;
-    color: #f1f5f9 !important;
-}
-
-html.dark body {
-    background-color: #121318 !important;
-    color: #f1f5f9 !important;
-}
-
-html.dark .bg-white {
-    background-color: #1e1f26 !important;
-    color: #f1f5f9 !important;
-}
-
-html.dark .bg-\[\#faf9fd\],
-html.dark .bg-\[\#f8fafc\],
-html.dark .bg-\[\#f4f3f7\],
-html.dark .bg-slate-50,
-html.dark .bg-slate-100,
-html.dark .bg-\[\#F1F5F9\] {
-    background-color: #25262f !important;
-}
-
-html.dark .bg-\[\#F8FAFC\] {
-    background-color: #181920 !important;
-}
-
-html.dark .border-\[\#E2E8F0\],
-html.dark .border-\[\#e2e8f0\] {
-    border-color: #2d303a !important;
-}
-
-html.dark .text-\[\#1a1b1e\] {
-    color: #f1f5f9 !important;
-}
-
-html.dark .text-\[\#44474e\] {
-    color: #a1a5b7 !important;
-}
-
-/* Dark mode hover overrides so row/button hover in dark mode stays dark */
-html.dark .hover\:bg-\[\#f4f3f7\]:hover,
-html.dark .hover\:bg-\[\#f8fafc\]:hover,
-html.dark .hover\:bg-slate-50:hover,
-html.dark .hover\:bg-slate-100:hover,
-html.dark .hover\:bg-\[\#f1f5f9\]:hover,
-html.dark .hover\:bg-\[\#e9e8ec\]:hover {
-    background-color: #2b2d37 !important;
-}
-
-/* Avatar circle dark mode overrides */
-html.dark .bg-\[\#aec7f7\] {
-    background-color: #2a3e66 !important;
-    color: #d6e3ff !important;
-}
-html.dark .text-\[\#2e476f\] {
-    color: #90b4f8 !important;
-}
-
-html.dark input:not([type="checkbox"]):not([type="radio"]),
-html.dark select,
-html.dark textarea {
-    background-color: #262730 !important;
-    color: #f1f5f9 !important;
-    border-color: #3b3d48 !important;
 }
 
 /* Custom Accent Color Utilities */

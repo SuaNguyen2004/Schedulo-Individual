@@ -14,7 +14,6 @@ import { ViewRequestModal } from "./components/Modals/ViewRequestModal";
 import { ViewAccountDetailModal } from "./components/Modals/ViewAccountDetailModal";
 import { EditProfileModal } from "./components/Modals/EditProfileModal";
 import { ChangePasswordModal } from "./components/Modals/ChangePasswordModal";
-import { useSystemSettings } from "./context/SystemSettingsContext";
 import { formatDateOnly, getUserInitials } from "./utils/formatters";
 import {
     fetchBootstrapData,
@@ -83,8 +82,6 @@ const loadAuthenticationState = (): boolean => {
 };
 
 export const App: React.FC = () => {
-    const { isDarkMode } = useSystemSettings();
-
     // Auth state
     const [isLoggedIn, setIsLoggedIn] = useState(loadAuthenticationState);
     const [isRestoringSession, setIsRestoringSession] = useState(loadAuthenticationState);
@@ -588,17 +585,14 @@ export const App: React.FC = () => {
 
     if (isRestoringSession) {
         return (
-            <div
-                className={`min-h-screen min-h-dvh flex flex-col items-center justify-center bg-[#faf9fd] text-[#1a1b1e] ${
-                    isDarkMode ? "dark bg-[#121316] text-[#e2e2e6]" : ""
-                }`}>
+            <div className="min-h-screen min-h-dvh flex flex-col items-center justify-center bg-[#faf9fd] text-[#1a1b1e]">
                 <div className="flex flex-col items-center gap-4 p-8">
                     <div className="w-14 h-14 rounded-2xl bg-[#002046] flex items-center justify-center text-white shadow-xl animate-pulse">
                         <span className="material-symbols-outlined text-[32px]">calendar_clock</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-5 h-5 border-2 border-[#002046] dark:border-[#9ecaff] border-t-transparent dark:border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="w-5 h-5 border-2 border-[#002046] border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm font-semibold text-slate-600">
                             Đang kết nối và đồng bộ dữ liệu...
                         </span>
                     </div>
@@ -631,8 +625,7 @@ export const App: React.FC = () => {
     }
 
     return (
-        <div
-            className={`h-screen min-h-dvh flex overflow-hidden bg-[#faf9fd] text-[#1a1b1e] ${isDarkMode ? "dark" : ""}`}>
+        <div className="h-screen min-h-dvh flex overflow-hidden bg-[#faf9fd] text-[#1a1b1e]">
             {/* Toast Notification Banner */}
             {toast && (
                 <div className="fixed bottom-6 right-6 z-[100] bg-[#002046] text-white text-xs font-semibold px-4 py-3 rounded-lg shadow-xl flex items-center gap-2.5 animate-in slide-in-from-bottom-3 duration-200">
