@@ -172,12 +172,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                     {isAdminViewing && onBack && (
                         <button
                             onClick={onBack}
-                            className="p-1.5 text-[#44474e] dark:text-[#c4c6cf] hover:text-[#002046] dark:hover:text-white hover:bg-[#efedf1] dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-[#44474e] hover:text-[#002046] hover:bg-[#efedf1] rounded-lg transition-colors cursor-pointer"
                             title="Quay lại">
                             <span className="material-symbols-outlined text-[22px]">arrow_back</span>
                         </button>
                     )}
-                    <h2 className="text-2xl font-bold text-[#1a1b1e] dark:text-white tracking-tight">
+                    <h2 className="text-2xl font-bold text-[#1a1b1e] tracking-tight">
                         Thông tin tài khoản
                     </h2>
                 </div>
@@ -187,7 +187,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
                 {/* Left Column: Hồ sơ cá nhân (Avatar + Tên + CCCD) */}
                 <div className="flex flex-col">
-                    <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl p-5 shadow-xs flex flex-col items-center text-center relative h-full">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-xs flex flex-col items-center text-center relative h-full">
                         {/* Interactive Avatar Container */}
                         <div
                             className="relative mb-3 group cursor-pointer"
@@ -202,16 +202,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 <img
                                     src={user.avatar}
                                     alt={user.name}
-                                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white dark:border-[#1a1b1e] shadow-md transition-all group-hover:brightness-90"
+                                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-md transition-all group-hover:brightness-90"
                                 />
                             ) : (
-                                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#1b365d] text-white flex items-center justify-center text-2xl sm:text-3xl font-bold border-4 border-white dark:border-[#1a1b1e] shadow-md transition-all group-hover:brightness-90">
+                                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#1b365d] text-white flex items-center justify-center text-2xl sm:text-3xl font-bold border-4 border-white shadow-md transition-all group-hover:brightness-90">
                                     {getUserInitials(user.name, user.initials)}
                                 </div>
                             )}
 
                             {/* Edit Camera Badge */}
-                            <div className="absolute bottom-0 right-0 bg-accent hover:opacity-90 text-white p-1.5 sm:p-2 rounded-full border-2 border-white dark:border-[#1a1b1e] shadow-sm flex items-center justify-center transition-transform group-hover:scale-110">
+                            <div className="absolute bottom-0 right-0 bg-accent hover:opacity-90 text-white p-1.5 sm:p-2 rounded-full border-2 border-white shadow-sm flex items-center justify-center transition-transform group-hover:scale-110">
                                 <span className="material-symbols-outlined text-[16px]">photo_camera</span>
                             </div>
                         </div>
@@ -224,10 +224,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             onChange={handleFileSelect}
                         />
 
-                        <h3 className="text-lg sm:text-xl font-bold text-[#1a1b1e] dark:text-white">{user.name}</h3>
+                        <h3 className="text-lg sm:text-xl font-bold text-[#1a1b1e]">{user.name}</h3>
 
                         {isAdmin ? (
-                            <span className="mt-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                            <span className="mt-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
                                 Quản trị viên
                             </span>
                         ) : (
@@ -256,9 +256,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 />
 
                                 {/* CCCD Photos Section */}
-                                <div className="w-full mt-4 pt-3.5 border-t border-[#E2E8F0] dark:border-[#3b3d45] text-left">
+                                <div className="w-full mt-4 pt-3.5 border-t border-[#E2E8F0] text-left">
                                     <div className="flex items-center justify-between mb-2.5">
-                                        <span className="text-xs font-bold text-[#1b365d] dark:text-[#87a0cd] uppercase tracking-wider flex items-center gap-1.5">
+                                        <span className="text-xs font-bold text-[#1b365d] uppercase tracking-wider flex items-center gap-1.5">
                                             <span className="material-symbols-outlined text-[17px]">badge</span>
                                             <span>Ảnh chụp CCCD</span>
                                         </span>
@@ -267,7 +267,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                                         {/* CCCD Mặt trước */}
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                                            <span className="text-[11px] font-semibold text-slate-600">
                                                 Mặt trước
                                             </span>
 
@@ -280,7 +280,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                             side: "front",
                                                         })
                                                     }
-                                                    className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#1a1b1e] overflow-hidden h-28 sm:h-32 cursor-pointer shadow-2xs">
+                                                    className="relative group rounded-xl border border-slate-200 bg-slate-50 overflow-hidden h-28 sm:h-32 cursor-pointer shadow-2xs">
                                                     <img
                                                         src={user.cccdFront}
                                                         alt="CCCD Mặt trước"
@@ -297,11 +297,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                             ) : (
                                                 <div
                                                     onClick={() => cccdFrontInputRef.current?.click()}
-                                                    className="h-28 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-[#1a1b1e]/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-400 transition-all cursor-pointer flex flex-col items-center justify-center p-2 text-center group/empty">
+                                                    className="h-28 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/60 hover:bg-blue-50/50 hover:border-blue-400 transition-all cursor-pointer flex flex-col items-center justify-center p-2 text-center group/empty">
                                                     <span className="material-symbols-outlined text-slate-400 group-hover/empty:text-blue-500 text-[22px] mb-1 transition-colors">
                                                         add_a_photo
                                                     </span>
-                                                    <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 group-hover/empty:text-blue-500 transition-colors">
+                                                    <span className="text-[11px] font-medium text-slate-400 group-hover/empty:text-blue-500 transition-colors">
                                                         Tải ảnh lên
                                                     </span>
                                                 </div>
@@ -310,7 +310,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
                                         {/* CCCD Mặt sau */}
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                                            <span className="text-[11px] font-semibold text-slate-600">
                                                 Mặt sau
                                             </span>
 
@@ -323,7 +323,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                             side: "back",
                                                         })
                                                     }
-                                                    className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#1a1b1e] overflow-hidden h-28 sm:h-32 cursor-pointer shadow-2xs">
+                                                    className="relative group rounded-xl border border-slate-200 bg-slate-50 overflow-hidden h-28 sm:h-32 cursor-pointer shadow-2xs">
                                                     <img
                                                         src={user.cccdBack}
                                                         alt="CCCD Mặt sau"
@@ -340,11 +340,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                             ) : (
                                                 <div
                                                     onClick={() => cccdBackInputRef.current?.click()}
-                                                    className="h-28 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-[#1a1b1e]/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-400 transition-all cursor-pointer flex flex-col items-center justify-center p-2 text-center group/empty">
+                                                    className="h-28 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/60 hover:bg-blue-50/50 hover:border-blue-400 transition-all cursor-pointer flex flex-col items-center justify-center p-2 text-center group/empty">
                                                     <span className="material-symbols-outlined text-slate-400 group-hover/empty:text-blue-500 text-[22px] mb-1 transition-colors">
                                                         add_a_photo
                                                     </span>
-                                                    <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 group-hover/empty:text-blue-500 transition-colors">
+                                                    <span className="text-[11px] font-medium text-slate-400 group-hover/empty:text-blue-500 transition-colors">
                                                         Tải ảnh lên
                                                     </span>
                                                 </div>
@@ -359,10 +359,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
                 {/* Right Column: Thông tin chi tiết + Thông tin tài khoản + Hồ sơ CV */}
                 <div className="flex flex-col">
-                    <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl shadow-xs overflow-hidden h-full flex flex-col">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl shadow-xs overflow-hidden h-full flex flex-col">
                         {/* Header & Actions */}
-                        <div className="bg-[#F8FAFC] dark:bg-[#1f2023] px-4 sm:px-5 py-3.5 border-b border-[#E2E8F0] dark:border-[#3b3d45] flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
-                            <h3 className="font-bold text-sm sm:text-base text-[#1a1b1e] dark:text-[#d6e3ff] flex items-center gap-2 whitespace-nowrap shrink-0">
+                        <div className="bg-[#F8FAFC] px-4 sm:px-5 py-3.5 border-b border-[#E2E8F0] flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+                            <h3 className="font-bold text-sm sm:text-base text-[#1a1b1e] flex items-center gap-2 whitespace-nowrap shrink-0">
                                 <span className="material-symbols-outlined text-accent text-[20px]">badge</span>
                                 <span>Thông tin chi tiết</span>
                             </h3>
@@ -371,7 +371,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                     type="button"
                                     onClick={onOpenChangePassword}
                                     title="Đổi mật khẩu"
-                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs">
+                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 border border-blue-600 text-blue-600 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs">
                                     <span className="material-symbols-outlined text-[18px]">lock_reset</span>
                                 </button>
                                 <button
@@ -387,24 +387,24 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                         <div className="p-5 space-y-4 sm:space-y-4 flex-1 flex flex-col justify-between">
                             {/* Nhóm 1: Thông tin cá nhân */}
                             <div>
-                                <h4 className="text-xs font-bold text-[#002046] dark:text-[#87a0cd] uppercase tracking-wider mb-2.5 pb-1.5 border-b border-[#E2E8F0] dark:border-[#3b3d45]">
+                                <h4 className="text-xs font-bold text-[#002046] uppercase tracking-wider mb-2.5 pb-1.5 border-b border-[#E2E8F0]">
                                     Thông tin cá nhân
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-[#74777f] dark:text-[#8e9099] mb-0.5">
+                                        <label className="block text-[11px] font-semibold text-[#74777f] mb-0.5">
                                             Họ và tên
                                         </label>
-                                        <p className="text-sm font-semibold text-[#1a1b1e] dark:text-white">
+                                        <p className="text-sm font-semibold text-[#1a1b1e]">
                                             {user.name}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-[#74777f] dark:text-[#8e9099] mb-0.5">
+                                        <label className="block text-[11px] font-semibold text-[#74777f] mb-0.5">
                                             Ngày sinh
                                         </label>
-                                        <p className="text-sm font-semibold text-[#1a1b1e] dark:text-white">
+                                        <p className="text-sm font-semibold text-[#1a1b1e]">
                                             {user.dob || (
                                                 <span className="text-sm text-[#74777f] italic font-normal">
                                                     Chưa cập nhật
@@ -414,21 +414,21 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                     </div>
 
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-[#74777f] dark:text-[#8e9099] mb-0.5">
+                                        <label className="block text-[11px] font-semibold text-[#74777f] mb-0.5">
                                             Email
                                         </label>
                                         <p
-                                            className="text-sm font-semibold text-[#1a1b1e] dark:text-white truncate"
+                                            className="text-sm font-semibold text-[#1a1b1e] truncate"
                                             title={user.email}>
                                             {user.email}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-[#74777f] dark:text-[#8e9099] mb-0.5">
+                                        <label className="block text-[11px] font-semibold text-[#74777f] mb-0.5">
                                             Số điện thoại
                                         </label>
-                                        <p className="text-sm font-semibold text-[#1a1b1e] dark:text-white">
+                                        <p className="text-sm font-semibold text-[#1a1b1e]">
                                             {user.phone ? (
                                                 formatPhoneNumber(user.phone)
                                             ) : (
@@ -443,24 +443,24 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
                             {/* Nhóm 2: Thông tin tài khoản */}
                             <div>
-                                <h4 className="text-xs font-bold text-[#002046] dark:text-[#87a0cd] uppercase tracking-wider mb-2.5 pb-1.5 border-b border-[#E2E8F0] dark:border-[#3b3d45]">
+                                <h4 className="text-xs font-bold text-[#002046] uppercase tracking-wider mb-2.5 pb-1.5 border-b border-[#E2E8F0]">
                                     Thông tin tài khoản
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-[#74777f] dark:text-[#8e9099] mb-0.5">
+                                        <label className="block text-[11px] font-semibold text-[#74777f] mb-0.5">
                                             Vai trò
                                         </label>
-                                        <p className="text-sm font-semibold text-[#1a1b1e] dark:text-white">
+                                        <p className="text-sm font-semibold text-[#1a1b1e]">
                                             {user.role}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-[11px] font-semibold text-[#74777f] dark:text-[#8e9099] mb-0.5">
+                                        <label className="block text-[11px] font-semibold text-[#74777f] mb-0.5">
                                             Ngày đăng ký
                                         </label>
-                                        <p className="text-sm font-semibold text-[#1a1b1e] dark:text-white">
+                                        <p className="text-sm font-semibold text-[#1a1b1e]">
                                             {user.registerDate || user.joinDate || (
                                                 <span className="text-sm text-[#74777f] italic font-normal">
                                                     Chưa cập nhật
@@ -474,19 +474,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             {/* Nhóm 3: Hồ sơ ứng tuyển (CV) - Chỉ hiển thị cho CTV */}
                             {!isAdmin && (
                                 <div className="pt-1">
-                                    <h4 className="text-xs font-bold text-[#002046] dark:text-[#87a0cd] uppercase tracking-wider mb-2 pb-1.5 border-b border-[#E2E8F0] dark:border-[#3b3d45] flex items-center gap-1.5">
+                                    <h4 className="text-xs font-bold text-[#002046] uppercase tracking-wider mb-2 pb-1.5 border-b border-[#E2E8F0] flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-[17px]">description</span>
                                         <span>Hồ sơ ứng tuyển (CV)</span>
                                     </h4>
 
                                     {hasCv ? (
-                                        <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-[#1a1b1e] flex items-center justify-between gap-3 shadow-2xs">
+                                        <div className="p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-3 shadow-2xs">
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <div
                                                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${
                                                         isPdf
-                                                            ? "bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-950/50 dark:text-red-300 dark:border-red-900/60"
-                                                            : "bg-blue-50 text-blue-600 border border-blue-200/80 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/60"
+                                                            ? "bg-red-50 text-red-600 border border-red-200/80"
+                                                            : "bg-blue-50 text-blue-600 border border-blue-200/80"
                                                     }`}>
                                                     <span className="material-symbols-outlined text-[20px]">
                                                         {isPdf ? "picture_as_pdf" : "description"}
@@ -494,11 +494,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <p
-                                                        className="text-xs font-bold text-[#1a1b1e] dark:text-white truncate"
+                                                        className="text-xs font-bold text-[#1a1b1e] truncate"
                                                         title={cvDisplayName}>
                                                         {cvDisplayName}
                                                     </p>
-                                                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                                    <p className="text-[11px] text-slate-500">
                                                         {cvDisplaySize}
                                                     </p>
                                                 </div>
@@ -510,7 +510,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                     href={user.cvFile ? getAuthorizedFileUrl(user.cvFile) : "#"}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs no-underline"
+                                                    className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 border border-blue-600 text-blue-600 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs no-underline"
                                                     title="Xem CV trong tab mới">
                                                     <span className="material-symbols-outlined text-[18px]">
                                                         visibility
@@ -520,7 +520,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={() => cvFileInputRef.current?.click()}
-                                                    className="w-8.5 h-8.5 bg-blue-50/80 hover:bg-blue-100/90 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                                                    className="w-8.5 h-8.5 bg-blue-50/80 hover:bg-blue-100/90 border border-blue-300 text-blue-600 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                                     title="Thay đổi file CV">
                                                     <span className="material-symbols-outlined text-[18px]">sync</span>
                                                 </button>
@@ -529,17 +529,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                     ) : (
                                         <div
                                             onClick={() => cvFileInputRef.current?.click()}
-                                            className="rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-[#1a1b1e]/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-400 transition-all cursor-pointer p-3 text-center group/cv flex items-center justify-center gap-2.5">
-                                            <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover/cv:scale-110 transition-transform">
+                                            className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/60 hover:bg-blue-50/50 hover:border-blue-400 transition-all cursor-pointer p-3 text-center group/cv flex items-center justify-center gap-2.5">
+                                            <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover/cv:scale-110 transition-transform">
                                                 <span className="material-symbols-outlined text-[17px]">
                                                     upload_file
                                                 </span>
                                             </div>
                                             <div className="text-left">
-                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover/cv:text-blue-600 transition-colors">
+                                                <p className="text-xs font-bold text-slate-700 group-hover/cv:text-blue-600 transition-colors">
                                                     Tải file CV lên
                                                 </p>
-                                                <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                                                <p className="text-[10px] text-slate-400">
                                                     Định dạng PDF, Word (.pdf, .doc, .docx)
                                                 </p>
                                             </div>
@@ -565,10 +565,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                     className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150"
                     onClick={() => setPreviewModal(null)}>
                     <div
-                        className="bg-white dark:bg-[#25262b] rounded-2xl max-w-2xl w-full p-5 border border-slate-200 dark:border-slate-700 shadow-2xl relative"
+                        className="bg-white rounded-2xl max-w-2xl w-full p-5 border border-slate-200 shadow-2xl relative"
                         onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-700">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+                            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-blue-600">
                                     {previewModal.side === "avatar" ? "account_circle" : "badge"}
                                 </span>
@@ -576,11 +576,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             </h3>
                             <button
                                 onClick={() => setPreviewModal(null)}
-                                className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                                className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
-                        <div className="overflow-hidden rounded-xl bg-slate-100 dark:bg-black/40 flex items-center justify-center max-h-[60vh] p-3 min-h-[220px]">
+                        <div className="overflow-hidden rounded-xl bg-slate-100 flex items-center justify-center max-h-[60vh] p-3 min-h-[220px]">
                             <img
                                 src={previewModal.url}
                                 alt={previewModal.title}
@@ -589,7 +589,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                         </div>
 
                         {/* Action Buttons strictly below the image */}
-                        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-700 mt-3">
+                        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 mt-3">
                             <button
                                 type="button"
                                 onClick={() => {

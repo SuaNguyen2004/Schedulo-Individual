@@ -225,27 +225,27 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
     return (
         <>
             <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
-                <div className="bg-white dark:bg-[#25262b] rounded-2xl border border-[#E2E8F0] dark:border-[#3b3d45] shadow-2xl w-full max-w-3xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+                <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-2xl w-full max-w-3xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
                     {/* Modal Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023]">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC]">
                         <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-[#1b365d]/10 text-[#1b365d] dark:bg-[#1b365d]/30 dark:text-[#87a0cd] flex items-center justify-center font-bold">
+                            <div className="w-8 h-8 rounded-lg bg-[#1b365d]/10 text-[#1b365d] flex items-center justify-center font-bold">
                                 <span className="material-symbols-outlined text-[20px]">badge</span>
                             </div>
-                            <h3 className="text-base font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                            <h3 className="text-base font-bold text-[#1b365d]">
                                 Hồ sơ & Lịch trình tài khoản
                             </h3>
                         </div>
                         <button
                             onClick={onClose}
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#74777f] hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#74777f] hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                             <span className="material-symbols-outlined text-[20px]">close</span>
                         </button>
                     </div>
 
                     <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
                         {/* User Profile Header Card */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F8FAFC] dark:bg-[#1e1f23] border border-[#E2E8F0] dark:border-[#3b3d45]">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                             <div className="flex items-center gap-4">
                                 {account.avatar ? (
                                     <img
@@ -259,20 +259,20 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                     </div>
                                 )}
                                 <div>
-                                    <h4 className="text-lg font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                                    <h4 className="text-lg font-bold text-[#1b365d]">
                                         {account.name}
                                     </h4>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:items-end gap-2 text-xs text-[#74777f] dark:text-[#c4c6cf]">
+                            <div className="flex flex-col sm:items-end gap-2 text-xs text-[#74777f]">
                                 <p>
                                     Ngày đăng ký:{" "}
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                    <span className="font-semibold text-[#1b365d]">
                                         {account.registerDate || account.joinDate ? (
                                             formatDateOnly(account.registerDate || account.joinDate)
                                         ) : (
-                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                            <span className="italic text-[#74777f]">
                                                 Chưa cập nhật
                                             </span>
                                         )}
@@ -283,38 +283,38 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
 
                         {/* Section 1: Detailed Profile Info */}
                         <div>
-                            <h5 className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <h5 className="text-xs font-bold text-[#1b365d] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-[16px]">person</span>
                                 <span>Thông tin cá nhân & Tài khoản</span>
                             </h5>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#F8FAFC] dark:bg-[#1e1f23] p-4 rounded-xl border border-[#E2E8F0] dark:border-[#3b3d45]">
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0]">
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
                                     <span className="text-[#74777f]">Họ và tên:</span>
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">{account.name}</span>
+                                    <span className="font-semibold text-[#1b365d]">{account.name}</span>
                                 </div>
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
                                     <span className="text-[#74777f]">Email:</span>
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                    <span className="font-semibold text-[#1b365d]">
                                         {account.email}
                                     </span>
                                 </div>
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
                                     <span className="text-[#74777f]">Số điện thoại:</span>
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                    <span className="font-semibold text-[#1b365d]">
                                         {account.phone ? (
                                             formatPhoneNumber(account.phone)
                                         ) : (
-                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                            <span className="italic text-[#74777f]">
                                                 Chưa cập nhật
                                             </span>
                                         )}
                                     </span>
                                 </div>
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
                                     <span className="text-[#74777f]">Ngày sinh:</span>
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                    <span className="font-semibold text-[#1b365d]">
                                         {account.dob || (
-                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                            <span className="italic text-[#74777f]">
                                                 Chưa cập nhật
                                             </span>
                                         )}
@@ -322,9 +322,9 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="mt-3 p-3.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1e1f23] border border-[#E2E8F0] dark:border-[#3b3d45]">
+                            <div className="mt-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                                 <div className="flex items-center mb-2.5">
-                                    <span className="text-[11px] font-bold text-[#1b365d] dark:text-[#d6e3ff] uppercase tracking-wider flex items-center gap-1.5">
+                                    <span className="text-[11px] font-bold text-[#1b365d] uppercase tracking-wider flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-[16px]">badge</span>
                                         <span>Ảnh chụp CCCD (Mặt trước & Mặt sau)</span>
                                     </span>
@@ -338,7 +338,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                     url: account.cccdFront!,
                                                 })
                                             }
-                                            className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 transition-all">
+                                            className="relative group rounded-xl border border-slate-200 bg-white overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 transition-all">
                                             <img
                                                 src={account.cccdFront}
                                                 alt="CCCD Mặt trước"
@@ -350,7 +350,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
+                                        <div className="rounded-xl border border-dashed border-slate-200 bg-white h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
                                             <span className="material-symbols-outlined text-[20px]">credit_card</span>
                                             <span>Chưa tải lên</span>
                                         </div>
@@ -364,7 +364,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                     url: account.cccdBack!,
                                                 })
                                             }
-                                            className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 transition-all">
+                                            className="relative group rounded-xl border border-slate-200 bg-white overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 transition-all">
                                             <img
                                                 src={account.cccdBack}
                                                 alt="CCCD Mặt sau"
@@ -376,7 +376,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
+                                        <div className="rounded-xl border border-dashed border-slate-200 bg-white h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
                                             <span className="material-symbols-outlined text-[20px]">credit_card</span>
                                             <span>Chưa tải lên</span>
                                         </div>
@@ -385,30 +385,30 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                             </div>
 
                             {/* CV Document Box */}
-                            <div className="mt-3 p-3.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1e1f23] border border-[#E2E8F0] dark:border-[#3b3d45]">
+                            <div className="mt-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[11px] font-bold text-[#1b365d] dark:text-[#d6e3ff] uppercase tracking-wider flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400">
+                                    <span className="text-[11px] font-bold text-[#1b365d] uppercase tracking-wider flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-[16px] text-indigo-600">
                                             description
                                         </span>
                                         <span>Hồ sơ ứng tuyển (CV)</span>
                                     </span>
                                 </div>
                                 {account.cvFile || account.cvFileName ? (
-                                    <div className="p-2.5 bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                                    <div className="p-2.5 bg-white border border-slate-200 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div
                                                 className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${
                                                     isPdf
-                                                        ? "bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-950/50 dark:text-red-300 dark:border-red-900/60"
-                                                        : "bg-blue-50 text-blue-600 border border-blue-200/80 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/60"
+                                                        ? "bg-red-50 text-red-600 border border-red-200/80"
+                                                        : "bg-blue-50 text-blue-600 border border-blue-200/80"
                                                 }`}>
                                                 <span className="material-symbols-outlined text-[22px]">
                                                     {isPdf ? "picture_as_pdf" : "description"}
                                                 </span>
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-xs font-bold text-[#1a1b1e] dark:text-white truncate">
+                                                <p className="text-xs font-bold text-[#1a1b1e] truncate">
                                                     {cvFileName}
                                                 </p>
                                             </div>
@@ -419,7 +419,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                 href={account.cvFile ? getAuthorizedFileUrl(account.cvFile) : "#"}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="px-3 py-1.5 bg-white hover:bg-blue-50/70 dark:bg-[#25262b] dark:hover:bg-blue-950/40 border border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap no-underline"
+                                                className="px-3 py-1.5 bg-white hover:bg-blue-50/70 border border-blue-600 text-blue-600 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap no-underline"
                                                 title="Xem CV trong tab mới">
                                                 <span className="material-symbols-outlined text-[16px]">
                                                     visibility
@@ -429,7 +429,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="p-3 bg-white dark:bg-[#25262b] border border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-center text-xs text-slate-400">
+                                    <div className="p-3 bg-white border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400">
                                         Chưa đính kèm file CV
                                     </div>
                                 )}
@@ -438,10 +438,10 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
 
                         {/* Section 2: Monday - Friday Schedule (Ca sáng & Ca chiều) */}
                         <div className="space-y-3">
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                                <h5 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                                <h5 className="flex items-center gap-2 text-base font-bold text-slate-900">
                                     <span
-                                        className="material-symbols-outlined text-[22px] text-blue-700 dark:text-blue-300"
+                                        className="material-symbols-outlined text-[22px] text-blue-700"
                                         aria-hidden="true">
                                         calendar_view_week
                                     </span>
@@ -453,12 +453,12 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                             type="button"
                                             onClick={() => setShowWorkHistory(true)}
                                             aria-label="Lịch sử làm việc"
-                                            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-700 shadow-2xs transition-colors hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                                            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-700 shadow-2xs transition-colors hover:bg-slate-200">
                                             <span className="material-symbols-outlined text-[18px]">history</span>
                                         </button>
                                         <span
                                             role="tooltip"
-                                            className="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 dark:bg-slate-100 dark:text-slate-900">
+                                            className="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                                             Lịch sử làm việc
                                         </span>
                                     </div>
@@ -466,7 +466,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                             </div>
 
                             {account.role === "Admin" ? (
-                                <div className="p-4 bg-slate-50 dark:bg-[#1e1f23] rounded-xl border border-[#E2E8F0] dark:border-[#3b3d45] flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                                <div className="p-4 bg-slate-50 rounded-xl border border-[#E2E8F0] flex items-center gap-3 text-xs text-slate-600">
                                     <span className="material-symbols-outlined text-amber-500 text-[20px]">info</span>
                                     <span>Tài khoản Quản trị viên (Admin) không tham gia đăng ký lịch làm việc.</span>
                                 </div>
@@ -483,8 +483,8 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                         key={day.index}
                                                         className={`flex flex-col items-center justify-center rounded-xl py-1.5 px-1 text-center font-bold transition-colors ${
                                                             isToday
-                                                                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                                                                : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                                                ? "bg-blue-50 text-blue-700"
+                                                                : "bg-slate-100/90 text-slate-700"
                                                         }`}>
                                                         <span className="text-[11px] uppercase tracking-wider">
                                                             {day.dayName}
@@ -509,10 +509,10 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                 return (
                                                     <div
                                                         key={day.index}
-                                                        className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                        className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors ${
                                                             isToday
-                                                                ? "border-blue-600 dark:border-blue-400"
-                                                                : "border-slate-200 dark:border-slate-800"
+                                                                ? "border-blue-600"
+                                                                : "border-slate-200"
                                                         }`}>
                                                         <div className="space-y-1">
                                                             {morning !== "off" ? (
@@ -524,8 +524,8 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                                     }
                                                                     className={`flex w-full items-center justify-center rounded-lg border h-[28px] shadow-2xs select-none transition-colors ${
                                                                         morning === "pending"
-                                                                            ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
-                                                                            : "border-amber-200/90 bg-amber-50 text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                            ? "border-amber-300 bg-amber-100 text-amber-900"
+                                                                            : "border-amber-200/90 bg-amber-50 text-amber-700"
                                                                     }`}>
                                                                     <span className="material-symbols-outlined text-[18px] leading-none">
                                                                         wb_sunny
@@ -544,8 +544,8 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                                     }
                                                                     className={`flex w-full items-center justify-center rounded-lg border h-[28px] shadow-2xs select-none transition-colors ${
                                                                         afternoon === "pending"
-                                                                            ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
-                                                                            : "border-purple-200/90 bg-purple-50 text-purple-700 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                            ? "border-purple-300 bg-purple-100 text-purple-900"
+                                                                            : "border-purple-200/90 bg-purple-50 text-purple-700"
                                                                     }`}>
                                                                     <span className="material-symbols-outlined text-[18px] leading-none">
                                                                         wb_twilight
@@ -573,8 +573,8 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                             key={day.index}
                                                             className={`flex items-center justify-center gap-1 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
                                                                 isToday
-                                                                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                                                                    : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                                                    ? "bg-blue-50 text-blue-700"
+                                                                    : "bg-slate-100/90 text-slate-700"
                                                             }`}>
                                                             <span>{day.dayName}</span>
                                                             {isToday && (
@@ -596,10 +596,10 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                     return (
                                                         <div
                                                             key={day.index}
-                                                            className={`min-h-[104px] rounded-2xl border-2 bg-white p-2.5 shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                            className={`min-h-[104px] rounded-2xl border-2 bg-white p-2.5 shadow-2xs transition-colors ${
                                                                 isToday
-                                                                    ? "border-blue-600 dark:border-blue-400"
-                                                                    : "border-slate-200 dark:border-slate-800"
+                                                                    ? "border-blue-600"
+                                                                    : "border-slate-200"
                                                             }`}>
                                                             <div className="space-y-2">
                                                                 {morning !== "off" ? (
@@ -611,8 +611,8 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                                         }
                                                                         className={`flex w-full items-center justify-center rounded-xl border h-[38px] shadow-2xs select-none transition-colors ${
                                                                             morning === "pending"
-                                                                                ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/50 dark:text-amber-100"
-                                                                                : "border-amber-200/90 bg-amber-50 text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                                ? "border-amber-300 bg-amber-100 text-amber-900"
+                                                                                : "border-amber-200/90 bg-amber-50 text-amber-700"
                                                                         }`}>
                                                                         <span
                                                                             className="material-symbols-outlined text-[20px] leading-none"
@@ -633,8 +633,8 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                                         }
                                                                         className={`flex w-full items-center justify-center rounded-xl border h-[38px] shadow-2xs select-none transition-colors ${
                                                                             afternoon === "pending"
-                                                                                ? "border-purple-300 bg-purple-100 text-purple-900 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-100"
-                                                                                : "border-purple-200/90 bg-purple-50 text-purple-700 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                                ? "border-purple-300 bg-purple-100 text-purple-900"
+                                                                                : "border-purple-200/90 bg-purple-50 text-purple-700"
                                                                         }`}>
                                                                         <span
                                                                             className="material-symbols-outlined text-[20px] leading-none"
@@ -657,10 +657,10 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                         </div>
 
                         {/* Section 3: Notes (Ghi chú) */}
-                        <div className="p-4 rounded-xl bg-[#F8FAFC] dark:bg-[#1e1f23] border border-[#E2E8F0] dark:border-[#3b3d45] space-y-2.5">
+                        <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2.5">
                             <div className="flex items-center justify-between">
-                                <h5 className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] uppercase tracking-wider flex items-center gap-1.5">
-                                    <span className="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-400">
+                                <h5 className="text-xs font-bold text-[#1b365d] uppercase tracking-wider flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-[16px] text-amber-600">
                                         edit_note
                                     </span>
                                     <span>Ghi chú</span>
@@ -671,7 +671,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
                                         isSavedNotes
                                             ? "bg-emerald-600 text-white"
-                                            : "bg-[#1b365d] hover:bg-[#002046] dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white"
+                                            : "bg-[#1b365d] hover:bg-[#002046] text-white"
                                     }`}>
                                     <span className="material-symbols-outlined text-[15px]">
                                         {isSavedNotes ? "check_circle" : "save"}
@@ -685,7 +685,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                     value={notesText}
                                     onChange={(e) => setNotesText(e.target.value)}
                                     rows={3}
-                                    className="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all resize-none shadow-2xs leading-relaxed"
+                                    className="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all resize-none shadow-2xs leading-relaxed"
                                 />
                             </div>
                         </div>
@@ -696,15 +696,15 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
             {/* END SCHEDULE POPUP MODAL */}
             {isEndScheduleModalOpen && (
                 <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+                    <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
                         {/* Header */}
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-300 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-[18px]">event_busy</span>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff]">
+                                    <h3 className="font-bold text-sm text-[#1b365d]">
                                         Kết thúc lịch làm việc
                                     </h3>
                                     <p className="text-[11px] text-slate-500">
@@ -714,14 +714,14 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                             </div>
                             <button
                                 onClick={() => setIsEndScheduleModalOpen(false)}
-                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
 
                         {/* Explanation card */}
-                        <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2.5">
-                            <span className="material-symbols-outlined text-[18px] shrink-0 text-amber-600 dark:text-amber-400 mt-0.5">
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-start gap-2.5">
+                            <span className="material-symbols-outlined text-[18px] shrink-0 text-amber-600 mt-0.5">
                                 info
                             </span>
                             <p className="leading-relaxed text-[11px]">
@@ -735,7 +735,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {/* Ngày bắt đầu (CTV đã chọn để đăng ký) */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                                     <span>Ngày bắt đầu</span>
                                     <span className="text-[10px] font-normal text-slate-400">(CTV đã đăng ký)</span>
                                 </label>
@@ -744,7 +744,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                         type="text"
                                         readOnly
                                         value={userRegisteredStartDateFormatted}
-                                        className="w-full text-xs font-semibold p-2.5 pl-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-not-allowed"
+                                        className="w-full text-xs font-semibold p-2.5 pl-8 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 cursor-not-allowed"
                                     />
                                     <span className="material-symbols-outlined text-[16px] text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2">
                                         event_available
@@ -754,7 +754,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
 
                             {/* Ngày kết thúc (Admin sẽ chọn) */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                                     <span>Ngày kết thúc</span>
                                     <span className="text-rose-500 font-bold">*</span>
                                 </label>
@@ -767,7 +767,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                             setEndScheduleEndDate(e.target.value);
                                             if (endScheduleError) setEndScheduleError("");
                                         }}
-                                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition-all cursor-pointer"
+                                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition-all cursor-pointer"
                                     />
                                 </div>
                             </div>
@@ -775,7 +775,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
 
                         {/* Lý do kết thúc (Textarea) */}
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Lý do</label>
+                            <label className="text-xs font-bold text-slate-700">Lý do</label>
                             <textarea
                                 value={endScheduleReason}
                                 onChange={(e) => {
@@ -784,23 +784,23 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 }}
                                 placeholder="Nhập lý do kết thúc lịch làm việc (ví dụ: Nghỉ việc đột xuất, bận việc học/cá nhân, hoàn thành kỳ thực tập...)..."
                                 rows={3}
-                                className="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition-all resize-none shadow-2xs leading-relaxed"
+                                className="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition-all resize-none shadow-2xs leading-relaxed"
                             />
                         </div>
 
                         {endScheduleError && (
-                            <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <p className="text-xs font-semibold text-rose-600 flex items-center gap-1">
                                 <span className="material-symbols-outlined text-[16px]">error</span>
                                 <span>{endScheduleError}</span>
                             </p>
                         )}
 
                         {/* Footer */}
-                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
                             <button
                                 type="button"
                                 onClick={() => setIsEndScheduleModalOpen(false)}
-                                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-colors cursor-pointer">
+                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer">
                                 Hủy
                             </button>
                             <button
@@ -818,23 +818,23 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
             {/* CCCD LIGHTBOX PREVIEW MODAL */}
             {previewImg && (
                 <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[#1b365d] dark:text-[#87a0cd] text-[20px]">
+                                <span className="material-symbols-outlined text-[#1b365d] text-[20px]">
                                     badge
                                 </span>
-                                <h3 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff]">
+                                <h3 className="font-bold text-sm text-[#1b365d]">
                                     {previewImg.title}
                                 </h3>
                             </div>
                             <button
                                 onClick={() => setPreviewImg(null)}
-                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
-                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 flex items-center justify-center max-h-[60vh]">
+                        <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-900 flex items-center justify-center max-h-[60vh]">
                             <img
                                 src={previewImg.url}
                                 alt={previewImg.title}
@@ -848,29 +848,29 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
             {/* WORK HISTORY MODAL */}
             {showWorkHistory && (
                 <div className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
-                    <div className="bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-4 max-h-[92vh] flex flex-col my-auto">
+                    <div className="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-4 max-h-[92vh] flex flex-col my-auto">
                         {/* Header matching CTV work history view */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
                             <div className="flex items-center gap-2">
                                 <span
-                                    className="material-symbols-outlined text-[22px] text-blue-700 dark:text-blue-300"
+                                    className="material-symbols-outlined text-[22px] text-blue-700"
                                     aria-hidden="true">
                                     calendar_month
                                 </span>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                                <h3 className="text-base font-bold text-slate-900">
                                     Lịch sử làm việc
                                 </h3>
                             </div>
 
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <div
-                                    className="inline-flex min-h-10 sm:min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                                    className="inline-flex min-h-10 sm:min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm"
                                     role="group"
                                     aria-label="Chuyển tháng">
                                     <button
                                         type="button"
                                         onClick={() => changeHistoryMonth(-1)}
-                                        className="flex min-h-8 min-w-8 sm:min-h-9 sm:min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                        className="flex min-h-8 min-w-8 sm:min-h-9 sm:min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
                                         aria-label="Xem tháng trước">
                                         <span
                                             className="material-symbols-outlined text-[18px] sm:text-[20px]"
@@ -879,14 +879,14 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                         </span>
                                     </button>
                                     <span
-                                        className="min-w-[110px] sm:min-w-[120px] px-2 text-center text-xs font-bold text-slate-900 dark:text-slate-100"
+                                        className="min-w-[110px] sm:min-w-[120px] px-2 text-center text-xs font-bold text-slate-900"
                                         aria-live="polite">
                                         Tháng {historyDate.getMonth() + 1}, {historyDate.getFullYear()}
                                     </span>
                                     <button
                                         type="button"
                                         onClick={() => changeHistoryMonth(1)}
-                                        className="flex min-h-8 min-w-8 sm:min-h-9 sm:min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                        className="flex min-h-8 min-w-8 sm:min-h-9 sm:min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
                                         aria-label="Xem tháng sau">
                                         <span
                                             className="material-symbols-outlined text-[18px] sm:text-[20px]"
@@ -899,7 +899,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setShowWorkHistory(false)}
-                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer"
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 transition-colors cursor-pointer"
                                     aria-label="Đóng">
                                     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                                         close
@@ -916,7 +916,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                     {["THỨ 2", "THỨ 3", "THỨ 4", "THỨ 5", "THỨ 6"].map((dayName, idx) => (
                                         <div
                                             key={idx}
-                                            className="rounded-xl border border-slate-200/80 bg-slate-100 py-1.5 px-1 sm:py-2.5 sm:px-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-[#1f2023] dark:text-slate-200">
+                                            className="rounded-xl border border-slate-200/80 bg-slate-100 py-1.5 px-1 sm:py-2.5 sm:px-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700">
                                             {dayName}
                                         </div>
                                     ))}
@@ -931,7 +931,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                     return (
                                                         <div
                                                             key={dayIndex}
-                                                            className="min-h-[88px] sm:min-h-[110px] rounded-xl border border-dashed border-slate-200 bg-slate-50/50 opacity-40 dark:border-slate-800/60 dark:bg-[#1f2023]/30"
+                                                            className="min-h-[88px] sm:min-h-[110px] rounded-xl border border-dashed border-slate-200 bg-slate-50/50 opacity-40"
                                                             aria-hidden="true"
                                                         />
                                                     );
@@ -951,16 +951,16 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                         key={dateISO}
                                                         className={`flex min-h-[88px] sm:min-h-[110px] flex-col rounded-xl border p-1.5 sm:p-2.5 transition-all ${
                                                             isToday
-                                                                ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20"
-                                                                : "border-slate-200/90 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#222327] dark:hover:border-slate-700"
+                                                                ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20"
+                                                                : "border-slate-200/90 bg-white hover:border-slate-300"
                                                         }`}>
-                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center border-b border-slate-100 pb-1 sm:pb-1.5 text-center dark:border-slate-800/80">
+                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center border-b border-slate-100 pb-1 sm:pb-1.5 text-center">
                                                             {isToday ? (
                                                                 <span className="inline-flex items-center justify-center rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-white shadow-2xs">
                                                                     {dayStr}
                                                                 </span>
                                                             ) : (
-                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800">
                                                                     {dayStr}
                                                                 </span>
                                                             )}
@@ -970,7 +970,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                             {morningShift ? (
                                                                 <div
                                                                     key={`${dateISO}-morning`}
-                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                                     title={`Ca Sáng, ${dayStr}`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
@@ -988,7 +988,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                                             {afternoonShift ? (
                                                                 <div
                                                                     key={`${dateISO}-afternoon`}
-                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                                     title={`Ca Chiều, ${dayStr}`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"

@@ -669,7 +669,7 @@ export const App: React.FC = () => {
 
             {/* Mobile Sidebar Drawer */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-y-0 left-0 w-[280px] max-w-[85vw] h-dvh max-h-[100dvh] bg-[#f4f3f7] dark:bg-[#1a1b1e] z-50 md:hidden flex flex-col shadow-2xl animate-in slide-in-from-left duration-200">
+                <div className="fixed inset-y-0 left-0 w-[280px] max-w-[85vw] h-dvh max-h-[100dvh] bg-[#f4f3f7] z-50 md:hidden flex flex-col shadow-2xl animate-in slide-in-from-left duration-200">
                     <Sidebar
                         currentTab={currentTab}
                         onSelectTab={(tab) => {
@@ -694,16 +694,16 @@ export const App: React.FC = () => {
                     isSidebarCollapsed ? "md:ml-[72px]" : "md:ml-[280px]"
                 }`}>
                 {/* Mobile-Only Navigation Bar */}
-                <div className="md:hidden px-3.5 py-2.5 border-b border-[#E2E8F0] dark:border-[#3b3d45] bg-[#f4f3f7] dark:bg-[#1a1b1e] flex items-center justify-between z-10 shrink-0 shadow-2xs">
+                <div className="md:hidden px-3.5 py-2.5 border-b border-[#E2E8F0] bg-[#f4f3f7] flex items-center justify-between z-10 shrink-0 shadow-2xs">
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="p-1.5 text-[#002046] dark:text-[#d6e3ff] hover:bg-[#e3e2e6] dark:hover:bg-[#2c2d33] rounded-lg flex items-center gap-1.5 font-bold text-sm cursor-pointer transition-colors">
+                        className="p-1.5 text-[#002046] hover:bg-[#e3e2e6] rounded-lg flex items-center gap-1.5 font-bold text-sm cursor-pointer transition-colors">
                         <span className="material-symbols-outlined text-[22px]">menu</span>
                         <span>Danh mục</span>
                     </button>
 
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] truncate max-w-[160px]">
+                        <span className="text-xs font-bold text-[#1b365d] truncate max-w-[160px]">
                             {currentTab === "accounts"
                                 ? "Tài khoản"
                                 : currentTab === "requests"

@@ -38,14 +38,14 @@ const SHIFT_OPTIONS: Array<{
         label: "Ca sáng",
         icon: "light_mode",
         surface:
-            "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/35 dark:text-amber-300 dark:border-amber-800",
+            "bg-amber-50 text-amber-700 border-amber-200",
     },
     {
         type: "afternoon",
         label: "Ca chiều",
         icon: "wb_twilight",
         surface:
-            "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/35 dark:text-purple-300 dark:border-purple-800",
+            "bg-purple-50 text-purple-700 border-purple-200",
     },
 ];
 
@@ -694,16 +694,16 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     return (
         <div className="space-y-5 pb-8">
             {isPending && (
-                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900 shadow-sm dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-200">
+                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900 shadow-sm">
                     <div className="flex items-start gap-3">
-                        <span className="material-symbols-outlined text-[24px] text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
+                        <span className="material-symbols-outlined text-[24px] text-amber-600 shrink-0 mt-0.5">
                             pending
                         </span>
                         <div>
-                            <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">
+                            <h4 className="font-bold text-sm text-amber-900">
                                 Tài khoản đang chờ duyệt
                             </h4>
-                            <p className="text-xs text-amber-800 dark:text-amber-300 mt-1">
+                            <p className="text-xs text-amber-800 mt-1">
                                 Tài khoản của bạn đang ở trạng thái <strong>Chờ duyệt</strong> bởi Quản trị viên. Trong
                                 thời gian này, bạn chưa thể đăng ký lịch làm việc. Bạn vẫn có thể xem và cập nhật hồ sơ
                                 cá nhân trong mục <strong>Hồ sơ</strong>.
@@ -713,9 +713,9 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                 </div>
             )}
 
-            <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/70 p-3 sm:p-4 shadow-sm dark:border-slate-700 dark:from-[#25262b] dark:via-[#25262b] dark:to-blue-950/25">
+            <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/70 p-3 sm:p-4 shadow-sm">
                 <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-[0.16em] text-blue-700 dark:text-blue-300 shrink-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-[0.16em] text-blue-700 shrink-0">
                         <span className="material-symbols-outlined text-[16px] sm:text-[18px]" aria-hidden="true">
                             calendar_month
                         </span>
@@ -725,7 +725,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         <button
                             type="button"
                             disabled
-                            className="inline-flex min-h-9 sm:min-h-11 shrink-0 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-slate-300 px-3 py-1.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-500 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500 whitespace-nowrap"
+                            className="inline-flex min-h-9 sm:min-h-11 shrink-0 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-slate-300 px-3 py-1.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-500 cursor-not-allowed whitespace-nowrap"
                             title="Tài khoản chờ duyệt chưa thể đăng ký lịch làm việc">
                             <span className="material-symbols-outlined text-[18px] sm:text-[20px]" aria-hidden="true">
                                 lock
@@ -736,7 +736,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         <button
                             type="button"
                             onClick={openRegistration}
-                            className="inline-flex min-h-9 sm:min-h-11 shrink-0 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-blue-700 px-3 py-1.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer whitespace-nowrap">
+                            className="inline-flex min-h-9 sm:min-h-11 shrink-0 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-blue-700 px-3 py-1.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 cursor-pointer whitespace-nowrap">
                             <span className="material-symbols-outlined text-[18px] sm:text-[20px]" aria-hidden="true">
                                 edit_calendar
                             </span>
@@ -746,10 +746,10 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                 </div>
             </section>
 
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#25262b]">
-                <div className="flex flex-row items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/35">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex flex-row items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 p-4">
                     <div
-                        className="inline-flex w-fit rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900"
+                        className="inline-flex w-fit rounded-xl border border-slate-200 bg-white p-1"
                         role="group"
                         aria-label="Chế độ xem lịch">
                         {(["week", "month"] as CalendarView[]).map((view) => (
@@ -761,7 +761,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 className={`min-h-11 rounded-lg px-4 text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center gap-1.5 ${
                                     calendarView === view
                                         ? "bg-blue-700 text-white shadow-sm"
-                                        : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                                        : "text-slate-600 hover:bg-slate-100"
                                 }`}>
                                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                                     {view === "week" ? "calendar_view_week" : "history"}
@@ -774,13 +774,13 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
                 {calendarView === "week" ? (
                     <div className="space-y-4 p-4 sm:p-5">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                             <span
-                                className="material-symbols-outlined text-[22px] text-blue-700 dark:text-blue-300"
+                                className="material-symbols-outlined text-[22px] text-blue-700"
                                 aria-hidden="true">
                                 calendar_view_week
                             </span>
-                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Lịch tuần</h3>
+                            <h3 className="text-base font-bold text-slate-900">Lịch tuần</h3>
                         </div>
 
                         {/* Mobile View: Grid 5 cột (< md) */}
@@ -795,8 +795,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                             key={weekday.index}
                                             className={`flex flex-col items-center justify-center rounded-xl py-1.5 px-1 text-center font-bold transition-colors ${
                                                 isToday
-                                                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                                                    : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                                    ? "bg-blue-50 text-blue-700"
+                                                    : "bg-slate-100/90 text-slate-700"
                                             }`}>
                                             <span className="text-[11px] uppercase tracking-wider">
                                                 {weekday.label}
@@ -822,15 +822,15 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     return (
                                         <div
                                             key={dateISO}
-                                            className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors dark:bg-slate-900 ${
+                                            className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors ${
                                                 isToday
-                                                    ? "border-blue-600 dark:border-blue-400"
-                                                    : "border-slate-200 dark:border-slate-800"
+                                                    ? "border-blue-600"
+                                                    : "border-slate-200"
                                             }`}>
                                             <div className="space-y-1">
                                                 {morningShift ? (
                                                     <div
-                                                        className="flex w-full items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                        className="flex w-full items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                         title="Ca Sáng">
                                                         <span className="material-symbols-outlined text-[18px] leading-none">
                                                             wb_sunny
@@ -842,7 +842,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
                                                 {afternoonShift ? (
                                                     <div
-                                                        className="flex w-full items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                        className="flex w-full items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                         title="Ca Chiều">
                                                         <span className="material-symbols-outlined text-[18px] leading-none">
                                                             wb_twilight
@@ -871,8 +871,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                 key={weekday.index}
                                                 className={`flex items-center justify-center gap-1 rounded-xl py-2 text-center text-xs font-bold uppercase tracking-wider transition-colors ${
                                                     isToday
-                                                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                                                        : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                                        ? "bg-blue-50 text-blue-700"
+                                                        : "bg-slate-100/90 text-slate-700"
                                                 }`}>
                                                 <span>{weekday.label}</span>
                                                 {isToday && (
@@ -896,15 +896,15 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                         return (
                                             <div
                                                 key={dateISO}
-                                                className={`rounded-2xl border-2 bg-white p-2.5 min-h-[104px] shadow-2xs transition-colors dark:bg-slate-900 ${
+                                                className={`rounded-2xl border-2 bg-white p-2.5 min-h-[104px] shadow-2xs transition-colors ${
                                                     isToday
-                                                        ? "border-blue-600 dark:border-blue-400"
-                                                        : "border-slate-200 dark:border-slate-800"
+                                                        ? "border-blue-600"
+                                                        : "border-slate-200"
                                                 }`}>
                                                 <div className="space-y-2">
                                                     {morningShift ? (
                                                         <div
-                                                            className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[38px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                            className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[38px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                             title="Ca Sáng">
                                                             <span
                                                                 className="material-symbols-outlined text-[20px] leading-none"
@@ -918,7 +918,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
                                                     {afternoonShift ? (
                                                         <div
-                                                            className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[38px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                            className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[38px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                             title="Ca Chiều">
                                                             <span
                                                                 className="material-symbols-outlined text-[20px] leading-none"
@@ -939,39 +939,39 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                     </div>
                 ) : (
                     <div className="space-y-4 p-5">
-                        <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+                        <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
                                 <span
-                                    className="material-symbols-outlined text-[22px] text-blue-700 dark:text-blue-300"
+                                    className="material-symbols-outlined text-[22px] text-blue-700"
                                     aria-hidden="true">
                                     calendar_month
                                 </span>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                                <h3 className="text-base font-bold text-slate-900">
                                     Lịch sử làm việc
                                 </h3>
                             </div>
                             <div
-                                className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                                className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm"
                                 role="group"
                                 aria-label="Chuyển tháng">
                                 <button
                                     type="button"
                                     onClick={() => changeMonth(-1)}
-                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
                                     aria-label="Xem tháng trước">
                                     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                                         chevron_left
                                     </span>
                                 </button>
                                 <span
-                                    className="min-w-[112px] px-2 text-center text-xs font-bold text-slate-900 dark:text-slate-100"
+                                    className="min-w-[112px] px-2 text-center text-xs font-bold text-slate-900"
                                     aria-live="polite">
                                     Tháng {monthStart.getMonth() + 1}, {monthStart.getFullYear()}
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => changeMonth(1)}
-                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
                                     aria-label="Xem tháng sau">
                                     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                                         chevron_right
@@ -986,7 +986,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     {WEEKDAYS.map((day) => (
                                         <div
                                             key={day.index}
-                                            className="rounded-xl border border-slate-200/80 bg-slate-100 py-1.5 px-1 sm:py-2.5 sm:px-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-[#1f2023] dark:text-slate-200">
+                                            className="rounded-xl border border-slate-200/80 bg-slate-100 py-1.5 px-1 sm:py-2.5 sm:px-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700">
                                             {day.label}
                                         </div>
                                     ))}
@@ -1000,7 +1000,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                     return (
                                                         <div
                                                             key={dayIndex}
-                                                            className="min-h-[88px] sm:min-h-[110px] rounded-xl border border-dashed border-slate-200 bg-slate-50/50 opacity-40 dark:border-slate-800/60 dark:bg-[#1f2023]/30"
+                                                            className="min-h-[88px] sm:min-h-[110px] rounded-xl border border-dashed border-slate-200 bg-slate-50/50 opacity-40"
                                                             aria-hidden="true"
                                                         />
                                                     );
@@ -1017,14 +1017,14 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                 return (
                                                     <div
                                                         key={dateISO}
-                                                        className={`flex min-h-[88px] sm:min-h-[110px] flex-col rounded-xl border p-1.5 sm:p-2.5 transition-all ${isToday ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20" : "border-slate-200/90 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#222327] dark:hover:border-slate-700"}`}>
-                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center border-b border-slate-100 pb-1 sm:pb-1.5 text-center dark:border-slate-800/80">
+                                                        className={`flex min-h-[88px] sm:min-h-[110px] flex-col rounded-xl border p-1.5 sm:p-2.5 transition-all ${isToday ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20" : "border-slate-200/90 bg-white hover:border-slate-300"}`}>
+                                                        <div className="mb-1.5 sm:mb-2 flex min-h-5 sm:min-h-6 items-center justify-center border-b border-slate-100 pb-1 sm:pb-1.5 text-center">
                                                             {isToday ? (
                                                                 <span className="inline-flex items-center justify-center rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-white shadow-2xs">
                                                                     {formatShortDate(date)}
                                                                 </span>
                                                             ) : (
-                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800">
                                                                     {formatShortDate(date)}
                                                                 </span>
                                                             )}
@@ -1034,7 +1034,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                             {morningShift ? (
                                                                 <div
                                                                     key={`${dateISO}-morning`}
-                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                                     title={`Ca Sáng, ${formatShortDate(date)}`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
@@ -1052,7 +1052,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                             {afternoonShift ? (
                                                                 <div
                                                                     key={`${dateISO}-afternoon`}
-                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors"
                                                                     title={`Ca Chiều, ${formatShortDate(date)}`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
@@ -1088,13 +1088,13 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="registration-title"
-                        className="max-h-[94vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#25262b]">
+                        className="max-h-[94vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
                         <form onSubmit={handleRegisterSchedule}>
-                            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white/95 p-5 backdrop-blur dark:border-slate-700 dark:bg-[#25262b]/95">
+                            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white/95 p-5 backdrop-blur">
                                 <div>
                                     <h3
                                         id="registration-title"
-                                        className="text-xl font-bold text-slate-950 dark:text-white">
+                                        className="text-xl font-bold text-slate-950">
                                         Đăng ký lịch làm việc
                                     </h3>
                                 </div>
@@ -1102,7 +1102,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     type="button"
                                     onClick={() => closeRegistrationModal()}
                                     aria-label="Đóng cửa sổ đăng ký"
-                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                                     <span className="material-symbols-outlined" aria-hidden="true">
                                         close
                                     </span>
@@ -1112,7 +1112,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                             <div className="space-y-5 p-5">
                                 <fieldset>
                                     <div className="flex items-center justify-between gap-2 mb-3">
-                                        <legend className="text-sm font-bold text-slate-900 dark:text-white">
+                                        <legend className="text-sm font-bold text-slate-900">
                                             Mẫu ca làm việc theo tuần
                                         </legend>
                                         {Object.keys(tempWeeklyPattern).some(
@@ -1127,24 +1127,24 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                             </button>
                                         )}
                                     </div>
-                                    <div className="w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <div className="w-full overflow-hidden rounded-xl border border-slate-200">
                                         <div className="w-full">
-                                            <div className="grid grid-cols-[48px_repeat(5,1fr)] sm:grid-cols-[100px_repeat(5,1fr)] bg-slate-50 dark:bg-slate-900/40">
+                                            <div className="grid grid-cols-[48px_repeat(5,1fr)] sm:grid-cols-[100px_repeat(5,1fr)] bg-slate-50">
                                                 <div
-                                                    className="border-r border-slate-200 p-2 text-xs font-bold text-slate-500 dark:border-slate-700 dark:text-slate-400 flex items-center justify-center"
+                                                    className="border-r border-slate-200 p-2 text-xs font-bold text-slate-500 flex items-center justify-center"
                                                     title="Ca làm việc">
                                                     <span className="sm:hidden material-symbols-outlined text-[16px]">
                                                         schedule
                                                     </span>
-                                                    <span className="hidden sm:inline font-bold text-slate-600 dark:text-slate-300">
+                                                    <span className="hidden sm:inline font-bold text-slate-600">
                                                         Ca / Thứ
                                                     </span>
                                                 </div>
                                                 {WEEKDAYS.map((day) => (
                                                     <div
                                                         key={day.index}
-                                                        className="border-r border-slate-200 p-2 text-center last:border-r-0 dark:border-slate-700 flex items-center justify-center">
-                                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                        className="border-r border-slate-200 p-2 text-center last:border-r-0 flex items-center justify-center">
+                                                        <p className="text-xs font-bold text-slate-700">
                                                             {day.short}
                                                         </p>
                                                     </div>
@@ -1153,31 +1153,31 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                             {SHIFT_OPTIONS.map((shiftOption) => (
                                                 <div
                                                     key={shiftOption.type}
-                                                    className="grid grid-cols-[48px_repeat(5,1fr)] sm:grid-cols-[100px_repeat(5,1fr)] border-t border-slate-200 dark:border-slate-700">
-                                                    <div className="flex items-center justify-center gap-1.5 border-r border-slate-200 p-1.5 dark:border-slate-700">
+                                                    className="grid grid-cols-[48px_repeat(5,1fr)] sm:grid-cols-[100px_repeat(5,1fr)] border-t border-slate-200">
+                                                    <div className="flex items-center justify-center gap-1.5 border-r border-slate-200 p-1.5">
                                                         {shiftOption.type === "morning" ? (
                                                             <>
                                                                 <div
-                                                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 text-amber-700 shadow-2xs transition-colors dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300 shrink-0"
+                                                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 text-amber-700 shadow-2xs transition-colors shrink-0"
                                                                     title="Ca sáng">
                                                                     <span className="material-symbols-outlined text-[18px] leading-none">
                                                                         wb_sunny
                                                                     </span>
                                                                 </div>
-                                                                <span className="hidden sm:inline text-xs font-extrabold text-amber-900 dark:text-amber-100">
+                                                                <span className="hidden sm:inline text-xs font-extrabold text-amber-900">
                                                                     Sáng
                                                                 </span>
                                                             </>
                                                         ) : (
                                                             <>
                                                                 <div
-                                                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 text-purple-700 shadow-2xs transition-colors dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300 shrink-0"
+                                                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 text-purple-700 shadow-2xs transition-colors shrink-0"
                                                                     title="Ca chiều">
                                                                     <span className="material-symbols-outlined text-[18px] leading-none">
                                                                         wb_twilight
                                                                     </span>
                                                                 </div>
-                                                                <span className="hidden sm:inline text-xs font-extrabold text-purple-900 dark:text-purple-100">
+                                                                <span className="hidden sm:inline text-xs font-extrabold text-purple-900">
                                                                     Chiều
                                                                 </span>
                                                             </>
@@ -1198,9 +1198,9 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                                         togglePattern(day.index, shiftOption.type);
                                                                     }
                                                                 }}
-                                                                className={`flex items-center justify-center border-r border-slate-200 p-1.5 last:border-r-0 dark:border-slate-700 transition-colors ${
+                                                                className={`flex items-center justify-center border-r border-slate-200 p-1.5 last:border-r-0 transition-colors ${
                                                                     firstDate
-                                                                        ? "cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/30"
+                                                                        ? "cursor-pointer hover:bg-blue-50/50"
                                                                         : ""
                                                                 }`}>
                                                                 <button
@@ -1214,12 +1214,12 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                                     disabled={!firstDate}
                                                                     aria-pressed={selected}
                                                                     aria-label={`${selected ? "Bỏ chọn" : "Chọn"} ${shiftOption.label} ${day.label}${firstDate ? `, ngày đầu tiên ${formatCalendarDate(firstDate)}` : ", ngoài khoảng đăng ký"}`}
-                                                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 dark:disabled:border-slate-700 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 ${
+                                                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 ${
                                                                         firstDate ? "cursor-pointer" : ""
                                                                     } ${
                                                                         selected
                                                                             ? "border-blue-700 bg-blue-700 text-white shadow-xs hover:bg-blue-800"
-                                                                            : "border-slate-200 bg-white text-slate-400 hover:border-blue-300 hover:text-blue-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-blue-300"
+                                                                            : "border-slate-200 bg-white text-slate-400 hover:border-blue-300 hover:text-blue-700"
                                                                     }`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px]"
@@ -1237,7 +1237,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 </fieldset>
                             </div>
 
-                            <div className="sticky bottom-0 flex items-center justify-center sm:justify-end gap-3 border-t border-slate-200 bg-white/95 p-4 backdrop-blur dark:border-slate-700 dark:bg-[#25262b]/95">
+                            <div className="sticky bottom-0 flex items-center justify-center sm:justify-end gap-3 border-t border-slate-200 bg-white/95 p-4 backdrop-blur">
                                 {Object.keys(tempWeeklyPattern).some(
                                     (key) => (tempWeeklyPattern[Number(key)] || []).length > 0,
                                 ) && (
@@ -1251,7 +1251,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 )}
                                 <button
                                     type="submit"
-                                    className="inline-flex min-h-10 sm:min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 cursor-pointer whitespace-nowrap">
+                                    className="inline-flex min-h-10 sm:min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 cursor-pointer whitespace-nowrap">
                                     <span className="material-symbols-outlined text-[19px]" aria-hidden="true">
                                         event_available
                                     </span>
@@ -1276,8 +1276,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="shift-detail-title"
-                        className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-[#25262b]">
-                        <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-700">
+                        className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+                        <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                             <div className="flex gap-3">
                                 <span
                                     className={`material-symbols-outlined rounded-xl border p-2.5 text-[22px] ${getShiftMeta(selectedShift.shiftType as ShiftType).surface}`}
@@ -1285,12 +1285,12 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     {getShiftMeta(selectedShift.shiftType as ShiftType).icon}
                                 </span>
                                 <div>
-                                    <p className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-blue-700">
                                         Chi tiết ca làm việc
                                     </p>
                                     <h3
                                         id="shift-detail-title"
-                                        className="mt-1 text-lg font-bold text-slate-950 dark:text-white">
+                                        className="mt-1 text-lg font-bold text-slate-950">
                                         {getShiftMeta(selectedShift.shiftType as ShiftType).label}
                                     </h3>
                                 </div>
@@ -1299,7 +1299,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 type="button"
                                 onClick={() => setSelectedShift(null)}
                                 aria-label="Đóng chi tiết ca"
-                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined" aria-hidden="true">
                                     close
                                 </span>
@@ -1307,19 +1307,19 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         </div>
 
                         <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900/45">
-                                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            <div className="rounded-xl bg-slate-50 p-3">
+                                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                     Ngày làm việc
                                 </dt>
-                                <dd className="mt-1 text-sm font-bold capitalize text-slate-900 dark:text-white">
+                                <dd className="mt-1 text-sm font-bold capitalize text-slate-900">
                                     {formatFullDate(parseISODate(resolveShiftDate(selectedShift)))}
                                 </dd>
                             </div>
-                            <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900/45">
-                                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            <div className="rounded-xl bg-slate-50 p-3">
+                                <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                     Trạng thái
                                 </dt>
-                                <dd className="mt-1 flex items-center gap-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                                <dd className="mt-1 flex items-center gap-1.5 text-sm font-bold text-emerald-700">
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white text-[12px]">
                                         <span className="material-symbols-outlined text-[13px]">check</span>
                                     </span>
@@ -1329,7 +1329,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         </dl>
 
                         <div className="mt-4">
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200">CTV làm cùng ca</p>
+                            <p className="text-xs font-bold text-slate-700">CTV làm cùng ca</p>
                             <div className="mt-2 flex flex-wrap gap-2">
                                 {(selectedShift.assignedCTVs || []).filter(
                                     (ctv) => ctv.id !== currentUser.id && ctv.name !== currentUser.name,
@@ -1339,7 +1339,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                         .map((ctv) => (
                                             <div
                                                 key={ctv.id}
-                                                className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-3 dark:border-slate-700 dark:bg-slate-900/45">
+                                                className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-3">
                                                 {ctv.avatar ? (
                                                     <img
                                                         src={ctv.avatar}
@@ -1351,44 +1351,44 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                         {ctv.initials || "CTV"}
                                                     </span>
                                                 )}
-                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                                                <span className="text-xs font-semibold text-slate-700">
                                                     {ctv.name}
                                                 </span>
                                             </div>
                                         ))
                                 ) : (
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                                    <span className="text-xs text-slate-500">
                                         Chưa có CTV khác trong ca này.
                                     </span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="mt-5 grid grid-cols-2 gap-2 border-t border-slate-200 pt-4 dark:border-slate-700">
+                        <div className="mt-5 grid grid-cols-2 gap-2 border-t border-slate-200 pt-4">
                             {canCancelSelectedShift ? (
                                 <>
                                     <button
                                         type="button"
                                         onClick={handleCancelShift}
-                                        className="min-h-11 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs sm:text-sm font-bold text-rose-700 transition-colors hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-rose-800 dark:bg-rose-950/35 dark:text-rose-300 dark:hover:bg-rose-950/55">
+                                        className="min-h-11 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs sm:text-sm font-bold text-rose-700 transition-colors hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600">
                                         Chỉ hủy ca này
                                     </button>
                                     <button
                                         type="button"
                                         onClick={handleCancelRecurringShift}
-                                        className="min-h-11 rounded-xl border border-rose-300 bg-rose-100/70 px-3 text-xs sm:text-sm font-bold text-rose-800 transition-colors hover:bg-rose-200/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200 dark:hover:bg-rose-900/60">
+                                        className="min-h-11 rounded-xl border border-rose-300 bg-rose-100/70 px-3 text-xs sm:text-sm font-bold text-rose-800 transition-colors hover:bg-rose-200/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600">
                                         Hủy ca định kỳ
                                     </button>
                                 </>
                             ) : (
                                 <>
-                                    <p className="col-span-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-500 dark:bg-slate-900/45 dark:text-slate-400">
+                                    <p className="col-span-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
                                         Ca làm việc đã qua nên không thể hủy.
                                     </p>
                                     <button
                                         type="button"
                                         onClick={() => setSelectedShift(null)}
-                                        className="col-span-2 min-h-11 rounded-xl px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-300 dark:hover:bg-slate-800">
+                                        className="col-span-2 min-h-11 rounded-xl px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
                                         Đóng
                                     </button>
                                 </>

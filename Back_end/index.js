@@ -842,6 +842,14 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                 }
             }
 
+            // Retrieve current profile to detect files being replaced
+            const [currentProfileRows] = await connection.execute(
+                "SELECT avatar_url, id_card_front_url, id_card_back_url, cv_url FROM user_profiles WHERE user_id = ?",
+                [String(userId)],
+            );
+            const currentProfile = currentProfileRows[0] || {};
+            const oldFilesToCleanup = [];
+
             const fileUpdates = {};
             if (avatar !== undefined) {
                 if (avatar) {
@@ -853,6 +861,9 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                     fileUpdates.avatar_url = result.filePath;
                 } else {
                     fileUpdates.avatar_url = "";
+                }
+                if (currentProfile.avatar_url && currentProfile.avatar_url !== fileUpdates.avatar_url) {
+                    oldFilesToCleanup.push(currentProfile.avatar_url);
                 }
             }
             if (cccdFront !== undefined) {
@@ -866,6 +877,9 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                 } else {
                     fileUpdates.id_card_front_url = "";
                 }
+                if (currentProfile.id_card_front_url && currentProfile.id_card_front_url !== fileUpdates.id_card_front_url) {
+                    oldFilesToCleanup.push(currentProfile.id_card_front_url);
+                }
             }
             if (cccdBack !== undefined) {
                 if (cccdBack) {
@@ -878,6 +892,9 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                 } else {
                     fileUpdates.id_card_back_url = "";
                 }
+                if (currentProfile.id_card_back_url && currentProfile.id_card_back_url !== fileUpdates.id_card_back_url) {
+                    oldFilesToCleanup.push(currentProfile.id_card_back_url);
+                }
             }
             if (cvFile !== undefined) {
                 if (cvFile) {
@@ -889,6 +906,9 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                     fileUpdates.cv_url = result.filePath;
                 } else {
                     fileUpdates.cv_url = "";
+                }
+                if (currentProfile.cv_url && currentProfile.cv_url !== fileUpdates.cv_url) {
+                    oldFilesToCleanup.push(currentProfile.cv_url);
                 }
             }
 
@@ -969,6 +989,11 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             }
 
             await connection.commit();
+
+            // Asynchronously clean up old replaced physical files
+            for (const oldFileUrl of oldFilesToCleanup) {
+                await deletePhysicalFile(oldFileUrl);
+            }
 
             const returnedFiles = {};
             if (fileUpdates.avatar_url !== undefined) returnedFiles.avatar = fileUpdates.avatar_url;
@@ -1052,7 +1077,11 @@ app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
 });
 
 async function deletePhysicalFile(fileUrl) {
-    if (!fileUrl || typeof fileUrl !== "string") return;
+    if (!fileUrl || typeof fileUrl !== "string") return { success: false, reason: "empty_url" };
+
+    let cloudDeleted = false;
+    let localDeleted = false;
+    const errors = [];
 
     // 1. Delete on Cloudinary if it is a Cloudinary URL
     if (fileUrl.includes("res.cloudinary.com") && isCloudinaryConfigured()) {
@@ -1064,12 +1093,14 @@ async function deletePhysicalFile(fileUrl) {
                 if (isImage) {
                     publicId = publicId.replace(/\.[^/.]+$/, "");
                 }
-                await cloudinary.uploader.destroy(publicId, {
+                const res = await cloudinary.uploader.destroy(publicId, {
                     resource_type: isImage ? "image" : "raw",
                     invalidate: true,
                 });
+                cloudDeleted = res?.result === "ok";
             }
         } catch (err) {
+            errors.push(`Cloudinary: ${err?.message}`);
             console.warn("Lỗi khi xóa file trên Cloudinary:", fileUrl, err?.message);
         }
     }
@@ -1090,15 +1121,76 @@ async function deletePhysicalFile(fileUrl) {
             const imagePath = path.resolve(imageDirectory, sanitizedFileName);
             if (imagePath.startsWith(path.resolve(imageDirectory)) && fs.existsSync(imagePath)) {
                 await fs.promises.unlink(imagePath);
+                localDeleted = true;
             }
 
             const cvPath = path.resolve(cvDirectory, sanitizedFileName);
             if (cvPath.startsWith(path.resolve(cvDirectory)) && fs.existsSync(cvPath)) {
                 await fs.promises.unlink(cvPath);
+                localDeleted = true;
             }
         }
     } catch (err) {
+        errors.push(`Local: ${err?.message}`);
         console.warn("Lỗi khi xóa file local:", fileUrl, err?.message);
+    }
+
+    return {
+        success: errors.length === 0,
+        cloudDeleted,
+        localDeleted,
+        errors: errors.length > 0 ? errors : undefined,
+    };
+}
+
+async function cleanupOrphanFiles() {
+    try {
+        const [profileRows] = await pool.query(
+            "SELECT avatar_url, id_card_front_url, id_card_back_url, cv_url FROM user_profiles",
+        );
+        const referencedFiles = new Set();
+        for (const row of profileRows) {
+            for (const val of Object.values(row)) {
+                if (val && typeof val === "string") {
+                    const fname = path.basename(val.split("?")[0]);
+                    referencedFiles.add(decodeURIComponent(fname));
+                }
+            }
+        }
+
+        // Check local image directory
+        if (fs.existsSync(imageDirectory)) {
+            const files = await fs.promises.readdir(imageDirectory);
+            for (const f of files) {
+                if (
+                    f !== ".gitkeep" &&
+                    !f.startsWith("demo_") &&
+                    !referencedFiles.has(f) &&
+                    (f.startsWith("avatar-") || f.startsWith("id-card-front-") || f.startsWith("id-card-back-"))
+                ) {
+                    await fs.promises.unlink(path.join(imageDirectory, f)).catch(() => {});
+                }
+            }
+        }
+
+        // Check local CV directory
+        if (fs.existsSync(cvDirectory)) {
+            const files = await fs.promises.readdir(cvDirectory);
+            for (const f of files) {
+                if (
+                    f !== ".gitkeep" &&
+                    !f.startsWith("CV_") &&
+                    !f.startsWith("FSOFT-") &&
+                    !f.startsWith("WWF-") &&
+                    !referencedFiles.has(f) &&
+                    f.startsWith("cv-")
+                ) {
+                    await fs.promises.unlink(path.join(cvDirectory, f)).catch(() => {});
+                }
+            }
+        }
+    } catch (err) {
+        console.warn("Lỗi khi quét dọn tệp rác không còn tham chiếu:", err?.message);
     }
 }
 
@@ -1145,11 +1237,22 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
         await connection.commit();
 
         // Clean up physical files from local disk and Cloudinary
+        const fileCleanupResults = [];
         for (const fileUrl of filesToDelete) {
-            await deletePhysicalFile(fileUrl);
+            const result = await deletePhysicalFile(fileUrl);
+            fileCleanupResults.push({ fileUrl, ...result });
         }
 
-        return res.json({ id: String(userId), deleted: true });
+        // Sweep and clean up any remaining orphan unreferenced files
+        await cleanupOrphanFiles();
+
+        const allFilesCleaned = fileCleanupResults.every((r) => r.success);
+        return res.json({
+            id: String(userId),
+            deleted: true,
+            filesCleaned: allFilesCleaned,
+            fileCleanupResults,
+        });
     } catch (error) {
         try {
             await connection.rollback();

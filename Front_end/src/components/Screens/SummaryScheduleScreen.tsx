@@ -281,46 +281,46 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
         <div className="space-y-6 animate-in fade-in duration-200">
             {/* Header Title */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h2 className="text-2xl font-bold text-[#1a1b1e] dark:text-slate-100 tracking-tight">
+                <h2 className="text-2xl font-bold text-[#1a1b1e] tracking-tight">
                     Lịch làm việc tổng hợp
                 </h2>
             </div>
 
             {/* Danh sách CTV đăng ký hôm nay (Khối thống kê nhanh) */}
-            <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3.5">
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-3.5">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 border-b border-slate-100 pb-3 sm:pb-3.5">
                     <div className="flex items-baseline gap-2.5 flex-wrap sm:flex-nowrap">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0 self-center">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold shrink-0 self-center">
                             <span className="material-symbols-outlined text-[18px] sm:text-[20px]">badge</span>
                         </div>
-                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 flex items-baseline gap-2 flex-wrap">
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-baseline gap-2 flex-wrap">
                             <span>Danh sách CTV đăng ký hôm nay</span>
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold shrink-0">
+                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold shrink-0">
                                 {todayData.dayLabel}
                             </span>
                         </h3>
                     </div>
-                    <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium sm:ml-auto shrink-0 whitespace-nowrap self-baseline">
+                    <span className="text-xs sm:text-sm text-slate-500 font-medium sm:ml-auto shrink-0 whitespace-nowrap self-baseline">
                         Tổng số:{" "}
-                        <strong className="text-slate-800 dark:text-slate-200">{todayData.totalUniqueCount}</strong>{" "}
+                        <strong className="text-slate-800">{todayData.totalUniqueCount}</strong>{" "}
                         Cộng tác viên
                     </span>
                 </div>
 
-                <div className="border border-slate-200/80 dark:border-slate-700/80 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xs">
+                <div className="border border-slate-200/80 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xs">
                     {/* Header bar */}
-                    <div className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-1.5 sm:py-2 flex items-center">
-                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <div className="bg-slate-50/80 border-b border-slate-200/80 px-3 sm:px-4 py-1.5 sm:py-2 flex items-center">
+                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
                             CA LÀM VIỆC
                         </div>
-                        <div className="w-[72%] sm:w-[75%] flex-1 text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        <div className="w-[72%] sm:w-[75%] flex-1 text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
                             DANH SÁCH NHÂN VIÊN
                         </div>
                     </div>
 
                     {/* Row 1: Ca Sáng */}
-                    <div className="border-b border-slate-200/80 dark:border-slate-700/80 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center">
-                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-amber-700 dark:text-amber-400">
+                    <div className="border-b border-slate-200/80 px-3 sm:px-4 py-2 sm:py-2.5 flex items-center">
+                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-amber-700">
                             <span className="material-symbols-outlined text-[17px] sm:text-[19px] text-amber-500 shrink-0">
                                 wb_sunny
                             </span>
@@ -335,19 +335,19 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                         <div
                                             key={`morning-${ctv.id || ctv.name}`}
                                             onClick={() => handleCTVClick(ctv)}
-                                            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
+                                            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50/90 hover:bg-slate-100 transition-all cursor-pointer group shadow-2xs">
                                             {ctv.avatar ? (
                                                 <img
                                                     src={ctv.avatar}
                                                     alt={ctv.name}
-                                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
                                                 />
                                             ) : (
                                                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#1b365d] text-white text-[11px] sm:text-xs font-bold flex items-center justify-center shrink-0">
                                                     {ctv.initials || ctv.name.substring(0, 2).toUpperCase()}
                                                 </div>
                                             )}
-                                            <span className="text-xs sm:text-[14px] font-medium text-slate-800 dark:text-slate-200 max-w-[130px] sm:max-w-none break-words line-clamp-2 leading-snug">
+                                            <span className="text-xs sm:text-[14px] font-medium text-slate-800 max-w-[130px] sm:max-w-none break-words line-clamp-2 leading-snug">
                                                 {ctv.name}
                                             </span>
                                         </div>
@@ -359,7 +359,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
 
                     {/* Row 2: Ca Chiều */}
                     <div className="px-3 sm:px-4 py-2 sm:py-2.5 flex items-center">
-                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-indigo-700 dark:text-indigo-400">
+                        <div className="w-[28%] sm:w-[25%] max-w-[200px] shrink-0 flex items-center gap-1.5 font-bold text-xs sm:text-sm text-indigo-700">
                             <span className="material-symbols-outlined text-[17px] sm:text-[19px] text-indigo-500 shrink-0">
                                 wb_twilight
                             </span>
@@ -374,19 +374,19 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                         <div
                                             key={`afternoon-${ctv.id || ctv.name}`}
                                             onClick={() => handleCTVClick(ctv)}
-                                            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group shadow-2xs">
+                                            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 min-h-[34px] sm:min-h-[36px] rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50/90 hover:bg-slate-100 transition-all cursor-pointer group shadow-2xs">
                                             {ctv.avatar ? (
                                                 <img
                                                     src={ctv.avatar}
                                                     alt={ctv.name}
-                                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
+                                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
                                                 />
                                             ) : (
                                                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#1b365d] text-white text-[11px] sm:text-xs font-bold flex items-center justify-center shrink-0">
                                                     {ctv.initials || ctv.name.substring(0, 2).toUpperCase()}
                                                 </div>
                                             )}
-                                            <span className="text-xs sm:text-[14px] font-medium text-slate-800 dark:text-slate-200 max-w-[130px] sm:max-w-none break-words line-clamp-2 leading-snug">
+                                            <span className="text-xs sm:text-[14px] font-medium text-slate-800 max-w-[130px] sm:max-w-none break-words line-clamp-2 leading-snug">
                                                 {ctv.name}
                                             </span>
                                         </div>
@@ -399,12 +399,12 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
             </div>
 
             {/* Main Schedule Container (With View Toggle: Lịch tuần & Lịch tháng) */}
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#25262b]">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 {/* Navigation Toolbar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/35">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 p-4">
                     {/* View Switcher: Lịch tuần & Lịch tháng */}
                     <div
-                        className="inline-flex w-fit rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900"
+                        className="inline-flex w-fit rounded-xl border border-slate-200 bg-white p-1"
                         role="group"
                         aria-label="Chế độ xem lịch">
                         <button
@@ -414,7 +414,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             className={`min-h-10 rounded-lg px-4 text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center gap-1.5 ${
                                 calendarView === "week"
                                     ? "bg-blue-700 text-white shadow-sm"
-                                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                                    : "text-slate-600 hover:bg-slate-100"
                             }`}>
                             <span className="material-symbols-outlined text-[17px]">calendar_view_week</span>
                             <span>Lịch tuần</span>
@@ -426,7 +426,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             className={`min-h-10 rounded-lg px-4 text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center gap-1.5 ${
                                 calendarView === "month"
                                     ? "bg-blue-700 text-white shadow-sm"
-                                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                                    : "text-slate-600 hover:bg-slate-100"
                             }`}>
                             <span className="material-symbols-outlined text-[17px]">history</span>
                             <span>Lịch sử làm việc</span>
@@ -437,23 +437,23 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                     {calendarView === "month" && (
                         <div className="flex items-center gap-2">
                             <div
-                                className="inline-flex min-h-10 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-2xs dark:border-slate-700 dark:bg-slate-900"
+                                className="inline-flex min-h-10 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-2xs"
                                 role="group"
                                 aria-label="Chuyển tháng">
                                 <button
                                     type="button"
                                     onClick={handlePrevMonth}
-                                    className="flex min-h-8 min-w-8 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                    className="flex min-h-8 min-w-8 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
                                     aria-label="Tháng trước">
                                     <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                                 </button>
-                                <span className="min-w-[130px] px-2 text-center text-xs font-bold text-slate-900 dark:text-slate-100">
+                                <span className="min-w-[130px] px-2 text-center text-xs font-bold text-slate-900">
                                     {monthNames[selectedMonth]}, {selectedYear}
                                 </span>
                                 <button
                                     type="button"
                                     onClick={handleNextMonth}
-                                    className="flex min-h-8 min-w-8 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                                    className="flex min-h-8 min-w-8 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
                                     aria-label="Tháng sau">
                                     <span className="material-symbols-outlined text-[18px]">chevron_right</span>
                                 </button>
@@ -465,13 +465,13 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                 {/* VIEW 1: LỊCH TUẦN (Matching CTV schedule with CTV counts & detail popups) */}
                 {calendarView === "week" ? (
                     <div className="space-y-4 p-4 sm:p-5">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                             <span
-                                className="material-symbols-outlined text-[22px] text-blue-700 dark:text-blue-300"
+                                className="material-symbols-outlined text-[22px] text-blue-700"
                                 aria-hidden="true">
                                 calendar_view_week
                             </span>
-                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Lịch tuần</h3>
+                            <h3 className="text-base font-bold text-slate-900">Lịch tuần</h3>
                         </div>
 
                         {/* Mobile View: Grid 5 cột (< md) */}
@@ -486,8 +486,8 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                             key={weekday.index}
                                             className={`flex flex-col items-center justify-center rounded-xl py-1.5 px-1 text-center font-bold transition-colors ${
                                                 isToday
-                                                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                                                    : "bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                                    ? "bg-blue-50 text-blue-700"
+                                                    : "bg-slate-100/90 text-slate-700"
                                             }`}>
                                             <span className="text-[11px] uppercase tracking-wider">
                                                 {weekday.label}
@@ -516,10 +516,10 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     return (
                                         <div
                                             key={dateISO}
-                                            className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors dark:bg-slate-900 ${
+                                            className={`rounded-xl border-2 bg-white p-1.5 min-h-[64px] flex flex-col justify-center shadow-2xs transition-colors ${
                                                 isToday
-                                                    ? "border-blue-600 dark:border-blue-400"
-                                                    : "border-slate-200 dark:border-slate-800"
+                                                    ? "border-blue-600"
+                                                    : "border-slate-200"
                                             }`}>
                                             <div className="space-y-1">
                                                 {morningCTVs.length > 0 ? (
@@ -533,14 +533,14 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                 dateISO,
                                                             )
                                                         }
-                                                        className="w-full flex items-center justify-center gap-1 rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 transition-all cursor-pointer dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
+                                                        className="w-full flex items-center justify-center gap-1 rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 transition-all cursor-pointer"
                                                         title="Bấm để xem chi tiết danh sách CTV ca sáng">
                                                         <span
-                                                            className="material-symbols-outlined text-[16px] text-amber-700 dark:text-amber-400 leading-none shrink-0"
+                                                            className="material-symbols-outlined text-[16px] text-amber-700 leading-none shrink-0"
                                                             aria-hidden="true">
                                                             wb_sunny
                                                         </span>
-                                                        <span className="text-[11px] font-extrabold text-amber-900 dark:text-amber-100">
+                                                        <span className="text-[11px] font-extrabold text-amber-900">
                                                             {morningCTVs.length}
                                                         </span>
                                                     </button>
@@ -559,14 +559,14 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                 dateISO,
                                                             )
                                                         }
-                                                        className="w-full flex items-center justify-center gap-1 rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-xs font-bold text-purple-900 shadow-2xs hover:bg-purple-100 transition-all cursor-pointer dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
+                                                        className="w-full flex items-center justify-center gap-1 rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-xs font-bold text-purple-900 shadow-2xs hover:bg-purple-100 transition-all cursor-pointer"
                                                         title="Bấm để xem chi tiết danh sách CTV ca chiều">
                                                         <span
-                                                            className="material-symbols-outlined text-[16px] text-purple-700 dark:text-purple-400 leading-none shrink-0"
+                                                            className="material-symbols-outlined text-[16px] text-purple-700 leading-none shrink-0"
                                                             aria-hidden="true">
                                                             wb_twilight
                                                         </span>
-                                                        <span className="text-[11px] font-extrabold text-purple-900 dark:text-purple-100">
+                                                        <span className="text-[11px] font-extrabold text-purple-900">
                                                             {afternoonCTVs.length}
                                                         </span>
                                                     </button>
@@ -588,7 +588,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     {WEEKDAYS.map((weekday) => (
                                         <div
                                             key={weekday.index}
-                                            className="flex items-center justify-center rounded-xl py-2.5 text-center text-xs font-bold uppercase tracking-wider bg-slate-100/90 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                                            className="flex items-center justify-center rounded-xl py-2.5 text-center text-xs font-bold uppercase tracking-wider bg-slate-100/90 text-slate-700">
                                             <span>{weekday.label}</span>
                                         </div>
                                     ))}
@@ -607,7 +607,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                         return (
                                             <div
                                                 key={dateISO}
-                                                className="rounded-2xl border-2 border-slate-200 bg-white p-3 min-h-[104px] shadow-2xs transition-colors dark:border-slate-800 dark:bg-slate-900">
+                                                className="rounded-2xl border-2 border-slate-200 bg-white p-3 min-h-[104px] shadow-2xs transition-colors">
                                                 <div className="space-y-2">
                                                     {/* Ca Sáng Slot */}
                                                     {morningCTVs.length > 0 ? (
@@ -621,14 +621,14 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                     dateISO,
                                                                 )
                                                             }
-                                                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-amber-200/90 bg-amber-50 px-2 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 hover:border-amber-300 transition-all cursor-pointer group dark:border-amber-800/50 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 dark:text-amber-200"
+                                                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-amber-200/90 bg-amber-50 px-2 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 hover:border-amber-300 transition-all cursor-pointer group"
                                                             title="Bấm để xem chi tiết danh sách CTV ca sáng">
                                                             <span
-                                                                className="material-symbols-outlined text-[18px] text-amber-700 dark:text-amber-400 shrink-0"
+                                                                className="material-symbols-outlined text-[18px] text-amber-700 shrink-0"
                                                                 aria-hidden="true">
                                                                 wb_sunny
                                                             </span>
-                                                            <span className="text-[12px] font-extrabold text-amber-900 dark:text-amber-100 whitespace-nowrap">
+                                                            <span className="text-[12px] font-extrabold text-amber-900 whitespace-nowrap">
                                                                 {morningCTVs.length} CTV
                                                             </span>
                                                         </button>
@@ -648,14 +648,14 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                     dateISO,
                                                                 )
                                                             }
-                                                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-purple-200/90 bg-purple-50 px-2 py-2 text-xs font-bold text-purple-900 shadow-xs hover:bg-purple-100 hover:border-purple-300 transition-all cursor-pointer group dark:border-purple-800/50 dark:bg-purple-950/40 dark:hover:bg-purple-950/70 dark:text-purple-200"
+                                                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-purple-200/90 bg-purple-50 px-2 py-2 text-xs font-bold text-purple-900 shadow-xs hover:bg-purple-100 hover:border-purple-300 transition-all cursor-pointer group"
                                                             title="Bấm để xem chi tiết danh sách CTV ca chiều">
                                                             <span
-                                                                className="material-symbols-outlined text-[18px] text-purple-700 dark:text-purple-400 shrink-0"
+                                                                className="material-symbols-outlined text-[18px] text-purple-700 shrink-0"
                                                                 aria-hidden="true">
                                                                 wb_twilight
                                                             </span>
-                                                            <span className="text-[12px] font-extrabold text-purple-900 dark:text-purple-100 whitespace-nowrap">
+                                                            <span className="text-[12px] font-extrabold text-purple-900 whitespace-nowrap">
                                                                 {afternoonCTVs.length} CTV
                                                             </span>
                                                         </button>
@@ -673,12 +673,12 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                 ) : (
                     /* VIEW 2: LỊCH THÁNG (Monthly grid with Mon-Fri) */
                     <div className="space-y-4 p-4 sm:p-5">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-blue-700 dark:text-blue-300 text-[22px]">
+                                <span className="material-symbols-outlined text-blue-700 text-[22px]">
                                     history
                                 </span>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                                <h3 className="text-base font-bold text-slate-900">
                                     Lịch sử làm việc - {monthNames[selectedMonth]}, {selectedYear}
                                 </h3>
                             </div>
@@ -692,7 +692,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     {WEEKDAYS.map((day) => (
                                         <div
                                             key={day.index}
-                                            className="py-1.5 px-1 sm:py-2.5 sm:px-3 bg-slate-100 dark:bg-[#1f2023] rounded-xl font-bold text-[11px] sm:text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wider border border-slate-200/80 dark:border-slate-800">
+                                            className="py-1.5 px-1 sm:py-2.5 sm:px-3 bg-slate-100 rounded-xl font-bold text-[11px] sm:text-xs text-slate-700 uppercase tracking-wider border border-slate-200/80">
                                             {day.label}
                                         </div>
                                     ))}
@@ -707,7 +707,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                     return (
                                                         <div
                                                             key={colIdx}
-                                                            className="min-h-[88px] sm:min-h-[110px] bg-slate-50/50 dark:bg-[#1f2023]/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800/60 opacity-40"
+                                                            className="min-h-[88px] sm:min-h-[110px] bg-slate-50/50 rounded-xl border border-dashed border-slate-200 opacity-40"
                                                         />
                                                     );
                                                 }
@@ -720,17 +720,17 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                         key={colIdx}
                                                         className={`min-h-[88px] sm:min-h-[110px] p-1.5 sm:p-3 rounded-xl border transition-all flex flex-col ${
                                                             cell.isToday
-                                                                ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20 dark:border-blue-500 dark:bg-blue-950/20"
-                                                                : "bg-white dark:bg-[#222327] border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                                                                ? "border-blue-700 bg-blue-50/40 ring-2 ring-blue-700/20"
+                                                                : "bg-white border-slate-200/90 hover:border-slate-300"
                                                         }`}>
                                                         {/* Day Cell Header */}
-                                                        <div className="flex items-center justify-center border-b border-slate-100 dark:border-slate-800/80 pb-1 mb-1.5 sm:pb-1.5 sm:mb-2">
+                                                        <div className="flex items-center justify-center border-b border-slate-100 pb-1 mb-1.5 sm:pb-1.5 sm:mb-2">
                                                             {cell.isToday ? (
                                                                 <span className="inline-flex items-center justify-center rounded-md bg-blue-600 px-1.5 py-0.5 text-[10px] sm:text-xs font-bold text-white shadow-2xs">
                                                                     {cell.dateShort}
                                                                 </span>
                                                             ) : (
-                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                                <span className="text-[11px] sm:text-xs font-bold text-slate-800">
                                                                     {cell.dateShort}
                                                                 </span>
                                                             )}
@@ -751,17 +751,17 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                             true,
                                                                         )
                                                                     }
-                                                                    className="w-full flex items-center justify-center gap-1 rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 transition-all cursor-pointer dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200"
+                                                                    className="w-full flex items-center justify-center gap-1 rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 transition-all cursor-pointer"
                                                                     title="Bấm để xem chi tiết danh sách CTV ca sáng">
                                                                     <span
-                                                                        className="material-symbols-outlined text-[16px] text-amber-700 dark:text-amber-400 leading-none shrink-0"
+                                                                        className="material-symbols-outlined text-[16px] text-amber-700 leading-none shrink-0"
                                                                         aria-hidden="true">
                                                                         wb_sunny
                                                                     </span>
-                                                                    <span className="text-[11px] sm:text-[12px] font-extrabold text-amber-900 dark:text-amber-100">
+                                                                    <span className="text-[11px] sm:text-[12px] font-extrabold text-amber-900">
                                                                         {morningCTVs.length}
                                                                     </span>
-                                                                    <span className="hidden sm:inline text-[11px] font-bold text-amber-900 dark:text-amber-100">
+                                                                    <span className="hidden sm:inline text-[11px] font-bold text-amber-900">
                                                                         CTV
                                                                     </span>
                                                                 </button>
@@ -785,17 +785,17 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                             true,
                                                                         )
                                                                     }
-                                                                    className="w-full flex items-center justify-center gap-1 rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-xs font-bold text-purple-900 shadow-2xs hover:bg-purple-100 transition-all cursor-pointer dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-200"
+                                                                    className="w-full flex items-center justify-center gap-1 rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-xs font-bold text-purple-900 shadow-2xs hover:bg-purple-100 transition-all cursor-pointer"
                                                                     title="Bấm để xem chi tiết danh sách CTV ca chiều">
                                                                     <span
-                                                                        className="material-symbols-outlined text-[16px] text-purple-700 dark:text-purple-400 leading-none shrink-0"
+                                                                        className="material-symbols-outlined text-[16px] text-purple-700 leading-none shrink-0"
                                                                         aria-hidden="true">
                                                                         wb_twilight
                                                                     </span>
-                                                                    <span className="text-[11px] sm:text-[12px] font-extrabold text-purple-900 dark:text-purple-100">
+                                                                    <span className="text-[11px] sm:text-[12px] font-extrabold text-purple-900">
                                                                         {afternoonCTVs.length}
                                                                     </span>
-                                                                    <span className="hidden sm:inline text-[11px] font-bold text-purple-900 dark:text-purple-100">
+                                                                    <span className="hidden sm:inline text-[11px] font-bold text-purple-900">
                                                                         CTV
                                                                     </span>
                                                                 </button>
@@ -824,15 +824,15 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                     className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
                     role="presentation"
                     onMouseDown={(e) => e.target === e.currentTarget && setSelectedShiftDetail(null)}>
-                    <div className="bg-white dark:bg-[#25262b] rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+                    <div className="bg-white rounded-2xl border border-slate-200 w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
                         {/* Modal Header */}
-                        <div className="p-4 sm:p-5 bg-slate-50 dark:bg-[#1f2023] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+                        <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
                             <div>
-                                <div className="flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-400 mb-1">
+                                <div className="flex items-center gap-2 text-xs font-bold text-blue-700 mb-1">
                                     <span className="material-symbols-outlined text-[18px]">event_note</span>
                                     <span>CHI TIẾT CA LÀM VIỆC</span>
                                 </div>
-                                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
+                                <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 flex-wrap">
                                     <span>
                                         {selectedShiftDetail.shiftName} - {selectedShiftDetail.dayName} (
                                         {selectedShiftDetail.dateFormatted})
@@ -842,7 +842,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setSelectedShiftDetail(null)}
-                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
@@ -850,11 +850,11 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                         {/* Modal Body */}
                         <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
                             {/* Stats row */}
-                            <div className="flex items-center gap-2 bg-blue-50/80 dark:bg-blue-950/40 p-3 rounded-xl border border-blue-100 dark:border-blue-900/60 text-xs">
-                                <span className="font-bold text-blue-900 dark:text-blue-200">
+                            <div className="flex items-center gap-2 bg-blue-50/80 p-3 rounded-xl border border-blue-100 text-xs">
+                                <span className="font-bold text-blue-900">
                                     Danh sách CTV trong ca:
                                 </span>
-                                <span className="font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2.5 py-0.5 rounded-lg">
+                                <span className="font-bold bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-lg">
                                     {selectedShiftDetail.ctvList.length} CTV
                                 </span>
                             </div>
@@ -867,21 +867,21 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                     <p className="text-sm font-semibold">Chưa có CTV nào đăng ký ca làm việc này</p>
                                 </div>
                             ) : (
-                                <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xs">
+                                <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr className="bg-slate-50 dark:bg-[#1f2023] border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                                     <th className="py-3.5 px-4">Họ tên CTV</th>
                                                     <th className="py-3.5 px-4">Số điện thoại</th>
                                                     <th className="py-3.5 px-4">Email</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                                            <tbody className="divide-y divide-slate-100 text-xs">
                                                 {selectedShiftDetail.ctvList.map((ctv, idx) => (
                                                     <tr
                                                         key={ctv.id || idx}
-                                                        className="hover:bg-slate-50/80 dark:hover:bg-[#1f2023]/60 transition-colors">
+                                                        className="hover:bg-slate-50/80 transition-colors">
                                                         {/* Họ tên CTV */}
                                                         <td className="py-3.5 px-4">
                                                             <div
@@ -895,16 +895,16 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                                                                     <img
                                                                         src={ctv.avatar}
                                                                         alt={ctv.name}
-                                                                        className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-slate-200 dark:ring-slate-700 group-hover:ring-blue-600 transition-all"
+                                                                        className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-slate-200 group-hover:ring-blue-600 transition-all"
                                                                     />
                                                                 ) : (
-                                                                    <div className="w-9 h-9 rounded-full bg-[#1b365d] text-white font-bold text-xs flex items-center justify-center shrink-0 ring-2 ring-slate-200 dark:ring-slate-700 group-hover:ring-blue-600 transition-all">
+                                                                    <div className="w-9 h-9 rounded-full bg-[#1b365d] text-white font-bold text-xs flex items-center justify-center shrink-0 ring-2 ring-slate-200 group-hover:ring-blue-600 transition-all">
                                                                         {ctv.initials ||
                                                                             ctv.name.substring(0, 2).toUpperCase()}
                                                                     </div>
                                                                 )}
                                                                 <div>
-                                                                    <span className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors block">
+                                                                    <span className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors block">
                                                                         {ctv.name}
                                                                     </span>
                                                                     {ctv.cctvCode && (
@@ -918,7 +918,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
 
                                                         {/* Số điện thoại */}
                                                         <td className="py-3.5 px-4">
-                                                            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-medium">
+                                                            <div className="flex items-center gap-1.5 text-slate-600 font-medium">
                                                                 <span className="material-symbols-outlined text-[15px] text-slate-400">
                                                                     call
                                                                 </span>
@@ -928,7 +928,7 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
 
                                                         {/* Email */}
                                                         <td className="py-3.5 px-4">
-                                                            <span className="text-slate-600 dark:text-slate-300 font-medium">
+                                                            <span className="text-slate-600 font-medium">
                                                                 {ctv.email || "—"}
                                                             </span>
                                                         </td>

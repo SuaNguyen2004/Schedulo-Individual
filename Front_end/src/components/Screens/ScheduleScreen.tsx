@@ -429,7 +429,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
             {/* Top Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-xl font-bold text-[#1b365d] dark:text-[#d6e3ff] tracking-tight">
+                    <h2 className="text-xl font-bold text-[#1b365d] tracking-tight">
                         Lịch trình làm việc
                     </h2>
                 </div>
@@ -439,22 +439,22 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
             {viewMode === "my_schedule" && (
                 <div className="space-y-6">
                     {/* Card: Ca làm việc hôm nay */}
-                    <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl p-5 shadow-2xs">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0] dark:border-[#3b3d45]">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-2xs">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                                     <span className="material-symbols-outlined text-[22px]">today</span>
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-bold text-base text-[#1b365d] dark:text-[#d6e3ff]">
+                                        <h3 className="font-bold text-base text-[#1b365d]">
                                             Ca làm việc hôm nay
                                         </h3>
-                                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                                             {todayHeader?.label}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                    <p className="text-xs text-slate-500 mt-0.5">
                                         {todayShifts.length > 0
                                             ? `Bạn có ${todayShifts.length} ca làm việc được phân công trong hôm nay`
                                             : "Hôm nay bạn không có ca làm việc nào được phân công"}
@@ -466,7 +466,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setIsLeaveModalOpen(true)}
-                                className="px-4 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border border-rose-200 dark:border-rose-800/60 shadow-2xs self-start sm:self-auto">
+                                className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border border-rose-200 shadow-2xs self-start sm:self-auto">
                                 <span className="material-symbols-outlined text-[18px]">event_busy</span>
                                 <span>Xin nghỉ</span>
                             </button>
@@ -479,17 +479,17 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                     {todayShifts.map((s) => (
                                         <div
                                             key={s.type}
-                                            className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#1f2023] flex items-center justify-between">
+                                            className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <span
                                                     className={`material-symbols-outlined text-[20px] p-2 rounded-lg ${s.badgeBg}`}>
                                                     {s.icon}
                                                 </span>
                                                 <div>
-                                                    <div className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff]">
+                                                    <div className="font-bold text-sm text-[#1b365d]">
                                                         {s.name}
                                                     </div>
-                                                    <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                                                    <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                                                         <span className="material-symbols-outlined text-[14px]">
                                                             schedule
                                                         </span>
@@ -501,10 +501,10 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                             <span
                                                 className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                                                     s.assigned?.status === "Đã duyệt"
-                                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                                                         : s.assigned?.status === "Chờ duyệt"
-                                                          ? "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
-                                                          : "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
+                                                          ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                                          : "bg-rose-50 text-rose-700 border border-rose-200"
                                                 }`}>
                                                 {s.assigned?.status || "Đã phân công"}
                                             </span>
@@ -512,7 +512,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                     ))}
                                 </div>
                             ) : (
-                                <div className="py-4 px-4 bg-slate-50 dark:bg-[#1f2023] rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center flex items-center justify-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                                <div className="py-4 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center flex items-center justify-center gap-2 text-xs font-medium text-slate-500">
                                     <span className="material-symbols-outlined text-[18px]">info</span>
                                     <span>Hôm nay bạn không có ca làm việc. Chúc bạn một ngày tốt lành!</span>
                                 </div>
@@ -520,13 +520,13 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                         </div>
                     </div>
                     {/* Registration Matrix Table */}
-                    <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl overflow-hidden shadow-2xs">
-                        <div className="p-4 border-b border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023] flex items-center justify-between">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-2xs">
+                        <div className="p-4 border-b border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[20px] text-[#1b365d] dark:text-[#d6e3ff]">
+                                <span className="material-symbols-outlined text-[20px] text-[#1b365d]">
                                     {isRegistrationMode ? "edit_calendar" : "calendar_month"}
                                 </span>
-                                <h3 className="font-bold text-base text-[#1b365d] dark:text-[#d6e3ff]">
+                                <h3 className="font-bold text-base text-[#1b365d]">
                                     {isRegistrationMode ? "Đăng ký ca làm việc" : "Lịch trình làm việc"}
                                 </h3>
                             </div>
@@ -542,7 +542,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                             ) : (
                                 <button
                                     onClick={() => setIsRegistrationMode(false)}
-                                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#1b365d] dark:text-[#d6e3ff] px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border border-slate-300 dark:border-slate-600">
+                                    className="bg-slate-100 hover:bg-slate-200 text-[#1b365d] px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border border-slate-300">
                                     <span className="material-symbols-outlined text-[16px]">arrow_back</span>
                                     <span>Quay lại Lịch trình</span>
                                 </button>
@@ -552,23 +552,23 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                         <div className="overflow-x-auto">
                             <div className="min-w-[900px]">
                                 {/* Header: Days Row */}
-                                <div className="grid grid-cols-[140px_repeat(5,1fr)] border-b border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023]">
-                                    <div className="p-3.5 border-r border-[#E2E8F0] dark:border-[#3b3d45] text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] text-center">
+                                <div className="grid grid-cols-[140px_repeat(5,1fr)] border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                                    <div className="p-3.5 border-r border-[#E2E8F0] text-xs font-bold text-[#1b365d] text-center">
                                         Buổi / Ngày
                                     </div>
                                     {daysHeader.map((d) => (
                                         <div
                                             key={d.index}
-                                            className={`p-3 border-r border-[#E2E8F0] dark:border-[#3b3d45] last:border-r-0 text-center ${
-                                                d.isSunday ? "bg-rose-50/30 dark:bg-rose-950/10" : ""
+                                            className={`p-3 border-r border-[#E2E8F0] last:border-r-0 text-center ${
+                                                d.isSunday ? "bg-rose-50/30" : ""
                                             }`}>
                                             <div
                                                 className={`font-bold text-sm ${
                                                     d.isSunday
-                                                        ? "text-rose-600 dark:text-rose-400"
+                                                        ? "text-rose-600"
                                                         : d.isWeekend
-                                                          ? "text-amber-600 dark:text-amber-400"
-                                                          : "text-[#1b365d] dark:text-[#d6e3ff]"
+                                                          ? "text-amber-600"
+                                                          : "text-[#1b365d]"
                                                 }`}>
                                                 {d.label}
                                             </div>
@@ -580,16 +580,16 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                 {shiftTypes.map((st) => (
                                     <div
                                         key={st.type}
-                                        className="grid grid-cols-[140px_repeat(5,1fr)] border-b border-[#E2E8F0] dark:border-[#3b3d45] last:border-b-0 min-h-[120px]">
+                                        className="grid grid-cols-[140px_repeat(5,1fr)] border-b border-[#E2E8F0] last:border-b-0 min-h-[120px]">
                                         {/* Left Sticky Column */}
-                                        <div className="p-3 border-r border-[#E2E8F0] dark:border-[#3b3d45] flex flex-col items-center justify-center bg-[#F8FAFC] dark:bg-[#1f2023] text-center">
-                                            <div className="w-8 h-8 rounded-full bg-[#1b365d]/10 dark:bg-[#1b365d]/30 text-[#1b365d] dark:text-[#87a0cd] flex items-center justify-center mb-1">
+                                        <div className="p-3 border-r border-[#E2E8F0] flex flex-col items-center justify-center bg-[#F8FAFC] text-center">
+                                            <div className="w-8 h-8 rounded-full bg-[#1b365d]/10 text-[#1b365d] flex items-center justify-center mb-1">
                                                 <span className="material-symbols-outlined text-[18px]">{st.icon}</span>
                                             </div>
-                                            <span className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                                            <span className="text-xs font-bold text-[#1b365d]">
                                                 {st.name}
                                             </span>
-                                            <span className="text-[10px] text-[#74777f] dark:text-[#c4c6cf] mt-0.5 font-mono">
+                                            <span className="text-[10px] text-[#74777f] mt-0.5 font-mono">
                                                 {st.timeLabel}
                                             </span>
                                         </div>
@@ -606,24 +606,24 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                             return (
                                                 <div
                                                     key={`my-${st.type}-${d.index}`}
-                                                    className={`p-3 border-r border-[#E2E8F0] dark:border-[#3b3d45] last:border-r-0 flex flex-col items-center justify-center min-h-[95px] transition-colors ${
+                                                    className={`p-3 border-r border-[#E2E8F0] last:border-r-0 flex flex-col items-center justify-center min-h-[95px] transition-colors ${
                                                         isMyRegistered
-                                                            ? "bg-emerald-50/60 dark:bg-emerald-950/20"
+                                                            ? "bg-emerald-50/60"
                                                             : d.isWeekend
-                                                              ? "bg-slate-50/60 dark:bg-[#1e1f23]"
-                                                              : "bg-white dark:bg-[#25262b]"
+                                                              ? "bg-slate-50/60"
+                                                              : "bg-white"
                                                     }`}>
                                                     {/* 1. VIEW MODE: LỊCH TRÌNH LÀM VIỆC (Strictly displays status, NO action buttons) */}
                                                     {!isRegistrationMode ? (
                                                         isMyRegistered ? (
-                                                            <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center gap-1.5 shadow-2xs">
+                                                            <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5 shadow-2xs">
                                                                 <span className="material-symbols-outlined text-[16px]">
                                                                     check_circle
                                                                 </span>
                                                                 <span>Đi làm</span>
                                                             </span>
                                                         ) : (
-                                                            <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 flex items-center gap-1">
+                                                            <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-1">
                                                                 <span>Nghỉ</span>
                                                             </span>
                                                         )
@@ -632,7 +632,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                         <div className="flex flex-col items-center justify-center gap-2">
                                                             <button
                                                                 onClick={() => handleCancelMyShift(d.index, st.type)}
-                                                                className="px-4 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-800/60 transition-all cursor-pointer flex items-center gap-1 shadow-2xs">
+                                                                className="px-4 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 transition-all cursor-pointer flex items-center gap-1 shadow-2xs">
                                                                 <span className="material-symbols-outlined text-[16px]">
                                                                     close
                                                                 </span>
@@ -643,7 +643,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                         <div className="flex flex-col items-center justify-center gap-2">
                                                             <button
                                                                 onClick={() => handleRegisterMyShift(d.index, st.type)}
-                                                                className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800/60 dark:hover:bg-emerald-600 dark:hover:text-white dark:hover:border-emerald-600 rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1 cursor-pointer">
+                                                                className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1 cursor-pointer">
                                                                 <span className="material-symbols-outlined text-[16px]">
                                                                     add_circle
                                                                 </span>
@@ -661,7 +661,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
                         {/* Card Footer with Save Button at Bottom Right - Only in Registration mode */}
                         {isRegistrationMode && (
-                            <div className="p-3.5 px-5 border-t border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023] flex items-center justify-end gap-3">
+                            <div className="p-3.5 px-5 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-end gap-3">
                                 <button
                                     onClick={handleSaveRegistration}
                                     className="px-6 py-2 bg-accent hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1.5 cursor-pointer">
@@ -676,27 +676,27 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
             {/* VIEW MODE 1: LƯỚI PHÂN CA THEO BUỔI (GRID VIEW) */}
             {viewMode === "grid" && (
-                <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-xl overflow-hidden shadow-2xs">
+                <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden shadow-2xs">
                     <div className="overflow-x-auto">
                         <div className="min-w-[1000px]">
                             {/* Header: Days Row */}
-                            <div className="grid grid-cols-[130px_repeat(5,1fr)] border-b border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023]">
-                                <div className="p-3.5 border-r border-[#E2E8F0] dark:border-[#3b3d45] text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] flex items-center justify-center">
+                            <div className="grid grid-cols-[130px_repeat(5,1fr)] border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                                <div className="p-3.5 border-r border-[#E2E8F0] text-xs font-bold text-[#1b365d] flex items-center justify-center">
                                     Ca / Buổi
                                 </div>
                                 {daysHeader.map((d) => (
                                     <div
                                         key={d.index}
-                                        className={`p-3 border-r border-[#E2E8F0] dark:border-[#3b3d45] last:border-r-0 text-center ${
-                                            d.isSunday ? "bg-rose-50/30 dark:bg-rose-950/10" : ""
+                                        className={`p-3 border-r border-[#E2E8F0] last:border-r-0 text-center ${
+                                            d.isSunday ? "bg-rose-50/30" : ""
                                         }`}>
                                         <div
                                             className={`font-bold text-sm ${
                                                 d.isSunday
-                                                    ? "text-rose-600 dark:text-rose-400"
+                                                    ? "text-rose-600"
                                                     : d.isWeekend
-                                                      ? "text-amber-600 dark:text-amber-400"
-                                                      : "text-[#1b365d] dark:text-[#d6e3ff]"
+                                                      ? "text-amber-600"
+                                                      : "text-[#1b365d]"
                                             }`}>
                                             {d.label}
                                         </div>
@@ -710,16 +710,16 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                 .map((st) => (
                                     <div
                                         key={st.type}
-                                        className="grid grid-cols-[130px_repeat(5,1fr)] border-b border-[#E2E8F0] dark:border-[#3b3d45] last:border-b-0 min-h-[150px]">
+                                        className="grid grid-cols-[130px_repeat(5,1fr)] border-b border-[#E2E8F0] last:border-b-0 min-h-[150px]">
                                         {/* Left Sticky Column: Shift Label */}
-                                        <div className="p-3 border-r border-[#E2E8F0] dark:border-[#3b3d45] flex flex-col items-center justify-center bg-[#F8FAFC] dark:bg-[#1f2023] text-center">
-                                            <div className="w-8 h-8 rounded-full bg-[#1b365d]/10 dark:bg-[#1b365d]/30 text-[#1b365d] dark:text-[#87a0cd] flex items-center justify-center mb-1">
+                                        <div className="p-3 border-r border-[#E2E8F0] flex flex-col items-center justify-center bg-[#F8FAFC] text-center">
+                                            <div className="w-8 h-8 rounded-full bg-[#1b365d]/10 text-[#1b365d] flex items-center justify-center mb-1">
                                                 <span className="material-symbols-outlined text-[18px]">{st.icon}</span>
                                             </div>
-                                            <span className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                                            <span className="text-xs font-bold text-[#1b365d]">
                                                 {st.name}
                                             </span>
-                                            <span className="text-[10px] text-[#74777f] dark:text-[#c4c6cf] mt-0.5 font-mono">
+                                            <span className="text-[10px] text-[#74777f] mt-0.5 font-mono">
                                                 {st.timeLabel}
                                             </span>
                                         </div>
@@ -736,24 +736,24 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                             return (
                                                 <div
                                                     key={`${st.type}-${d.index}`}
-                                                    className={`p-2 border-r border-[#E2E8F0] dark:border-[#3b3d45] last:border-r-0 flex flex-col justify-between transition-colors ${
+                                                    className={`p-2 border-r border-[#E2E8F0] last:border-r-0 flex flex-col justify-between transition-colors ${
                                                         d.isWeekend
-                                                            ? "bg-slate-50/60 dark:bg-[#1e1f23]"
-                                                            : "bg-white dark:bg-[#25262b]"
-                                                    } hover:bg-slate-50 dark:hover:bg-[#2c2d33]`}>
+                                                            ? "bg-slate-50/60"
+                                                            : "bg-white"
+                                                    } hover:bg-slate-50`}>
                                                     {/* Cell Top Header */}
                                                     <div className="flex items-center justify-between mb-1.5">
                                                         {isOff ? (
-                                                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                                                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
                                                                 Nghỉ
                                                             </span>
                                                         ) : (
                                                             <div className="flex items-center gap-1">
-                                                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 px-1.5 py-0.5 rounded-full">
+                                                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
                                                                     {approvedCount} CTV
                                                                 </span>
                                                                 {pendingCount > 0 && (
-                                                                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 px-1.5 py-0.5 rounded-full animate-pulse">
+                                                                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full animate-pulse">
                                                                         +{pendingCount} chờ
                                                                     </span>
                                                                 )}
@@ -768,7 +768,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                 })
                                                             }
                                                             title="Quản lý CTV ca này"
-                                                            className="text-[#74777f] hover:text-[#1b365d] dark:hover:text-white p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                                            className="text-[#74777f] hover:text-[#1b365d] p-0.5 rounded hover:bg-slate-200 transition-colors">
                                                             <span className="material-symbols-outlined text-[16px]">
                                                                 edit_square
                                                             </span>
@@ -783,8 +783,8 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                     key={ctv.id}
                                                                     className={`p-1.5 rounded-lg border text-xs flex items-center justify-between gap-1 group transition-all ${
                                                                         ctv.status === "Đã duyệt"
-                                                                            ? "bg-slate-50 border-slate-200 dark:bg-[#1a1b1e] dark:border-[#3b3d45]"
-                                                                            : "bg-amber-50/70 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50"
+                                                                            ? "bg-slate-50 border-slate-200"
+                                                                            : "bg-amber-50/70 border-amber-200"
                                                                     }`}>
                                                                     <div className="flex items-center gap-1.5 min-w-0">
                                                                         {ctv.avatar ? (
@@ -798,7 +798,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                                 {ctv.initials || "CTV"}
                                                                             </div>
                                                                         )}
-                                                                        <span className="font-semibold text-[#1a1b1e] dark:text-[#d6e3ff] truncate text-[11px]">
+                                                                        <span className="font-semibold text-[#1a1b1e] truncate text-[11px]">
                                                                             {ctv.name}
                                                                         </span>
                                                                     </div>
@@ -814,7 +814,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                                     )
                                                                                 }
                                                                                 title="Duyệt CTV này"
-                                                                                className="text-emerald-600 hover:text-emerald-700 bg-emerald-100 dark:bg-emerald-900/50 p-0.5 rounded text-[10px] font-bold">
+                                                                                className="text-emerald-600 hover:text-emerald-700 bg-emerald-100 p-0.5 rounded text-[10px] font-bold">
                                                                                 Duyệt
                                                                             </button>
                                                                         ) : (
@@ -842,7 +842,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                 </div>
                                                             ))
                                                         ) : (
-                                                            <div className="h-full flex flex-col items-center justify-center text-center p-2 text-[11px] text-slate-300 dark:text-slate-600 italic">
+                                                            <div className="h-full flex flex-col items-center justify-center text-center p-2 text-[11px] text-slate-300 italic">
                                                                 {isOff ? "Không mở ca" : "Chưa có CTV"}
                                                             </div>
                                                         )}
@@ -857,7 +857,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                     shiftType: st.type,
                                                                 })
                                                             }
-                                                            className="mt-1 w-full py-1 rounded border border-dashed border-slate-200 dark:border-slate-700 hover:border-[#1b365d] hover:bg-[#1b365d]/5 text-[11px] text-[#74777f] hover:text-[#1b365d] dark:hover:text-white transition-all font-medium flex items-center justify-center gap-1 cursor-pointer">
+                                                            className="mt-1 w-full py-1 rounded border border-dashed border-slate-200 hover:border-[#1b365d] hover:bg-[#1b365d]/5 text-[11px] text-[#74777f] hover:text-[#1b365d] transition-all font-medium flex items-center justify-center gap-1 cursor-pointer">
                                                             <span className="material-symbols-outlined text-[14px]">
                                                                 add
                                                             </span>
@@ -876,32 +876,32 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
             {/* VIEW MODE 2: LỊCH LÀM THEO DANH SÁCH CTV (PER-CTV VIEW) */}
             {viewMode === "ctv" && (
-                <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-xl overflow-hidden shadow-2xs">
+                <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden shadow-2xs">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs">
-                            <thead className="bg-[#F8FAFC] dark:bg-[#1f2023] border-b border-[#E2E8F0] dark:border-[#3b3d45] text-[#1b365d] dark:text-[#d6e3ff]">
+                            <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#1b365d]">
                                 <tr>
                                     <th className="p-3.5 font-bold w-[220px]">Cộng tác viên</th>
                                     {daysHeader.map((d) => (
                                         <th
                                             key={d.index}
-                                            className="p-3.5 font-bold text-center border-l border-[#E2E8F0] dark:border-[#3b3d45]">
+                                            className="p-3.5 font-bold text-center border-l border-[#E2E8F0]">
                                             <div>{d.label}</div>
                                         </th>
                                     ))}
-                                    <th className="p-3.5 font-bold text-center border-l border-[#E2E8F0] dark:border-[#3b3d45] w-[100px]">
+                                    <th className="p-3.5 font-bold text-center border-l border-[#E2E8F0] w-[100px]">
                                         Tổng ca
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#E2E8F0] dark:divide-[#3b3d45]">
+                            <tbody className="divide-y divide-[#E2E8F0]">
                                 {activeAccounts.map((acc) => {
                                     let totalShiftsForCTV = 0;
 
                                     return (
                                         <tr
                                             key={acc.id}
-                                            className="hover:bg-slate-50 dark:hover:bg-[#2c2d33] transition-colors">
+                                            className="hover:bg-slate-50 transition-colors">
                                             {/* CTV Info Column */}
                                             <td className="p-3.5">
                                                 <div className="flex items-center gap-2.5">
@@ -917,10 +917,10 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                         </div>
                                                     )}
                                                     <div className="min-w-0">
-                                                        <p className="font-bold text-[#1b365d] dark:text-[#d6e3ff] truncate text-xs">
+                                                        <p className="font-bold text-[#1b365d] truncate text-xs">
                                                             {acc.name}
                                                         </p>
-                                                        <p className="text-[10px] text-[#74777f] dark:text-[#c4c6cf] font-mono truncate">
+                                                        <p className="text-[10px] text-[#74777f] font-mono truncate">
                                                             {acc.cctvCode || acc.phone}
                                                         </p>
                                                     </div>
@@ -941,7 +941,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                 return (
                                                     <td
                                                         key={d.index}
-                                                        className="p-2 border-l border-[#E2E8F0] dark:border-[#3b3d45] text-center align-middle">
+                                                        className="p-2 border-l border-[#E2E8F0] text-center align-middle">
                                                         {dayShifts.length > 0 ? (
                                                             <div className="flex flex-wrap items-center justify-center gap-1">
                                                                 {dayShifts.map((s) => {
@@ -955,10 +955,10 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                             key={s.id}
                                                                             className={`px-2 py-1 rounded text-[10px] font-bold border ${
                                                                                 s.shiftType === "morning"
-                                                                                    ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300"
+                                                                                    ? "bg-amber-50 text-amber-800 border-amber-300"
                                                                                     : s.shiftType === "afternoon"
-                                                                                      ? "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300"
-                                                                                      : "bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300"
+                                                                                      ? "bg-blue-50 text-blue-800 border-blue-300"
+                                                                                      : "bg-purple-50 text-purple-800 border-purple-300"
                                                                             } ${isPending ? "border-dashed opacity-80" : ""}`}>
                                                                             {s.shiftType === "morning"
                                                                                 ? "Sáng"
@@ -971,7 +971,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                                 })}
                                                             </div>
                                                         ) : (
-                                                            <span className="text-slate-300 dark:text-slate-600 text-[11px]">
+                                                            <span className="text-slate-300 text-[11px]">
                                                                 -
                                                             </span>
                                                         )}
@@ -980,8 +980,8 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                             })}
 
                                             {/* Total Shifts Column */}
-                                            <td className="p-3.5 border-l border-[#E2E8F0] dark:border-[#3b3d45] text-center font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff]">
-                                                <span className="bg-[#1b365d]/10 text-[#1b365d] dark:bg-[#1b365d]/30 dark:text-[#87a0cd] px-2.5 py-1 rounded-full text-xs">
+                                            <td className="p-3.5 border-l border-[#E2E8F0] text-center font-bold text-sm text-[#1b365d]">
+                                                <span className="bg-[#1b365d]/10 text-[#1b365d] px-2.5 py-1 rounded-full text-xs">
                                                     {totalShiftsForCTV} ca
                                                 </span>
                                             </td>
@@ -997,10 +997,10 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
             {/* MODAL 1: Phân ca CTV cho Ô được chọn (Shift Detail & Assign Modal) */}
             {selectedCell && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
                         <button
                             onClick={() => setSelectedCell(null)}
-                            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
                             <span className="material-symbols-outlined">close</span>
                         </button>
 
@@ -1011,12 +1011,12 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                 </span>
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                                <h3 className="text-lg font-bold text-[#1b365d]">
                                     Phân ca làm việc - {modalDayHeader?.label} ({modalDayHeader?.date})
                                 </h3>
-                                <p className="text-xs text-[#74777f] dark:text-[#c4c6cf]">
+                                <p className="text-xs text-[#74777f]">
                                     Ca:{" "}
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                    <span className="font-semibold text-[#1b365d]">
                                         {modalShiftMeta?.name}
                                     </span>{" "}
                                     ({modalShiftMeta?.timeLabel})
@@ -1026,16 +1026,16 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
                         {/* Current CTV list in this shift */}
                         <div className="space-y-3 mb-6">
-                            <label className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] block">
+                            <label className="text-xs font-bold text-[#1b365d] block">
                                 Danh sách CTV trong ca này ({modalSlot?.assignedCTVs?.length || 0}):
                             </label>
 
-                            <div className="max-h-52 overflow-y-auto space-y-2 border border-[#E2E8F0] dark:border-[#3b3d45] rounded-xl p-2 bg-[#f4f3f7]/50 dark:bg-[#1a1b1e]">
+                            <div className="max-h-52 overflow-y-auto space-y-2 border border-[#E2E8F0] rounded-xl p-2 bg-[#f4f3f7]/50">
                                 {modalSlot?.assignedCTVs && modalSlot.assignedCTVs.length > 0 ? (
                                     modalSlot.assignedCTVs.map((ctv) => (
                                         <div
                                             key={ctv.id}
-                                            className="p-2.5 bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-lg flex items-center justify-between">
+                                            className="p-2.5 bg-white border border-[#E2E8F0] rounded-lg flex items-center justify-between">
                                             <div
                                                 onClick={() => {
                                                     if (onViewAccountDetail) {
@@ -1079,7 +1079,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <p className="font-bold text-xs text-[#1b365d] dark:text-[#d6e3ff] group-hover/ctv:text-accent group-hover/ctv:underline transition-colors">
+                                                    <p className="font-bold text-xs text-[#1b365d] group-hover/ctv:text-accent group-hover/ctv:underline transition-colors">
                                                         {ctv.name}
                                                     </p>
                                                     <p className="text-[10px] text-[#74777f]">
@@ -1125,15 +1125,15 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                         </div>
 
                         {/* Form to add a CTV to this shift */}
-                        <div className="space-y-3 pt-3 border-t border-[#E2E8F0] dark:border-[#3b3d45]">
-                            <label className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] block">
+                        <div className="space-y-3 pt-3 border-t border-[#E2E8F0]">
+                            <label className="text-xs font-bold text-[#1b365d] block">
                                 Thêm CTV vào ca này:
                             </label>
                             <div className="flex gap-2">
                                 <select
                                     value={assignUser}
                                     onChange={(e) => setAssignUser(e.target.value)}
-                                    className="flex-1 p-2 bg-[#f4f3f7] dark:bg-[#1a1b1e] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-xl text-xs font-medium text-[#1b365d] dark:text-[#d6e3ff]">
+                                    className="flex-1 p-2 bg-[#f4f3f7] border border-[#E2E8F0] rounded-xl text-xs font-medium text-[#1b365d]">
                                     <option value="">-- Chọn Cộng tác viên --</option>
                                     {activeAccounts
                                         .filter((acc) => !(modalSlot?.assignedCTVs || []).some((c) => c.id === acc.id))
@@ -1162,7 +1162,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                         <div className="mt-6 flex justify-end">
                             <button
                                 onClick={() => setSelectedCell(null)}
-                                className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs px-5 py-2 rounded-xl cursor-pointer">
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-5 py-2 rounded-xl cursor-pointer">
                                 Hoàn tất
                             </button>
                         </div>
@@ -1173,10 +1173,10 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
             {/* MODAL 2: Phân ca nhanh CTV (Quick Assign Modal) */}
             {isQuickAssignOpen && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#25262b] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
                         <button
                             onClick={() => setIsQuickAssignOpen(false)}
-                            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
                             <span className="material-symbols-outlined">close</span>
                         </button>
 
@@ -1185,7 +1185,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                 <span className="material-symbols-outlined text-[22px]">person_add</span>
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                                <h3 className="text-lg font-bold text-[#1b365d]">
                                     Phân ca nhanh cho CTV
                                 </h3>
                                 <p className="text-xs text-[#74777f]">
@@ -1197,14 +1197,14 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                         <form onSubmit={handleQuickAssignSubmit} className="space-y-4">
                             {/* Select CTV */}
                             <div>
-                                <label className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] block mb-1.5">
+                                <label className="text-xs font-bold text-[#1b365d] block mb-1.5">
                                     1. Chọn Cộng tác viên:
                                 </label>
                                 <select
                                     required
                                     value={assignUser}
                                     onChange={(e) => setAssignUser(e.target.value)}
-                                    className="w-full p-2.5 bg-[#f4f3f7] dark:bg-[#1a1b1e] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-xl text-xs font-medium text-[#1b365d] dark:text-[#d6e3ff]">
+                                    className="w-full p-2.5 bg-[#f4f3f7] border border-[#E2E8F0] rounded-xl text-xs font-medium text-[#1b365d]">
                                     <option value="">-- Chọn CTV --</option>
                                     {activeAccounts.map((acc) => (
                                         <option key={acc.id} value={acc.id}>
@@ -1216,13 +1216,13 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
                             {/* Select Day */}
                             <div>
-                                <label className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] block mb-1.5">
+                                <label className="text-xs font-bold text-[#1b365d] block mb-1.5">
                                     2. Chọn ngày trong tuần:
                                 </label>
                                 <select
                                     value={assignDay}
                                     onChange={(e) => setAssignDay(Number(e.target.value))}
-                                    className="w-full p-2.5 bg-[#f4f3f7] dark:bg-[#1a1b1e] border border-[#E2E8F0] dark:border-[#3b3d45] rounded-xl text-xs font-medium text-[#1b365d] dark:text-[#d6e3ff]">
+                                    className="w-full p-2.5 bg-[#f4f3f7] border border-[#E2E8F0] rounded-xl text-xs font-medium text-[#1b365d]">
                                     {daysHeader.map((d) => (
                                         <option key={d.index} value={d.index}>
                                             {d.label} ({d.date})
@@ -1233,7 +1233,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
                             {/* Select Shift Type */}
                             <div>
-                                <label className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] block mb-1.5">
+                                <label className="text-xs font-bold text-[#1b365d] block mb-1.5">
                                     3. Chọn Buổi làm việc:
                                 </label>
                                 <div className="grid grid-cols-3 gap-2">
@@ -1245,7 +1245,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                             className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer ${
                                                 assignType === st.type
                                                     ? "bg-[#1b365d] text-white border-[#1b365d] shadow-2xs"
-                                                    : "bg-[#f4f3f7] dark:bg-[#1a1b1e] border-[#E2E8F0] dark:border-[#3b3d45] text-[#1b365d] dark:text-[#d6e3ff] hover:bg-slate-200"
+                                                    : "bg-[#f4f3f7] border-[#E2E8F0] text-[#1b365d] hover:bg-slate-200"
                                             }`}>
                                             <span className="material-symbols-outlined text-[18px]">{st.icon}</span>
                                             <span>{st.name}</span>
@@ -1259,7 +1259,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setIsQuickAssignOpen(false)}
-                                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100">
                                     Hủy
                                 </button>
                                 <button
@@ -1276,19 +1276,19 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
             {/* LEAVE REQUEST MODAL */}
             {isLeaveModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-                        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
+                    <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-[20px]">event_busy</span>
                                 </div>
-                                <h3 className="text-base font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                                <h3 className="text-base font-bold text-[#1b365d]">
                                     Đơn xin nghỉ ca làm việc
                                 </h3>
                             </div>
                             <button
                                 onClick={() => setIsLeaveModalOpen(false)}
-                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+                                className="text-slate-400 hover:text-slate-600 cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
@@ -1296,13 +1296,13 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                         <div className="space-y-3.5">
                             {/* Select Shift to Take Leave */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
                                     Chọn ca xin nghỉ
                                 </label>
                                 <select
                                     value={leaveShiftType}
                                     onChange={(e) => setLeaveShiftType(e.target.value)}
-                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#1a1b1e] border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-[#1b365d] dark:text-[#d6e3ff] outline-none focus:ring-1 focus:ring-blue-500">
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#1b365d] outline-none focus:ring-1 focus:ring-blue-500">
                                     <option value="today_morning">Ca Sáng - Hôm nay ({todayHeader?.label})</option>
                                     <option value="today_afternoon">Ca Chiều - Hôm nay ({todayHeader?.label})</option>
                                     <option value="other">Toàn bộ ca trong tuần này</option>
@@ -1311,7 +1311,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
                             {/* Reason Selector */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
                                     Lý do nghỉ
                                 </label>
                                 <div className="grid grid-cols-2 gap-2 mb-2">
@@ -1327,8 +1327,8 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                             onClick={() => setLeaveReason(r)}
                                             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border text-left transition-all cursor-pointer ${
                                                 leaveReason === r
-                                                    ? "bg-rose-50 dark:bg-rose-950/60 border-rose-500 text-rose-700 dark:text-rose-300 font-bold"
-                                                    : "bg-slate-50 dark:bg-[#1a1b1e] border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100"
+                                                    ? "bg-rose-50 border-rose-500 text-rose-700 font-bold"
+                                                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                                             }`}>
                                             {r}
                                         </button>
@@ -1338,7 +1338,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
                             {/* Note input */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
                                     Ghi chú chi tiết (không bắt buộc)
                                 </label>
                                 <textarea
@@ -1346,17 +1346,17 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                                     value={leaveNote}
                                     onChange={(e) => setLeaveNote(e.target.value)}
                                     placeholder="Nhập lý do chi tiết để Admin xét duyệt..."
-                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#1a1b1e] border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-[#1b365d] dark:text-[#d6e3ff] outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#1b365d] outline-none focus:ring-1 focus:ring-blue-500 resize-none"
                                 />
                             </div>
                         </div>
 
                         {/* Modal Footer Buttons */}
-                        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                             <button
                                 type="button"
                                 onClick={() => setIsLeaveModalOpen(false)}
-                                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
                                 Hủy
                             </button>
                             <button

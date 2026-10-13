@@ -33,42 +33,42 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
     return (
         <>
             <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
-                <div className="bg-white dark:bg-[#25262b] rounded-2xl border border-[#E2E8F0] dark:border-[#3b3d45] shadow-2xl w-full max-w-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+                <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-2xl w-full max-w-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
                     {/* Modal Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023]">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC]">
                         <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-[#1b365d]/10 text-[#1b365d] dark:bg-[#1b365d]/30 dark:text-[#87a0cd] flex items-center justify-center font-bold">
+                            <div className="w-8 h-8 rounded-lg bg-[#1b365d]/10 text-[#1b365d] flex items-center justify-center font-bold">
                                 <span className="material-symbols-outlined text-[20px]">badge</span>
                             </div>
-                            <h3 className="text-base font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                            <h3 className="text-base font-bold text-[#1b365d]">
                                 Chi tiết hồ sơ đăng ký CTV
                             </h3>
                         </div>
                         <button
                             onClick={onClose}
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#74777f] hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#74777f] hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                             <span className="material-symbols-outlined text-[20px]">close</span>
                         </button>
                     </div>
 
                     <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
                         {/* User Profile Header Card */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F8FAFC] dark:bg-[#1e1f23] border border-[#E2E8F0] dark:border-[#3b3d45]">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 rounded-full bg-[#1b365d] text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
                                     {request.initials || request.name.substring(0, 2).toUpperCase()}
                                 </div>
                                 <div>
-                                    <h4 className="text-lg font-bold text-[#1b365d] dark:text-[#d6e3ff]">
+                                    <h4 className="text-lg font-bold text-[#1b365d]">
                                         {request.name}
                                     </h4>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:items-end gap-1 text-xs text-[#74777f] dark:text-[#c4c6cf]">
+                            <div className="flex flex-col sm:items-end gap-1 text-xs text-[#74777f]">
                                 <p>
                                     Ngày đăng ký:{" "}
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                    <span className="font-semibold text-[#1b365d]">
                                         {formatDateOnly(request.submittedAt)}
                                     </span>
                                 </p>
@@ -77,40 +77,40 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
 
                         {/* Section 1: Detailed Profile Info (2-column layout matching Account Detail) */}
                         <div>
-                            <h5 className="text-xs font-bold text-[#1b365d] dark:text-[#d6e3ff] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <h5 className="text-xs font-bold text-[#1b365d] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-[16px]">person</span>
                                 <span>Thông tin cá nhân & Tài khoản</span>
                             </h5>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#F8FAFC] dark:bg-[#1e1f23] p-4 rounded-xl border border-[#E2E8F0] dark:border-[#3b3d45]">
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
-                                    <span className="text-[#74777f] dark:text-[#c4c6cf]">Họ và tên:</span>
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">{request.name}</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0]">
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
+                                    <span className="text-[#74777f]">Họ và tên:</span>
+                                    <span className="font-semibold text-[#1b365d]">{request.name}</span>
                                 </div>
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
-                                    <span className="text-[#74777f] dark:text-[#c4c6cf]">Email:</span>
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
+                                    <span className="text-[#74777f]">Email:</span>
                                     <span
-                                        className="font-semibold text-[#1b365d] dark:text-white truncate max-w-[180px]"
+                                        className="font-semibold text-[#1b365d] truncate max-w-[180px]"
                                         title={request.email}>
                                         {request.email}
                                     </span>
                                 </div>
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
-                                    <span className="text-[#74777f] dark:text-[#c4c6cf]">Số điện thoại:</span>
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
+                                    <span className="text-[#74777f]">Số điện thoại:</span>
+                                    <span className="font-semibold text-[#1b365d]">
                                         {request.phone ? (
                                             formatPhoneNumber(request.phone)
                                         ) : (
-                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                            <span className="italic text-[#74777f]">
                                                 Chưa cập nhật
                                             </span>
                                         )}
                                     </span>
                                 </div>
-                                <div className="flex justify-between p-2 rounded bg-white dark:bg-[#25262b] border border-[#E2E8F0]/60 dark:border-[#3b3d45]">
-                                    <span className="text-[#74777f] dark:text-[#c4c6cf]">Ngày sinh:</span>
-                                    <span className="font-semibold text-[#1b365d] dark:text-white">
+                                <div className="flex justify-between p-2 rounded bg-white border border-[#E2E8F0]/60">
+                                    <span className="text-[#74777f]">Ngày sinh:</span>
+                                    <span className="font-semibold text-[#1b365d]">
                                         {request.dob || (
-                                            <span className="italic text-[#74777f] dark:text-[#c4c6cf]">
+                                            <span className="italic text-[#74777f]">
                                                 Chưa cập nhật
                                             </span>
                                         )}
@@ -120,9 +120,9 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                         </div>
 
                         {/* CCCD Section */}
-                        <div className="p-3.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1e1f23] border border-[#E2E8F0] dark:border-[#3b3d45]">
+                        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[11px] font-bold text-[#1b365d] dark:text-[#d6e3ff] uppercase tracking-wider flex items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-[#1b365d] uppercase tracking-wider flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-[16px]">badge</span>
                                     <span>Ảnh chụp CCCD (Mặt trước & Mặt sau)</span>
                                 </span>
@@ -136,7 +136,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                                 url: request.cccdFront!,
                                             })
                                         }
-                                        className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                                        className="relative group rounded-xl border border-slate-200 bg-white overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 transition-all">
                                         <img
                                             src={request.cccdFront}
                                             alt="CCCD Mặt trước"
@@ -148,7 +148,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
+                                    <div className="rounded-xl border border-dashed border-slate-200 bg-white h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
                                         <span className="material-symbols-outlined text-[20px]">credit_card</span>
                                         <span>Chưa tải lên</span>
                                     </div>
@@ -162,7 +162,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                                 url: request.cccdBack!,
                                             })
                                         }
-                                        className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                                        className="relative group rounded-xl border border-slate-200 bg-white overflow-hidden h-28 cursor-pointer shadow-2xs hover:border-blue-400 transition-all">
                                         <img
                                             src={request.cccdBack}
                                             alt="CCCD Mặt sau"
@@ -174,7 +174,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-[#25262b] h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
+                                    <div className="rounded-xl border border-dashed border-slate-200 bg-white h-28 flex flex-col items-center justify-center gap-1 text-xs text-slate-400">
                                         <span className="material-symbols-outlined text-[20px]">credit_card</span>
                                         <span>Chưa tải lên</span>
                                     </div>
@@ -183,22 +183,22 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                         </div>
 
                         {/* CV Section */}
-                        <div className="p-3.5 rounded-xl bg-[#F8FAFC] dark:bg-[#1e1f23] border border-[#E2E8F0] dark:border-[#3b3d45]">
+                        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[11px] font-bold text-[#1b365d] dark:text-[#d6e3ff] uppercase tracking-wider flex items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-[#1b365d] uppercase tracking-wider flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-[16px]">description</span>
                                     <span>Hồ sơ ứng tuyển (CV)</span>
                                 </span>
                             </div>
 
                             {request.cvFileName || request.cvFile ? (
-                                <div className="p-2.5 bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                                <div className="p-2.5 bg-white border border-slate-200 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
                                     <div className="flex items-center gap-3 min-w-0">
                                         <div
                                             className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                                                 (request.cvFileName || "").toLowerCase().endsWith(".pdf")
-                                                    ? "bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/50"
-                                                    : "bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/50"
+                                                    ? "bg-red-50 text-red-600 border border-red-200"
+                                                    : "bg-blue-50 text-blue-600 border border-blue-200"
                                             }`}>
                                             <span className="material-symbols-outlined text-[20px]">
                                                 {(request.cvFileName || "").toLowerCase().endsWith(".pdf")
@@ -207,7 +207,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                             </span>
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-xs font-bold text-[#1a1b1e] dark:text-[#d6e3ff] truncate">
+                                            <p className="text-xs font-bold text-[#1a1b1e] truncate">
                                                 {request.cvFileName || "Ho_so_CV.pdf"}
                                             </p>
                                         </div>
@@ -223,7 +223,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                                 rel="noopener noreferrer"
                                                 aria-label="Xem file"
                                                 title="Xem CV trong tab mới"
-                                                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-2xs transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 no-underline">
+                                                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-700 shadow-2xs transition-colors hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 no-underline">
                                                 <span className="material-symbols-outlined text-[18px]">
                                                     visibility
                                                 </span>
@@ -240,7 +240,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                                 href={downloadHref}
                                                 download={downloadName}
                                                 aria-label="Tải về"
-                                                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-2xs transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
+                                                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-700 shadow-2xs transition-colors hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
                                                 <span className="material-symbols-outlined text-[18px]">download</span>
                                             </a>
                                             <span
@@ -252,7 +252,7 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                     </div>
                                 </div>
                             ) : (
-                                <div className="p-3 bg-white dark:bg-[#25262b] border border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-center text-xs text-slate-400">
+                                <div className="p-3 bg-white border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400">
                                     Chưa đính kèm file CV
                                 </div>
                             )}
@@ -260,14 +260,14 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                     </div>
 
                     {/* Actions Footer */}
-                    <div className="p-4 border-t border-[#E2E8F0] dark:border-[#3b3d45] bg-[#F8FAFC] dark:bg-[#1f2023] flex items-center justify-end gap-2.5">
+                    <div className="p-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-end gap-2.5">
                         <button
                             type="button"
                             onClick={() => {
                                 onReject(request.id);
                                 onClose();
                             }}
-                            className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/80 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
+                            className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[16px]">cancel</span>
                             <span>Từ chối hồ sơ</span>
                         </button>
@@ -288,23 +288,23 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
             {/* CCCD LIGHTBOX PREVIEW MODAL */}
             {previewImg && (
                 <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#25262b] border border-slate-200 dark:border-slate-700 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                             <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[#1b365d] dark:text-[#87a0cd] text-[20px]">
+                                <span className="material-symbols-outlined text-[#1b365d] text-[20px]">
                                     badge
                                 </span>
-                                <h3 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff]">
+                                <h3 className="font-bold text-sm text-[#1b365d]">
                                     {previewImg.title}
                                 </h3>
                             </div>
                             <button
                                 onClick={() => setPreviewImg(null)}
-                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 dark:text-slate-400 dark:hover:bg-rose-600 transition-colors cursor-pointer">
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-500 transition-colors cursor-pointer">
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
-                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 flex items-center justify-center max-h-[60vh]">
+                        <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-900 flex items-center justify-center max-h-[60vh]">
                             <img
                                 src={previewImg.url}
                                 alt={previewImg.title}

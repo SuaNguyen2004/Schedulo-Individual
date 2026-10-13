@@ -34,15 +34,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <aside
-            className={`bg-[#f4f3f7] dark:bg-[#1a1b1e] h-full max-h-full overflow-hidden border-r border-[#E2E8F0] dark:border-[#c4c6cf] flex flex-col transition-all duration-300 ease-in-out w-full`}>
+            className={`bg-[#f4f3f7] h-full max-h-full overflow-hidden border-r border-[#E2E8F0] flex flex-col transition-all duration-300 ease-in-out w-full`}>
             {/* Header */}
             <div
-                className={`px-3 py-3.5 border-b border-[#E2E8F0] dark:border-[#c4c6cf] flex items-center shrink-0 ${isCollapsed ? "justify-center" : "justify-between gap-1.5"}`}>
+                className={`px-3 py-3.5 border-b border-[#E2E8F0] flex items-center shrink-0 ${isCollapsed ? "justify-center" : "justify-between gap-1.5"}`}>
                 {!isCollapsed && (
                     <div className="flex items-center gap-2.5 min-w-0">
                         <img src={logoAmst} alt="Logo AMST" className="w-9 h-9 object-contain shrink-0 rounded-lg" />
                         <div className="min-w-0">
-                            <h1 className="font-bold text-sm text-[#1b365d] dark:text-[#d6e3ff] leading-tight tracking-tight whitespace-nowrap">
+                            <h1 className="font-bold text-sm text-[#1b365d] leading-tight tracking-tight whitespace-nowrap">
                                 Hệ thống Quản lý CTV
                             </h1>
                         </div>
@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                         onClick={onCloseMobile}
                         title="Đóng menu"
-                        className="md:hidden p-1.5 text-[#44474e] dark:text-[#c4c6cf] hover:text-[#002046] dark:hover:text-white hover:bg-[#e9e8ec] dark:hover:bg-[#2c2d33] rounded-lg transition-colors cursor-pointer shrink-0">
+                        className="md:hidden p-1.5 text-[#44474e] hover:text-[#002046] hover:bg-[#e9e8ec] rounded-lg transition-colors cursor-pointer shrink-0">
                         <span className="material-symbols-outlined text-[20px]">close</span>
                     </button>
                 )}
@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                         onClick={onToggleCollapse}
                         title={isCollapsed ? "Mở rộng Sidebar" : "Thu gọn Sidebar"}
-                        className="hidden md:flex p-1 text-[#44474e] dark:text-[#c4c6cf] hover:text-[#002046] dark:hover:text-white hover:bg-[#e9e8ec] dark:hover:bg-[#2c2d33] rounded-md transition-colors cursor-pointer shrink-0">
+                        className="hidden md:flex p-1 text-[#44474e] hover:text-[#002046] hover:bg-[#e9e8ec] rounded-md transition-colors cursor-pointer shrink-0">
                         <span className="material-symbols-outlined text-[20px]">
                             {isCollapsed ? "side_navigation" : "first_page"}
                         </span>
@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
                             currentTab === "accounts"
                                 ? "bg-accent text-white shadow-xs"
-                                : "text-[#44474e] dark:text-slate-200 hover:bg-[#e9e7eb] dark:hover:bg-[#2a2b30] hover:text-[#002046]"
+                                : "text-[#44474e] hover:bg-[#e9e7eb] hover:text-[#002046]"
                         }`}>
                         <span
                             className="material-symbols-outlined text-[22px] shrink-0"
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
                             currentTab === "requests"
                                 ? "bg-accent text-white shadow-xs"
-                                : "text-[#44474e] dark:text-slate-200 hover:bg-[#e9e7eb] dark:hover:bg-[#2a2b30] hover:text-[#002046]"
+                                : "text-[#44474e] hover:bg-[#e9e7eb] hover:text-[#002046]"
                         }`}>
                         <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} truncate`}>
                             <span
@@ -139,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
                             currentTab === "schedule"
                                 ? "bg-accent text-white shadow-xs"
-                                : "text-[#44474e] dark:text-slate-200 hover:bg-[#e9e7eb] dark:hover:bg-[#2a2b30] hover:text-[#002046]"
+                                : "text-[#44474e] hover:bg-[#e9e7eb] hover:text-[#002046]"
                         }`}>
                         <span
                             className="material-symbols-outlined text-[22px] shrink-0"
@@ -160,7 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
                             currentTab === "meetings"
                                 ? "bg-accent text-white shadow-xs"
-                                : "text-[#44474e] dark:text-slate-200 hover:bg-[#e9e7eb] dark:hover:bg-[#2a2b30] hover:text-[#002046]"
+                                : "text-[#44474e] hover:bg-[#e9e7eb] hover:text-[#002046]"
                         }`}>
                         <span
                             className="material-symbols-outlined text-[22px] shrink-0"
@@ -180,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     } rounded-lg text-sm font-semibold transition-all duration-150 text-left w-full cursor-pointer relative ${
                         currentTab === "profile"
                             ? "bg-accent text-white shadow-xs"
-                            : "text-[#44474e] dark:text-slate-200 hover:bg-[#e9e7eb] dark:hover:bg-[#2a2b30] hover:text-[#002046]"
+                            : "text-[#44474e] hover:bg-[#e9e7eb] hover:text-[#002046]"
                     }`}>
                     <span
                         className="material-symbols-outlined text-[22px] shrink-0"
@@ -192,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </nav>
 
             {/* User Profile Widget Footer with Direct Logout */}
-            <div className="p-3 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-[#E2E8F0] dark:border-[#3b3d45] shrink-0 bg-[#ebe9ef] dark:bg-[#202125]">
+            <div className="p-3 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-[#E2E8F0] shrink-0 bg-[#ebe9ef]">
                 <div
                     className={`flex items-center ${
                         isCollapsed ? "flex-col gap-2 justify-center" : "justify-between gap-2"
@@ -202,7 +202,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <img
                                 src={userAvatar}
                                 alt={userName}
-                                className="w-9 h-9 rounded-full object-cover border border-white dark:border-[#3b3d45] shadow-2xs shrink-0"
+                                className="w-9 h-9 rounded-full object-cover border border-white shadow-2xs shrink-0"
                             />
                         ) : (
                             <div className="w-9 h-9 rounded-full bg-[#1b365d] text-white font-bold flex items-center justify-center text-xs shrink-0 border border-white/20 shadow-2xs">
@@ -211,10 +211,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         )}
                         {!isCollapsed && (
                             <div className="min-w-0">
-                                <h4 className="text-xs font-bold text-[#1a1b1e] dark:text-white truncate">
+                                <h4 className="text-xs font-bold text-[#1a1b1e] truncate">
                                     {userName || "Người dùng"}
                                 </h4>
-                                <p className="text-[10px] text-[#74777f] dark:text-[#c4c6cf] truncate">
+                                <p className="text-[10px] text-[#74777f] truncate">
                                     {userRole || "Cộng tác viên"}
                                 </p>
                             </div>
