@@ -1051,6 +1051,57 @@ app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
     }
 });
 
+async function deletePhysicalFile(fileUrl) {
+    if (!fileUrl || typeof fileUrl !== "string") return;
+
+    // 1. Delete on Cloudinary if it is a Cloudinary URL
+    if (fileUrl.includes("res.cloudinary.com") && isCloudinaryConfigured()) {
+        try {
+            const isImage = fileUrl.includes("/image/upload/");
+            const match = fileUrl.match(/\/upload\/(?:v\d+\/)?(schedulo\/.+)$/);
+            if (match && match[1]) {
+                let publicId = match[1];
+                if (isImage) {
+                    publicId = publicId.replace(/\.[^/.]+$/, "");
+                }
+                await cloudinary.uploader.destroy(publicId, {
+                    resource_type: isImage ? "image" : "raw",
+                    invalidate: true,
+                });
+            }
+        } catch (err) {
+            console.warn("Lỗi khi xóa file trên Cloudinary:", fileUrl, err?.message);
+        }
+    }
+
+    // 2. Delete local copy from disk (if exists and not a demo/sample file)
+    try {
+        const rawFileName = path.basename(fileUrl.split("?")[0]);
+        const sanitizedFileName = path.basename(decodeURIComponent(rawFileName));
+
+        const isProtected =
+            sanitizedFileName === ".gitkeep" ||
+            sanitizedFileName.startsWith("demo_") ||
+            sanitizedFileName.startsWith("CV_") ||
+            sanitizedFileName.startsWith("FSOFT-") ||
+            sanitizedFileName.startsWith("WWF-");
+
+        if (!isProtected && sanitizedFileName) {
+            const imagePath = path.resolve(imageDirectory, sanitizedFileName);
+            if (imagePath.startsWith(path.resolve(imageDirectory)) && fs.existsSync(imagePath)) {
+                await fs.promises.unlink(imagePath);
+            }
+
+            const cvPath = path.resolve(cvDirectory, sanitizedFileName);
+            if (cvPath.startsWith(path.resolve(cvDirectory)) && fs.existsSync(cvPath)) {
+                await fs.promises.unlink(cvPath);
+            }
+        }
+    } catch (err) {
+        console.warn("Lỗi khi xóa file local:", fileUrl, err?.message);
+    }
+}
+
 app.delete("/api/users/:id", requireAdmin, async (req, res) => {
     const userId = Number(req.params.id);
     if (!Number.isInteger(userId)) {
@@ -1072,12 +1123,32 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
             return res.status(400).json({ message: "Không thể xóa tài khoản Admin." });
         }
 
+        // Query physical file URLs before deleting the user records from database
+        const [profiles] = await connection.execute(
+            "SELECT avatar_url, id_card_front_url, id_card_back_url, cv_url FROM user_profiles WHERE user_id = ?",
+            [userId]
+        );
+        const filesToDelete = [];
+        if (profiles.length > 0) {
+            const p = profiles[0];
+            if (p.avatar_url) filesToDelete.push(p.avatar_url);
+            if (p.id_card_front_url) filesToDelete.push(p.id_card_front_url);
+            if (p.id_card_back_url) filesToDelete.push(p.id_card_back_url);
+            if (p.cv_url) filesToDelete.push(p.cv_url);
+        }
+
         // Foreign keys on user_profiles, work_schedules and work_history all use
         // ON DELETE CASCADE, so removing the users row deletes the profile, the
         // weekly schedule and the work history together.
         await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
 
         await connection.commit();
+
+        // Clean up physical files from local disk and Cloudinary
+        for (const fileUrl of filesToDelete) {
+            await deletePhysicalFile(fileUrl);
+        }
+
         return res.json({ id: String(userId), deleted: true });
     } catch (error) {
         try {
