@@ -17,6 +17,25 @@ function isCloudinaryConfigured() {
     );
 }
 
+function getCloudinaryCloudName() {
+    try {
+        const config = cloudinary.config();
+        if (config && config.cloud_name) {
+            return config.cloud_name;
+        }
+    } catch (_) {}
+    if (process.env.CLOUDINARY_CLOUD_NAME) {
+        return process.env.CLOUDINARY_CLOUD_NAME;
+    }
+    if (process.env.CLOUDINARY_URL) {
+        const match = process.env.CLOUDINARY_URL.match(/@([^/?#]+)/);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    return null;
+}
+
 if (isCloudinaryConfigured()) {
     if (process.env.CLOUDINARY_URL) {
         cloudinary.config({ url: process.env.CLOUDINARY_URL });
@@ -317,16 +336,35 @@ app.get("/CV/:fileName", async (req, res) => {
         let isAuthorized = isAdmin;
 
         if (!isAuthorized) {
-            // Collaborators may ONLY view their own CV.
-            // Directly query user's profile from database and verify exact filename match (no LIKE pattern).
+            // Collaborators may ONLY view their own local CV.
+            // Retrieve exact cv_url from user_profiles to verify ownership:
             const [profileRows] = await pool.execute(
                 "SELECT cv_url FROM user_profiles WHERE user_id = ? LIMIT 1",
                 [user.id],
             );
             if (profileRows.length > 0 && profileRows[0].cv_url) {
-                const storedFileName = path.basename(decodeURIComponent(profileRows[0].cv_url.split("?")[0]));
-                if (storedFileName === sanitizedFileName) {
-                    isAuthorized = true;
+                const storedCvUrl = String(profileRows[0].cv_url).trim();
+                // Ensure profile CV is strictly a LOCAL file, not Cloudinary
+                const isRemote = storedCvUrl.startsWith("http://") || storedCvUrl.startsWith("https://");
+                if (!isRemote) {
+                    const storedLocalName = path.basename(decodeURIComponent(storedCvUrl.split("?")[0]));
+                    const userLocalCvPath = path.resolve(cvDirectory, storedLocalName);
+                    // Match canonical absolute path
+                    if (targetPath === userLocalCvPath) {
+                        isAuthorized = true;
+                    }
+                }
+            }
+        } else {
+            // For Admin: ensure the local file actually belongs to a recorded profile in CSDL or is a valid demo
+            const [matchedProfiles] = await pool.execute(
+                "SELECT 1 FROM user_profiles WHERE cv_url = ? OR cv_url LIKE ? LIMIT 1",
+                [sanitizedFileName, `%${sanitizedFileName}`],
+            );
+            if (matchedProfiles.length === 0) {
+                const isDemo = sanitizedFileName.startsWith("CV_") || sanitizedFileName.startsWith("demo_");
+                if (!isDemo) {
+                    return res.status(404).json({ message: "Tài liệu CV không tồn tại trong hồ sơ hệ thống." });
                 }
             }
         }
@@ -401,16 +439,12 @@ app.get("/api/cv/download", async (req, res) => {
             }
 
             if (!resolvedTargetUrl && rawUrl) {
-                // Verify that rawUrl corresponds exactly to a recorded CV in database (user_profiles or registration_requests)
+                // Verify that rawUrl corresponds exactly to a recorded CV in user_profiles
                 const [matchedProfiles] = await pool.execute(
                     "SELECT 1 FROM user_profiles WHERE cv_url = ? LIMIT 1",
                     [rawUrl],
                 );
-                const [matchedRequests] = await pool.execute(
-                    "SELECT 1 FROM registration_requests WHERE cv_url = ? LIMIT 1",
-                    [rawUrl],
-                );
-                if (matchedProfiles.length === 0 && matchedRequests.length === 0) {
+                if (matchedProfiles.length === 0) {
                     return res.status(404).json({ message: "Tệp CV không tồn tại trong hệ thống hồ sơ." });
                 }
                 resolvedTargetUrl = rawUrl;
@@ -451,9 +485,12 @@ app.get("/api/cv/download", async (req, res) => {
                 return res.status(400).json({ message: "Tên miền lưu trữ tệp không được phép." });
             }
 
-            // Path must belong to application scope (schedulo/cv or configured cloud_name)
-            const configuredCloudName = process.env.CLOUDINARY_CLOUD_NAME;
-            if (configuredCloudName && !parsedUrl.pathname.startsWith(`/${configuredCloudName}/`)) {
+            // Path must belong to application scope: verify against dynamically resolved cloud name
+            const activeCloudName = getCloudinaryCloudName();
+            if (!activeCloudName) {
+                return res.status(503).json({ message: "Dịch vụ lưu trữ đám mây chưa được cấu hình tài khoản lưu trữ." });
+            }
+            if (!parsedUrl.pathname.startsWith(`/${activeCloudName}/`)) {
                 return res.status(403).json({ message: "Đường dẫn không thuộc tài khoản lưu trữ của ứng dụng." });
             }
             if (!parsedUrl.pathname.includes("/schedulo/cv/") && !parsedUrl.pathname.includes("/schedulo/")) {
@@ -465,7 +502,7 @@ app.get("/api/cv/download", async (req, res) => {
             try {
                 fetchRes = await fetch(resolvedTargetUrl, { redirect: "error" });
             } catch (fetchErr) {
-                return res.status(502).json({ message: "Không thể kết nối đến máy chủ lưu trữ tệp." });
+                return res.status(502).json({ message: "Không thể kết nối đến máy chủ lưu trữ tệp hoặc yêu cầu bị chuyển hướng." });
             }
 
             if (!fetchRes.ok) {
@@ -1159,26 +1196,43 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             await connection.commit();
 
             // Process cleanup queue for old replaced physical files
-            let profileCleanupFailed = false;
+            let fileDeletionFailed = false;
+            let queueUpdateFailed = false;
+
             for (const entry of profileQueueEntries) {
                 const result = await deletePhysicalFile(entry.fileUrl);
                 if (result.success) {
-                    await pool.execute(
-                        "UPDATE file_cleanup_queue SET status = 'completed', attempts = attempts + 1, last_error = NULL WHERE id = ?",
-                        [entry.id],
-                    ).catch((err) => {
-                        console.warn(`[Profile Cleanup Queue] Không thể cập nhật trạng thái hoàn tất cho queue id ${entry.id}:`, err?.message);
-                    });
+                    try {
+                        await pool.execute(
+                            "UPDATE file_cleanup_queue SET status = 'completed', attempts = attempts + 1, last_error = NULL WHERE id = ?",
+                            [entry.id],
+                        );
+                    } catch (queueErr) {
+                        queueUpdateFailed = true;
+                        console.warn(`[Profile Cleanup Queue] Không thể cập nhật trạng thái hoàn tất cho queue id ${entry.id}:`, queueErr?.message);
+                    }
                 } else {
-                    profileCleanupFailed = true;
+                    fileDeletionFailed = true;
                     const errStr = JSON.stringify({ local: result.local, cloud: result.cloud });
-                    await pool.execute(
-                        "UPDATE file_cleanup_queue SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?",
-                        [errStr, entry.id],
-                    ).catch((err) => {
-                        console.warn(`[Profile Cleanup Queue] Không thể cập nhật trạng thái lỗi cho queue id ${entry.id}:`, err?.message);
-                    });
+                    try {
+                        await pool.execute(
+                            "UPDATE file_cleanup_queue SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?",
+                            [errStr, entry.id],
+                        );
+                    } catch (queueErr) {
+                        queueUpdateFailed = true;
+                        console.warn(`[Profile Cleanup Queue] Không thể cập nhật trạng thái lỗi cho queue id ${entry.id}:`, queueErr?.message);
+                    }
                 }
+            }
+
+            let profileWarning = undefined;
+            if (fileDeletionFailed && queueUpdateFailed) {
+                profileWarning = "Hồ sơ đã được lưu, nhưng một số tệp cũ chưa thể dọn dẹp ngay và trạng thái hàng đợi chưa được cập nhật đầy đủ.";
+            } else if (fileDeletionFailed) {
+                profileWarning = "Hồ sơ đã được lưu, nhưng một số tệp cũ chưa thể dọn dẹp ngay và đã được lưu vào hàng đợi dọn dẹp để xử lý lại.";
+            } else if (queueUpdateFailed) {
+                profileWarning = "Hồ sơ đã được lưu và tệp cũ đã được dọn, nhưng trạng thái hàng đợi dọn dẹp chưa thể cập nhật.";
             }
 
             const returnedFiles = {};
@@ -1189,9 +1243,7 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
 
             return res.json({
                 message: "Cập nhật hồ sơ thành công.",
-                warning: profileCleanupFailed
-                    ? "Hồ sơ đã được lưu thành công, nhưng một số tệp cũ chưa thể dọn dẹp ngay và đã được lưu vào hàng đợi dọn dẹp để xử lý lại."
-                    : undefined,
+                warning: profileWarning,
                 ...returnedFiles,
             });
         } catch (err) {
@@ -1854,16 +1906,26 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
 
             // Update persistent queue record with final result
             if (result.success) {
-                await pool.execute(
-                    "UPDATE file_cleanup_queue SET status = 'completed', attempts = attempts + 1, last_error = NULL WHERE id = ?",
-                    [entry.id],
-                ).catch((e) => console.warn("Lỗi update completed queue:", e.message));
+                try {
+                    await pool.execute(
+                        "UPDATE file_cleanup_queue SET status = 'completed', attempts = attempts + 1, last_error = NULL WHERE id = ?",
+                        [entry.id],
+                    );
+                } catch (e) {
+                    console.warn("Lỗi update completed queue:", e.message);
+                    if (!postCommitWarning) postCommitWarning = "Một số trạng thái trong hàng đợi dọn dẹp chưa thể cập nhật.";
+                }
             } else {
                 const errStr = JSON.stringify({ local: result.local, cloud: result.cloud });
-                await pool.execute(
-                    "UPDATE file_cleanup_queue SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?",
-                    [errStr, entry.id],
-                ).catch((e) => console.warn("Lỗi update failed queue:", e.message));
+                try {
+                    await pool.execute(
+                        "UPDATE file_cleanup_queue SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?",
+                        [errStr, entry.id],
+                    );
+                } catch (e) {
+                    console.warn("Lỗi update failed queue:", e.message);
+                    if (!postCommitWarning) postCommitWarning = "Một số trạng thái trong hàng đợi dọn dẹp chưa thể cập nhật.";
+                }
             }
         }
 
