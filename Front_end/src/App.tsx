@@ -723,7 +723,6 @@ export const App: React.FC = () => {
                         {currentTab === "accounts" && (
                             <AccountListScreen
                                 accounts={accounts}
-                                onCreateAccount={() => setIsCreateUserOpen(true)}
                                 onToggleAccountStatus={handleToggleAccountStatus}
                                 onDeleteAccount={handleDeleteAccount}
                                 onViewAccountDetail={(acc) => setSelectedAccountDetail(acc)}

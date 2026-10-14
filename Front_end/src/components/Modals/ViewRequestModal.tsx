@@ -217,7 +217,9 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                         <div className="group relative">
                                             <a
                                                 href={
-                                                    request.cvFile ? getAuthorizedFileUrl(request.cvFile) : downloadHref
+                                                    request.cvFile
+                                                        ? getAuthorizedFileUrl(request.cvFile, request.cvFileName)
+                                                        : downloadHref
                                                 }
                                                 download={
                                                     Boolean((request.cvFileName || request.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))

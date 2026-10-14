@@ -507,7 +507,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                             {/* Action Buttons: Xem & Thay đổi */}
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <a
-                                                    href={user.cvFile ? getAuthorizedFileUrl(user.cvFile) : "#"}
+                                                    href={user.cvFile ? getAuthorizedFileUrl(user.cvFile, cvDisplayName) : "#"}
                                                     download={
                                                         Boolean((cvDisplayName || user.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
                                                             ? (cvDisplayName || "CV.docx")

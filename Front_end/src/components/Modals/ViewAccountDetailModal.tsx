@@ -416,7 +416,7 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
 
                                         <div className="flex items-center gap-1.5 shrink-0">
                                             <a
-                                                href={account.cvFile ? getAuthorizedFileUrl(account.cvFile) : "#"}
+                                                href={account.cvFile ? getAuthorizedFileUrl(account.cvFile, cvFileName) : "#"}
                                                 download={
                                                     Boolean((account.cvFileName || account.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
                                                         ? (account.cvFileName || "CV.docx")

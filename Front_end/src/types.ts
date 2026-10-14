@@ -86,6 +86,8 @@ export interface ShiftSlot {
     registrationId?: string;
     registrationStartDate?: string;
     registrationEndDate?: string;
+    workContent?: string;
+    room?: string;
 }
 
 export * from "./utils/formatters";

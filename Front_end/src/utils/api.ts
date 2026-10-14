@@ -22,12 +22,34 @@ export function setAuthToken(token: string | null): void {
     }
 }
 
-export function getAuthorizedFileUrl(url: string | null | undefined): string {
+export function getAuthorizedFileUrl(url: string | null | undefined, forceFilename?: string): string {
     if (!url) return "";
-    if (url.startsWith("data:") || url.startsWith("blob:") || url.startsWith("http://") || url.startsWith("https://")) {
+    if (url.startsWith("data:") || url.startsWith("blob:")) {
         return url;
     }
+
+    const isWord = Boolean((forceFilename || url).toLowerCase().match(/\.(doc|docx)($|\?)/));
     const token = getAuthToken();
+
+    // Word documents (.doc/.docx) are served through the dedicated download endpoint to guarantee
+    // Content-Disposition: attachment header. This circumvents browser restrictions where the HTML5
+    // `download` attribute is ignored on cross-origin URLs (e.g. Cloudinary).
+    if (isWord) {
+        const queryParams = new URLSearchParams();
+        queryParams.set("url", url);
+        if (forceFilename) {
+            queryParams.set("filename", forceFilename);
+        }
+        if (token) {
+            queryParams.set("token", token);
+        }
+        return `/api/cv/download?${queryParams.toString()}`;
+    }
+
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+    }
+
     if (!token) return url;
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}token=${encodeURIComponent(token)}`;
