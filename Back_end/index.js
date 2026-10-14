@@ -285,7 +285,7 @@ app.get("/image/:fileName", async (req, res) => {
 // Secure file access for CV documents (Confidential: Admin or owner only)
 app.get("/CV/:fileName", async (req, res) => {
     const rawFileName = req.params.fileName || "";
-    const sanitizedFileName = path.basename(rawFileName);
+    const sanitizedFileName = path.basename(decodeURIComponent(rawFileName));
     const targetPath = path.resolve(cvDirectory, sanitizedFileName);
 
     // Prevent directory traversal
@@ -317,14 +317,17 @@ app.get("/CV/:fileName", async (req, res) => {
         let isAuthorized = isAdmin;
 
         if (!isAuthorized) {
-            // Collaborators may only view their own CV
+            // Collaborators may ONLY view their own CV.
+            // Directly query user's profile from database and verify exact filename match (no LIKE pattern).
             const [profileRows] = await pool.execute(
-                `SELECT user_id FROM user_profiles
-                 WHERE user_id = ? AND cv_url LIKE ? LIMIT 1`,
-                [user.id, `%${sanitizedFileName}%`],
+                "SELECT cv_url FROM user_profiles WHERE user_id = ? LIMIT 1",
+                [user.id],
             );
-            if (profileRows.length > 0) {
-                isAuthorized = true;
+            if (profileRows.length > 0 && profileRows[0].cv_url) {
+                const storedFileName = path.basename(decodeURIComponent(profileRows[0].cv_url.split("?")[0]));
+                if (storedFileName === sanitizedFileName) {
+                    isAuthorized = true;
+                }
             }
         }
 
@@ -348,12 +351,6 @@ app.get("/CV/:fileName", async (req, res) => {
 // Download endpoint for CV files with guaranteed Content-Disposition: attachment header.
 // Supports both local files and Cloudinary raw files, resolving cross-origin browser download issues.
 app.get("/api/cv/download", async (req, res) => {
-    const rawUrl = req.query.url;
-    const requestedName = req.query.filename;
-    if (!rawUrl || typeof rawUrl !== "string") {
-        return res.status(400).json({ message: "Thiếu đường dẫn tệp CV." });
-    }
-
     // Require authentication
     const token = extractToken(req);
     if (!token) {
@@ -372,19 +369,60 @@ app.get("/api/cv/download", async (req, res) => {
         }
         const isAdmin = String(dbUser.role || "").toLowerCase() === "admin";
 
-        // If not admin, check if collaborator owns this CV
+        const rawUrl = typeof req.query.url === "string" ? req.query.url.trim() : "";
+        const targetUserId = req.query.userId ? Number(req.query.userId) : null;
+        let resolvedTargetUrl = "";
+
         if (!isAdmin) {
-            const fileNameOnly = path.basename(rawUrl.split("?")[0]);
+            // Collaborators may ONLY download their own CV.
+            // Obtain the exact cv_url from the user's database profile (not via client-provided arbitrary filename/LIKE).
             const [profileRows] = await pool.execute(
-                "SELECT user_id FROM user_profiles WHERE user_id = ? AND (cv_url LIKE ? OR cv_url = ?) LIMIT 1",
-                [user.id, `%${fileNameOnly}%`, rawUrl],
+                "SELECT cv_url FROM user_profiles WHERE user_id = ? LIMIT 1",
+                [user.id],
             );
-            if (profileRows.length === 0) {
+            const userCvUrl = profileRows[0]?.cv_url;
+            if (!userCvUrl) {
+                return res.status(404).json({ message: "Hồ sơ của bạn chưa có tệp CV." });
+            }
+            if (rawUrl && rawUrl !== userCvUrl) {
                 return res.status(403).json({ message: "Bạn không có quyền tải tệp CV này." });
+            }
+            resolvedTargetUrl = userCvUrl;
+        } else {
+            // Admin: can download either by target userId or by verified URL in CSDL
+            if (targetUserId && Number.isInteger(targetUserId)) {
+                const [targetProfile] = await pool.execute(
+                    "SELECT cv_url FROM user_profiles WHERE user_id = ? LIMIT 1",
+                    [targetUserId],
+                );
+                if (targetProfile[0]?.cv_url) {
+                    resolvedTargetUrl = targetProfile[0].cv_url;
+                }
+            }
+
+            if (!resolvedTargetUrl && rawUrl) {
+                // Verify that rawUrl corresponds exactly to a recorded CV in database (user_profiles or registration_requests)
+                const [matchedProfiles] = await pool.execute(
+                    "SELECT 1 FROM user_profiles WHERE cv_url = ? LIMIT 1",
+                    [rawUrl],
+                );
+                const [matchedRequests] = await pool.execute(
+                    "SELECT 1 FROM registration_requests WHERE cv_url = ? LIMIT 1",
+                    [rawUrl],
+                );
+                if (matchedProfiles.length === 0 && matchedRequests.length === 0) {
+                    return res.status(404).json({ message: "Tệp CV không tồn tại trong hệ thống hồ sơ." });
+                }
+                resolvedTargetUrl = rawUrl;
             }
         }
 
-        const safeFilename = path.basename(requestedName || rawUrl.split("?")[0]) || "Ho_so_CV.docx";
+        if (!resolvedTargetUrl) {
+            return res.status(400).json({ message: "Thiếu thông tin tệp CV cần tải." });
+        }
+
+        const requestedName = typeof req.query.filename === "string" ? req.query.filename.trim() : "";
+        const safeFilename = path.basename(requestedName || resolvedTargetUrl.split("?")[0]) || "Ho_so_CV.docx";
         const ext = path.extname(safeFilename).toLowerCase();
         const contentType =
             ext === ".docx"
@@ -395,23 +433,52 @@ app.get("/api/cv/download", async (req, res) => {
                     ? "application/pdf"
                     : "application/octet-stream";
 
-        if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
-            // Validate allowed domain (Cloudinary) to prevent SSRF
-            const parsedUrl = new URL(rawUrl);
-            if (!parsedUrl.hostname.endsWith("cloudinary.com")) {
+        if (resolvedTargetUrl.startsWith("http://") || resolvedTargetUrl.startsWith("https://")) {
+            // Strict URL validation: HTTPS only, exact hostname 'res.cloudinary.com', within application folder
+            let parsedUrl;
+            try {
+                parsedUrl = new URL(resolvedTargetUrl);
+            } catch {
                 return res.status(400).json({ message: "Đường dẫn tải tệp không hợp lệ." });
             }
-            const fetchRes = await fetch(rawUrl);
+
+            if (parsedUrl.protocol !== "https:") {
+                return res.status(400).json({ message: "Yêu cầu tệp phải sử dụng giao thức HTTPS bảo mật." });
+            }
+
+            // Must match exact res.cloudinary.com (reject examplecloudinary.com, subdomain spoofing, etc.)
+            if (parsedUrl.hostname !== "res.cloudinary.com") {
+                return res.status(400).json({ message: "Tên miền lưu trữ tệp không được phép." });
+            }
+
+            // Path must belong to application scope (schedulo/cv or configured cloud_name)
+            const configuredCloudName = process.env.CLOUDINARY_CLOUD_NAME;
+            if (configuredCloudName && !parsedUrl.pathname.startsWith(`/${configuredCloudName}/`)) {
+                return res.status(403).json({ message: "Đường dẫn không thuộc tài khoản lưu trữ của ứng dụng." });
+            }
+            if (!parsedUrl.pathname.includes("/schedulo/cv/") && !parsedUrl.pathname.includes("/schedulo/")) {
+                return res.status(403).json({ message: "Phạm vi tài nguyên tải về không hợp lệ." });
+            }
+
+            // Fetch from Cloudinary with redirect: "error" to prevent SSRF via open redirects
+            let fetchRes;
+            try {
+                fetchRes = await fetch(resolvedTargetUrl, { redirect: "error" });
+            } catch (fetchErr) {
+                return res.status(502).json({ message: "Không thể kết nối đến máy chủ lưu trữ tệp." });
+            }
+
             if (!fetchRes.ok) {
                 return res.status(fetchRes.status).json({ message: "Không thể tải tệp từ lưu trữ đám mây." });
             }
+
             res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(safeFilename)}"`);
             res.setHeader("Content-Type", contentType);
             const arrayBuffer = await fetchRes.arrayBuffer();
             return res.send(Buffer.from(arrayBuffer));
         } else {
             // Local disk file
-            const sanitizedFileName = path.basename(decodeURIComponent(rawUrl));
+            const sanitizedFileName = path.basename(decodeURIComponent(resolvedTargetUrl));
             const targetPath = path.resolve(cvDirectory, sanitizedFileName);
             if (!targetPath.startsWith(path.resolve(cvDirectory)) || !fs.existsSync(targetPath)) {
                 return res.status(404).json({ message: "Không tìm thấy tệp CV trên hệ thống." });
@@ -1092,19 +1159,25 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             await connection.commit();
 
             // Process cleanup queue for old replaced physical files
+            let profileCleanupFailed = false;
             for (const entry of profileQueueEntries) {
                 const result = await deletePhysicalFile(entry.fileUrl);
                 if (result.success) {
                     await pool.execute(
                         "UPDATE file_cleanup_queue SET status = 'completed', attempts = attempts + 1, last_error = NULL WHERE id = ?",
                         [entry.id],
-                    ).catch(() => {});
+                    ).catch((err) => {
+                        console.warn(`[Profile Cleanup Queue] Không thể cập nhật trạng thái hoàn tất cho queue id ${entry.id}:`, err?.message);
+                    });
                 } else {
+                    profileCleanupFailed = true;
                     const errStr = JSON.stringify({ local: result.local, cloud: result.cloud });
                     await pool.execute(
                         "UPDATE file_cleanup_queue SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?",
                         [errStr, entry.id],
-                    ).catch(() => {});
+                    ).catch((err) => {
+                        console.warn(`[Profile Cleanup Queue] Không thể cập nhật trạng thái lỗi cho queue id ${entry.id}:`, err?.message);
+                    });
                 }
             }
 
@@ -1114,7 +1187,13 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
             if (fileUpdates.id_card_back_url !== undefined) returnedFiles.cccdBack = fileUpdates.id_card_back_url;
             if (fileUpdates.cv_url !== undefined) returnedFiles.cvFile = fileUpdates.cv_url;
 
-            return res.json({ message: "Cập nhật hồ sơ thành công.", ...returnedFiles });
+            return res.json({
+                message: "Cập nhật hồ sơ thành công.",
+                warning: profileCleanupFailed
+                    ? "Hồ sơ đã được lưu thành công, nhưng một số tệp cũ chưa thể dọn dẹp ngay và đã được lưu vào hàng đợi dọn dẹp để xử lý lại."
+                    : undefined,
+                ...returnedFiles,
+            });
         } catch (err) {
             await connection.rollback();
             throw err;
@@ -1364,6 +1443,15 @@ async function cleanupCloudinaryOrphanFiles(referencedUrls) {
                             }
                         }
 
+                        // Double-check fresh database reference right before cloud destroy
+                        const [freshCloudRef] = await pool.execute(
+                            "SELECT 1 FROM user_profiles WHERE avatar_url LIKE ? OR id_card_front_url LIKE ? OR id_card_back_url LIKE ? OR cv_url LIKE ? LIMIT 1",
+                            [`%${pubId}%`, `%${pubId}%`, `%${pubId}%`, `%${pubId}%`],
+                        );
+                        if (freshCloudRef.length > 0) {
+                            continue; // Freshly linked by an in-flight transaction, protect!
+                        }
+
                         try {
                             const delRes = await cloudinary.uploader.destroy(pubId, {
                                 resource_type: "image",
@@ -1412,6 +1500,15 @@ async function cleanupCloudinaryOrphanFiles(referencedUrls) {
                             if (now - createdAtMs < ORPHAN_FILE_MIN_AGE_MS) {
                                 continue; // Inside grace period, do not delete
                             }
+                        }
+
+                        // Double-check fresh database reference right before cloud destroy
+                        const [freshCvRef] = await pool.execute(
+                            "SELECT 1 FROM user_profiles WHERE cv_url LIKE ? LIMIT 1",
+                            [`%${pubId}%`],
+                        );
+                        if (freshCvRef.length > 0) {
+                            continue; // Freshly linked by an in-flight transaction, protect!
                         }
 
                         try {
@@ -1463,7 +1560,7 @@ async function cleanupLocalOrphanFiles(referencedFileNames) {
 
     const now = Date.now();
 
-    // 1. Scan imageDirectory with grace period check
+    // 1. Scan imageDirectory with grace period check & fresh reference double-check
     if (fs.existsSync(imageDirectory)) {
         try {
             const files = await fs.promises.readdir(imageDirectory);
@@ -1475,6 +1572,16 @@ async function cleanupLocalOrphanFiles(referencedFileNames) {
                         if (now - stat.mtimeMs < ORPHAN_FILE_MIN_AGE_MS) {
                             continue; // File modified/uploaded recently, keep
                         }
+
+                        // Double-check fresh database reference right before unlinking
+                        const [freshImageRef] = await pool.execute(
+                            "SELECT 1 FROM user_profiles WHERE avatar_url LIKE ? OR id_card_front_url LIKE ? OR id_card_back_url LIKE ? LIMIT 1",
+                            [`%${f}%`, `%${f}%`, `%${f}%`],
+                        );
+                        if (freshImageRef.length > 0) {
+                            continue; // Freshly linked by an in-flight transaction, protect!
+                        }
+
                         await fs.promises.unlink(fullPath);
                         deleted.push(`image/${f}`);
                     } catch (err) {
@@ -1488,7 +1595,7 @@ async function cleanupLocalOrphanFiles(referencedFileNames) {
         }
     }
 
-    // 2. Scan cvDirectory with grace period check
+    // 2. Scan cvDirectory with grace period check & fresh reference double-check
     if (fs.existsSync(cvDirectory)) {
         try {
             const files = await fs.promises.readdir(cvDirectory);
@@ -1500,6 +1607,16 @@ async function cleanupLocalOrphanFiles(referencedFileNames) {
                         if (now - stat.mtimeMs < ORPHAN_FILE_MIN_AGE_MS) {
                             continue; // File modified/uploaded recently, keep
                         }
+
+                        // Double-check fresh database reference right before unlinking
+                        const [freshCvLocalRef] = await pool.execute(
+                            "SELECT 1 FROM user_profiles WHERE cv_url LIKE ? LIMIT 1",
+                            [`%${f}%`],
+                        );
+                        if (freshCvLocalRef.length > 0) {
+                            continue; // Freshly linked by an in-flight transaction, protect!
+                        }
+
                         await fs.promises.unlink(fullPath);
                         deleted.push(`CV/${f}`);
                     } catch (err) {
@@ -1534,24 +1651,52 @@ async function cleanupOrphanFiles() {
             }
         }
 
-        // Clean up both local disk and Cloudinary
+        const isCloudConfigured = isCloudinaryConfigured();
         const localResult = await cleanupLocalOrphanFiles(referencedFileNames);
-        const cloudResult = await cleanupCloudinaryOrphanFiles(allReferencedUrls);
+        const cloudResult = isCloudConfigured
+            ? await cleanupCloudinaryOrphanFiles(allReferencedUrls)
+            : { status: "not_configured", reason: "Cloudinary credentials not configured", deleted: [], failed: [] };
 
-        const cloudOk = cloudResult.status === "not_configured" || cloudResult.failed.length === 0;
-        const localOk = localResult.failed.length === 0;
+        const localSuccess = localResult.failed.length === 0;
+        const cloudSuccess = isCloudConfigured ? cloudResult.failed.length === 0 : null; // null: skipped / not applicable
+        const fullyCompleted = isCloudConfigured ? (localSuccess && Boolean(cloudSuccess)) : localSuccess;
 
         return {
+            scope: isCloudConfigured ? "local_and_cloud" : "local_only",
+            fullyCompleted,
+            local: {
+                success: localSuccess,
+                deleted: localResult.deleted,
+                failed: localResult.failed,
+            },
+            cloud: {
+                status: isCloudConfigured ? "active" : "not_configured",
+                applied: isCloudConfigured,
+                success: cloudSuccess,
+                deleted: cloudResult.deleted,
+                failed: cloudResult.failed,
+                reason: isCloudConfigured ? undefined : "Cloudinary không được cấu hình nên không áp dụng.",
+            },
             localDeleted: localResult.deleted,
             localFailed: localResult.failed,
             cloudDeleted: cloudResult.deleted,
             cloudFailed: cloudResult.failed,
-            cloudStatus: cloudResult.status,
-            success: localOk && cloudOk,
+            cloudStatus: isCloudConfigured ? "active" : "not_configured",
+            success: fullyCompleted,
         };
     } catch (err) {
         console.warn("Lỗi khi quét dọn tệp rác không còn tham chiếu:", err?.message);
         return {
+            scope: isCloudinaryConfigured() ? "local_and_cloud" : "local_only",
+            fullyCompleted: false,
+            local: { success: false, deleted: [], failed: [{ error: err?.message }] },
+            cloud: {
+                status: isCloudinaryConfigured() ? "active" : "not_configured",
+                applied: isCloudinaryConfigured(),
+                success: false,
+                deleted: [],
+                failed: [],
+            },
             localDeleted: [],
             localFailed: [{ error: err?.message }],
             cloudDeleted: [],
@@ -1585,6 +1730,30 @@ async function retryFailedFileCleanups() {
         }
     }
     return retried;
+}
+
+// Background Worker: Automatically retry file cleanups and run orphan sweeps periodically every 30 minutes
+const CLEANUP_WORKER_INTERVAL_MS = 30 * 60 * 1000;
+let isWorkerExecuting = false;
+
+async function runPeriodicCleanupWorker() {
+    if (isWorkerExecuting) return;
+    isWorkerExecuting = true;
+    try {
+        const retried = await retryFailedFileCleanups();
+        if (retried.length > 0) {
+            console.log(`[Cleanup Worker] Đã thử lại xử lý ${retried.length} tệp trong hàng đợi.`);
+        }
+    } catch (err) {
+        console.warn("[Cleanup Worker] Sự cố chu kỳ dọn tệp:", err?.message);
+    } finally {
+        isWorkerExecuting = false;
+    }
+}
+
+const cleanupWorkerTimer = setInterval(runPeriodicCleanupWorker, CLEANUP_WORKER_INTERVAL_MS);
+if (cleanupWorkerTimer.unref) {
+    cleanupWorkerTimer.unref();
 }
 
 // Admin endpoint to view the file cleanup queue
@@ -1708,7 +1877,7 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
     const filesCleaned =
         !postCommitWarning &&
         fileCleanupResults.every((r) => r.success) &&
-        (orphanCleanup ? orphanCleanup.success : false);
+        (orphanCleanup ? orphanCleanup.fullyCompleted : false);
 
     return res.json({
         id: String(userId),
@@ -1716,7 +1885,7 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
         filesCleaned,
         warning: filesCleaned
             ? undefined
-            : postCommitWarning || "Tài khoản đã được xóa trong CSDL nhưng một số tệp vật lý chưa thể dọn dẹp ngay và đã được lưu vào hàng đợi để tự động thử lại.",
+            : postCommitWarning || "Tài khoản đã được xóa trong CSDL nhưng một số tệp vật lý chưa thể dọn dẹp ngay và đã được lưu vào hàng đợi dọn dẹp.",
         fileCleanupResults,
         orphanCleanup,
     });
