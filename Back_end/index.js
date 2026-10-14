@@ -314,21 +314,32 @@ app.get("/CV/:fileName", async (req, res) => {
         }
 
         const isAdmin = String(dbUser.role || "").toLowerCase() === "admin";
-        if (isAdmin) {
-            return res.sendFile(targetPath);
+        let isAuthorized = isAdmin;
+
+        if (!isAuthorized) {
+            // Collaborators may only view their own CV
+            const [profileRows] = await pool.execute(
+                `SELECT user_id FROM user_profiles
+                 WHERE user_id = ? AND cv_url LIKE ? LIMIT 1`,
+                [user.id, `%${sanitizedFileName}%`],
+            );
+            if (profileRows.length > 0) {
+                isAuthorized = true;
+            }
         }
 
-        // Collaborators may only view their own CV
-        const [profileRows] = await pool.execute(
-            `SELECT user_id FROM user_profiles
-             WHERE user_id = ? AND cv_url LIKE ? LIMIT 1`,
-            [user.id, `%${sanitizedFileName}%`],
-        );
-        if (profileRows.length > 0) {
-            return res.sendFile(targetPath);
+        if (!isAuthorized) {
+            return res.status(403).json({ message: "Bạn không có quyền xem tài liệu CV này." });
         }
 
-        return res.status(403).json({ message: "Bạn không có quyền xem tài liệu CV này." });
+        const ext = path.extname(sanitizedFileName).toLowerCase();
+        if (ext === ".doc" || ext === ".docx") {
+            res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(sanitizedFileName)}"`);
+        } else if (ext === ".pdf") {
+            res.setHeader("Content-Disposition", `inline; filename="${encodeURIComponent(sanitizedFileName)}"`);
+            res.setHeader("Content-Type", "application/pdf");
+        }
+        return res.sendFile(targetPath);
     } catch (err) {
         return res.status(500).json(formatError("Lỗi kiểm tra quyền truy cập file.", err));
     }
@@ -1076,36 +1087,85 @@ app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
     }
 });
 
+// Persistent file cleanup queue table initialization
+async function initFileCleanupQueueTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS file_cleanup_queue (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                user_id BIGINT NULL,
+                file_url VARCHAR(1000) NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                attempts INT DEFAULT 0,
+                last_error TEXT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+    } catch (err) {
+        console.warn("Lỗi khởi tạo bảng file_cleanup_queue:", err?.message);
+    }
+}
+initFileCleanupQueueTable();
+
 async function deletePhysicalFile(fileUrl) {
-    if (!fileUrl || typeof fileUrl !== "string") return { success: false, reason: "empty_url" };
-
-    let cloudDeleted = false;
-    let localDeleted = false;
-    const errors = [];
-
-    // 1. Delete on Cloudinary if it is a Cloudinary URL
-    if (fileUrl.includes("res.cloudinary.com") && isCloudinaryConfigured()) {
-        try {
-            const isImage = fileUrl.includes("/image/upload/");
-            const match = fileUrl.match(/\/upload\/(?:v\d+\/)?(schedulo\/.+)$/);
-            if (match && match[1]) {
-                let publicId = match[1];
-                if (isImage) {
-                    publicId = publicId.replace(/\.[^/.]+$/, "");
-                }
-                const res = await cloudinary.uploader.destroy(publicId, {
-                    resource_type: isImage ? "image" : "raw",
-                    invalidate: true,
-                });
-                cloudDeleted = res?.result === "ok";
-            }
-        } catch (err) {
-            errors.push(`Cloudinary: ${err?.message}`);
-            console.warn("Lỗi khi xóa file trên Cloudinary:", fileUrl, err?.message);
-        }
+    if (!fileUrl || typeof fileUrl !== "string") {
+        return {
+            fileUrl,
+            success: false,
+            reason: "empty_url",
+            local: { status: "skipped" },
+            cloud: { status: "skipped" },
+        };
     }
 
-    // 2. Delete local copy from disk (if exists and not a demo/sample file)
+    const result = {
+        fileUrl,
+        local: { status: "skipped" },
+        cloud: { status: "skipped" },
+        success: false,
+    };
+
+    // 1. Process Cloudinary
+    if (fileUrl.includes("res.cloudinary.com")) {
+        if (!isCloudinaryConfigured()) {
+            result.cloud = {
+                status: "not_configured",
+                message: "Cloudinary credentials not configured on server",
+            };
+        } else {
+            try {
+                const isImage = fileUrl.includes("/image/upload/");
+                const match = fileUrl.match(/\/upload\/(?:v\d+\/)?(schedulo\/.+)$/);
+                if (match && match[1]) {
+                    let publicId = match[1];
+                    if (isImage) {
+                        publicId = publicId.replace(/\.[^/.]+$/, "");
+                    }
+                    const res = await cloudinary.uploader.destroy(publicId, {
+                        resource_type: isImage ? "image" : "raw",
+                        invalidate: true,
+                    });
+                    if (res?.result === "ok") {
+                        result.cloud = { status: "deleted", publicId };
+                    } else if (res?.result === "not found") {
+                        result.cloud = { status: "not_found", publicId };
+                    } else {
+                        result.cloud = { status: "failed", publicId, rawResult: res?.result };
+                    }
+                } else {
+                    result.cloud = { status: "unmatched_pattern", fileUrl };
+                }
+            } catch (err) {
+                result.cloud = { status: "failed", error: err.message };
+                console.warn("Lỗi khi xóa file trên Cloudinary:", fileUrl, err?.message);
+            }
+        }
+    } else {
+        result.cloud = { status: "not_applicable" };
+    }
+
+    // 2. Process Local disk
     try {
         const rawFileName = path.basename(fileUrl.split("?")[0]);
         const sanitizedFileName = path.basename(decodeURIComponent(rawFileName));
@@ -1117,30 +1177,188 @@ async function deletePhysicalFile(fileUrl) {
             sanitizedFileName.startsWith("FSOFT-") ||
             sanitizedFileName.startsWith("WWF-");
 
-        if (!isProtected && sanitizedFileName) {
+        if (isProtected) {
+            result.local = { status: "protected", fileName: sanitizedFileName };
+        } else if (sanitizedFileName) {
             const imagePath = path.resolve(imageDirectory, sanitizedFileName);
+            const cvPath = path.resolve(cvDirectory, sanitizedFileName);
+            let targetPath = null;
+
             if (imagePath.startsWith(path.resolve(imageDirectory)) && fs.existsSync(imagePath)) {
-                await fs.promises.unlink(imagePath);
-                localDeleted = true;
+                targetPath = imagePath;
+            } else if (cvPath.startsWith(path.resolve(cvDirectory)) && fs.existsSync(cvPath)) {
+                targetPath = cvPath;
             }
 
-            const cvPath = path.resolve(cvDirectory, sanitizedFileName);
-            if (cvPath.startsWith(path.resolve(cvDirectory)) && fs.existsSync(cvPath)) {
-                await fs.promises.unlink(cvPath);
-                localDeleted = true;
+            if (targetPath) {
+                await fs.promises.unlink(targetPath);
+                result.local = { status: "deleted", fileName: sanitizedFileName };
+            } else {
+                result.local = { status: "not_found", fileName: sanitizedFileName };
             }
         }
     } catch (err) {
-        errors.push(`Local: ${err?.message}`);
+        result.local = { status: "failed", error: err.message };
         console.warn("Lỗi khi xóa file local:", fileUrl, err?.message);
     }
 
-    return {
-        success: errors.length === 0,
-        cloudDeleted,
-        localDeleted,
-        errors: errors.length > 0 ? errors : undefined,
+    // Determine overall success: No active failures on applicable destinations
+    const cloudOk = ["deleted", "not_found", "not_applicable"].includes(result.cloud.status);
+    const localOk = ["deleted", "not_found", "protected"].includes(result.local.status);
+    result.success = cloudOk && localOk;
+
+    return result;
+}
+
+async function cleanupCloudinaryOrphanFiles(referencedUrls) {
+    if (!isCloudinaryConfigured()) {
+        return { skipped: true, reason: "Cloudinary credentials not configured", deleted: [], failed: [] };
+    }
+
+    const deleted = [];
+    const failed = [];
+    try {
+        const referencedKeys = new Set();
+        for (const url of referencedUrls) {
+            if (url && typeof url === "string") {
+                const match = url.match(/\/upload\/(?:v\d+\/)?(schedulo\/.+)$/);
+                if (match && match[1]) {
+                    referencedKeys.add(match[1]);
+                    referencedKeys.add(match[1].replace(/\.[^/.]+$/, ""));
+                }
+            }
+        }
+
+        // 1. Scan images under schedulo/images/
+        try {
+            const imgRes = await cloudinary.api.resources({
+                type: "upload",
+                prefix: "schedulo/images/",
+                max_results: 500,
+            });
+            for (const res of imgRes.resources || []) {
+                const pubId = res.public_id;
+                if (!referencedKeys.has(pubId) && !pubId.includes("demo_")) {
+                    try {
+                        const delRes = await cloudinary.uploader.destroy(pubId, {
+                            resource_type: "image",
+                            invalidate: true,
+                        });
+                        if (delRes?.result === "ok" || delRes?.result === "not found") {
+                            deleted.push(pubId);
+                        } else {
+                            failed.push({ publicId: pubId, error: delRes?.result });
+                        }
+                    } catch (e) {
+                        failed.push({ publicId: pubId, error: e.message });
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Lỗi duyệt Cloudinary images:", e.message);
+            failed.push({ target: "schedulo/images", error: e.message });
+        }
+
+        // 2. Scan raw CV documents under schedulo/cv/
+        try {
+            const cvRes = await cloudinary.api.resources({
+                resource_type: "raw",
+                type: "upload",
+                prefix: "schedulo/cv/",
+                max_results: 500,
+            });
+            for (const res of cvRes.resources || []) {
+                const pubId = res.public_id;
+                if (
+                    !referencedKeys.has(pubId) &&
+                    !pubId.includes("CV_") &&
+                    !pubId.includes("FSOFT-") &&
+                    !pubId.includes("WWF-")
+                ) {
+                    try {
+                        const delRes = await cloudinary.uploader.destroy(pubId, {
+                            resource_type: "raw",
+                            invalidate: true,
+                        });
+                        if (delRes?.result === "ok" || delRes?.result === "not found") {
+                            deleted.push(pubId);
+                        } else {
+                            failed.push({ publicId: pubId, error: delRes?.result });
+                        }
+                    } catch (e) {
+                        failed.push({ publicId: pubId, error: e.message });
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Lỗi duyệt Cloudinary raw CVs:", e.message);
+            failed.push({ target: "schedulo/cv", error: e.message });
+        }
+    } catch (err) {
+        console.warn("Lỗi tổng thể khi quét Cloudinary orphan files:", err.message);
+        failed.push({ target: "overall", error: err.message });
+    }
+
+    return { deleted, failed };
+}
+
+async function cleanupLocalOrphanFiles(referencedFileNames) {
+    const deleted = [];
+    const failed = [];
+
+    const isProtected = (f) => {
+        return (
+            f === ".gitkeep" ||
+            f.startsWith("demo_") ||
+            f.startsWith("CV_") ||
+            f.startsWith("FSOFT-") ||
+            f.startsWith("WWF-")
+        );
     };
+
+    // 1. Scan imageDirectory (removes any unreferenced image, including legacy formats)
+    if (fs.existsSync(imageDirectory)) {
+        try {
+            const files = await fs.promises.readdir(imageDirectory);
+            for (const f of files) {
+                if (!isProtected(f) && !referencedFileNames.has(f)) {
+                    const fullPath = path.join(imageDirectory, f);
+                    try {
+                        await fs.promises.unlink(fullPath);
+                        deleted.push(`image/${f}`);
+                    } catch (err) {
+                        failed.push({ file: `image/${f}`, error: err.message });
+                        console.warn(`Lỗi xóa file rác local image/${f}:`, err.message);
+                    }
+                }
+            }
+        } catch (err) {
+            failed.push({ directory: "imageDirectory", error: err.message });
+        }
+    }
+
+    // 2. Scan cvDirectory (removes any unreferenced CV, including legacy formats)
+    if (fs.existsSync(cvDirectory)) {
+        try {
+            const files = await fs.promises.readdir(cvDirectory);
+            for (const f of files) {
+                if (!isProtected(f) && !referencedFileNames.has(f)) {
+                    const fullPath = path.join(cvDirectory, f);
+                    try {
+                        await fs.promises.unlink(fullPath);
+                        deleted.push(`CV/${f}`);
+                    } catch (err) {
+                        failed.push({ file: `CV/${f}`, error: err.message });
+                        console.warn(`Lỗi xóa file rác local CV/${f}:`, err.message);
+                    }
+                }
+            }
+        } catch (err) {
+            failed.push({ directory: "cvDirectory", error: err.message });
+        }
+    }
+
+    return { deleted, failed };
 }
 
 async function cleanupOrphanFiles() {
@@ -1148,51 +1366,82 @@ async function cleanupOrphanFiles() {
         const [profileRows] = await pool.query(
             "SELECT avatar_url, id_card_front_url, id_card_back_url, cv_url FROM user_profiles",
         );
-        const referencedFiles = new Set();
+        const referencedFileNames = new Set();
+        const allReferencedUrls = [];
+
         for (const row of profileRows) {
             for (const val of Object.values(row)) {
                 if (val && typeof val === "string") {
+                    allReferencedUrls.push(val);
                     const fname = path.basename(val.split("?")[0]);
-                    referencedFiles.add(decodeURIComponent(fname));
+                    referencedFileNames.add(decodeURIComponent(fname));
                 }
             }
         }
 
-        // Check local image directory
-        if (fs.existsSync(imageDirectory)) {
-            const files = await fs.promises.readdir(imageDirectory);
-            for (const f of files) {
-                if (
-                    f !== ".gitkeep" &&
-                    !f.startsWith("demo_") &&
-                    !referencedFiles.has(f) &&
-                    (f.startsWith("avatar-") || f.startsWith("id-card-front-") || f.startsWith("id-card-back-"))
-                ) {
-                    await fs.promises.unlink(path.join(imageDirectory, f)).catch(() => {});
-                }
-            }
-        }
+        // Clean up both local disk and Cloudinary
+        const localResult = await cleanupLocalOrphanFiles(referencedFileNames);
+        const cloudResult = await cleanupCloudinaryOrphanFiles(allReferencedUrls);
 
-        // Check local CV directory
-        if (fs.existsSync(cvDirectory)) {
-            const files = await fs.promises.readdir(cvDirectory);
-            for (const f of files) {
-                if (
-                    f !== ".gitkeep" &&
-                    !f.startsWith("CV_") &&
-                    !f.startsWith("FSOFT-") &&
-                    !f.startsWith("WWF-") &&
-                    !referencedFiles.has(f) &&
-                    f.startsWith("cv-")
-                ) {
-                    await fs.promises.unlink(path.join(cvDirectory, f)).catch(() => {});
-                }
-            }
-        }
+        return {
+            localDeleted: localResult.deleted,
+            localFailed: localResult.failed,
+            cloudDeleted: cloudResult.deleted,
+            cloudFailed: cloudResult.failed,
+            success: localResult.failed.length === 0 && cloudResult.failed.length === 0,
+        };
     } catch (err) {
         console.warn("Lỗi khi quét dọn tệp rác không còn tham chiếu:", err?.message);
+        return {
+            localDeleted: [],
+            localFailed: [{ error: err?.message }],
+            cloudDeleted: [],
+            cloudFailed: [],
+            success: false,
+        };
     }
 }
+
+async function retryFailedFileCleanups() {
+    try {
+        const [pendingRows] = await pool.query(
+            "SELECT id, user_id, file_url, attempts FROM file_cleanup_queue WHERE status IN ('pending', 'failed') AND attempts < 5 LIMIT 50",
+        );
+        const retried = [];
+        for (const row of pendingRows) {
+            const result = await deletePhysicalFile(row.file_url);
+            if (result.success) {
+                await pool.execute(
+                    "UPDATE file_cleanup_queue SET status = 'completed', attempts = attempts + 1, last_error = NULL WHERE id = ?",
+                    [row.id],
+                );
+                retried.push({ id: row.id, fileUrl: row.file_url, status: "completed" });
+            } else {
+                const errStr = JSON.stringify({ local: result.local, cloud: result.cloud });
+                await pool.execute(
+                    "UPDATE file_cleanup_queue SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?",
+                    [errStr, row.id],
+                );
+                retried.push({ id: row.id, fileUrl: row.file_url, status: "failed", error: errStr });
+            }
+        }
+        return retried;
+    } catch (err) {
+        console.warn("Lỗi khi thử lại xóa tệp từ queue:", err?.message);
+        return [];
+    }
+}
+
+// Admin endpoint to retry failed file cleanups on demand
+app.post("/api/admin/files/retry-cleanup", requireAdmin, async (_req, res) => {
+    try {
+        const retried = await retryFailedFileCleanups();
+        const orphanSweep = await cleanupOrphanFiles();
+        return res.json({ message: "Đã thực hiện thử lại dọn dẹp tệp.", retried, orphanSweep });
+    } catch (err) {
+        return res.status(500).json(formatError("Không thể thử lại dọn dẹp tệp.", err));
+    }
+});
 
 app.delete("/api/users/:id", requireAdmin, async (req, res) => {
     const userId = Number(req.params.id);
@@ -1229,6 +1478,16 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
             if (p.cv_url) filesToDelete.push(p.cv_url);
         }
 
+        // Persist cleanup tasks in database queue BEFORE deleting the user account
+        const queueEntries = [];
+        for (const fileUrl of filesToDelete) {
+            const [qRes] = await connection.execute(
+                "INSERT INTO file_cleanup_queue (user_id, file_url, status) VALUES (?, ?, 'pending')",
+                [userId, fileUrl],
+            );
+            queueEntries.push({ id: qRes.insertId, fileUrl });
+        }
+
         // Foreign keys on user_profiles, work_schedules and work_history all use
         // ON DELETE CASCADE, so removing the users row deletes the profile, the
         // weekly schedule and the work history together.
@@ -1238,20 +1497,35 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
 
         // Clean up physical files from local disk and Cloudinary
         const fileCleanupResults = [];
-        for (const fileUrl of filesToDelete) {
-            const result = await deletePhysicalFile(fileUrl);
-            fileCleanupResults.push({ fileUrl, ...result });
+        for (const entry of queueEntries) {
+            const result = await deletePhysicalFile(entry.fileUrl);
+            fileCleanupResults.push(result);
+
+            // Update persistent queue record with final result
+            if (result.success) {
+                await pool.execute(
+                    "UPDATE file_cleanup_queue SET status = 'completed', attempts = attempts + 1, last_error = NULL WHERE id = ?",
+                    [entry.id],
+                );
+            } else {
+                const errStr = JSON.stringify({ local: result.local, cloud: result.cloud });
+                await pool.execute(
+                    "UPDATE file_cleanup_queue SET status = 'failed', attempts = attempts + 1, last_error = ? WHERE id = ?",
+                    [errStr, entry.id],
+                );
+            }
         }
 
         // Sweep and clean up any remaining orphan unreferenced files
-        await cleanupOrphanFiles();
+        const orphanCleanup = await cleanupOrphanFiles();
 
-        const allFilesCleaned = fileCleanupResults.every((r) => r.success);
+        const allFilesCleaned = fileCleanupResults.every((r) => r.success) && orphanCleanup.success;
         return res.json({
             id: String(userId),
             deleted: true,
             filesCleaned: allFilesCleaned,
             fileCleanupResults,
+            orphanCleanup,
         });
     } catch (error) {
         try {

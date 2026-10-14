@@ -508,10 +508,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <a
                                                     href={user.cvFile ? getAuthorizedFileUrl(user.cvFile) : "#"}
+                                                    download={
+                                                        Boolean((cvDisplayName || user.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
+                                                            ? (cvDisplayName || "CV.docx")
+                                                            : undefined
+                                                    }
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="w-8.5 h-8.5 bg-white hover:bg-blue-50/70 border border-blue-600 text-blue-600 rounded-xl transition-colors flex items-center justify-center cursor-pointer shadow-2xs no-underline"
-                                                    title="Xem CV trong tab mới">
+                                                    title={
+                                                        Boolean((cvDisplayName || user.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
+                                                            ? "Tải tệp CV Word về máy"
+                                                            : "Xem CV trong tab mới"
+                                                    }>
                                                     <span className="material-symbols-outlined text-[18px]">
                                                         visibility
                                                     </span>

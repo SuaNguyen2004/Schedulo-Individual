@@ -219,10 +219,19 @@ export const ViewRequestModal: React.FC<ViewRequestModalProps> = ({ request, onC
                                                 href={
                                                     request.cvFile ? getAuthorizedFileUrl(request.cvFile) : downloadHref
                                                 }
+                                                download={
+                                                    Boolean((request.cvFileName || request.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
+                                                        ? (request.cvFileName || "Ho_so_CV.docx")
+                                                        : undefined
+                                                }
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 aria-label="Xem file"
-                                                title="Xem CV trong tab mới"
+                                                title={
+                                                    Boolean((request.cvFileName || request.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
+                                                        ? "Tải tệp CV Word về máy"
+                                                        : "Xem CV trong tab mới"
+                                                }
                                                 className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-700 shadow-2xs transition-colors hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 no-underline">
                                                 <span className="material-symbols-outlined text-[18px]">
                                                     visibility

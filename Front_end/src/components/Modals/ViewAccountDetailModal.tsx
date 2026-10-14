@@ -417,10 +417,19 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                         <div className="flex items-center gap-1.5 shrink-0">
                                             <a
                                                 href={account.cvFile ? getAuthorizedFileUrl(account.cvFile) : "#"}
+                                                download={
+                                                    Boolean((account.cvFileName || account.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
+                                                        ? (account.cvFileName || "CV.docx")
+                                                        : undefined
+                                                }
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="px-3 py-1.5 bg-white hover:bg-blue-50/70 border border-blue-600 text-blue-600 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap no-underline"
-                                                title="Xem CV trong tab mới">
+                                                title={
+                                                    Boolean((account.cvFileName || account.cvFile || "").toLowerCase().match(/\.(doc|docx)($|\?)/))
+                                                        ? "Tải tệp CV Word về máy"
+                                                        : "Xem CV trong tab mới"
+                                                }>
                                                 <span className="material-symbols-outlined text-[16px]">
                                                     visibility
                                                 </span>
