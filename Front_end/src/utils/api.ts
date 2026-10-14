@@ -145,6 +145,9 @@ export async function registerWithDatabase(payload: RegistrationPayload): Promis
         body: JSON.stringify(payload),
     });
     if (!response.ok) {
+        if (response.status === 413) {
+            throw new Error("Dung lượng tệp đính kèm quá lớn (tối đa 25MB). Vui lòng chọn tệp nhỏ hơn.");
+        }
         const data = (await response.json().catch(() => null)) as { message?: string; detail?: string } | null;
         throw new Error(data?.detail || data?.message || "Không thể gửi yêu cầu đăng ký.");
     }
