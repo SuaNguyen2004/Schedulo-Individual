@@ -106,6 +106,32 @@ const formatFullDate = (date: Date) =>
 
 const getShiftMeta = (type: ShiftType) => SHIFT_OPTIONS.find((option) => option.type === type) || SHIFT_OPTIONS[0];
 
+const getVietnamNow = (): Date => {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+    });
+    const parts = formatter.formatToParts(new Date());
+    const map: Record<string, number> = {};
+    for (const p of parts) {
+        if (p.type !== "literal") {
+            map[p.type] = parseInt(p.value, 10);
+        }
+    }
+    return new Date(map.year, map.month - 1, map.day, map.hour || 0, map.minute || 0, map.second || 0);
+};
+
+const getVietnamToday = (): Date => {
+    const vn = getVietnamNow();
+    return new Date(vn.getFullYear(), vn.getMonth(), vn.getDate());
+};
+
 const getDayIndex = (date: Date) => (date.getDay() + 6) % 7;
 
 export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
@@ -115,8 +141,26 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     onUpdateShifts,
     onShowToast,
 }) => {
-    const today = useMemo(() => startOfDay(new Date()), []);
+    const [today, setToday] = useState<Date>(() => getVietnamToday());
     const todayISO = toISODate(today);
+
+    // Auto-refresh today when staying open across midnight 00:00 or across Monday
+    useEffect(() => {
+        const checkMidnightChange = () => {
+            const currentVn = getVietnamToday();
+            if (toISODate(currentVn) !== toISODate(today)) {
+                setToday(currentVn);
+            }
+        };
+        const interval = setInterval(checkMidnightChange, 15000);
+        window.addEventListener("focus", checkMidnightChange);
+        document.addEventListener("visibilitychange", checkMidnightChange);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener("focus", checkMidnightChange);
+            document.removeEventListener("visibilitychange", checkMidnightChange);
+        };
+    }, [today]);
 
     const nextMondayDate = useMemo(() => {
         const mondayOffset = (startOfDay(today).getDay() + 6) % 7;
@@ -561,7 +605,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setCalendarDate(today)}
+                                        onClick={() => { const fresh = getVietnamToday(); setToday(fresh); setCalendarDate(fresh); }}
                                         className="ml-1 px-2.5 py-1 text-xs font-bold rounded-lg text-blue-700 hover:bg-white transition-colors cursor-pointer"
                                         title="Về tuần hiện tại">
                                         Hiện tại

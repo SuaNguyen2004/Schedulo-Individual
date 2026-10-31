@@ -1868,6 +1868,7 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
 
     const connection = await pool.getConnection();
     let queueEntries = [];
+    let earlyError = null;
     try {
         await withUserLock(connection, userId, async () => {
             await connection.beginTransaction();
@@ -1876,11 +1877,13 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
         const [target] = await connection.execute("SELECT id, role FROM users WHERE id = ? LIMIT 1", [userId]);
         if (target.length === 0) {
             await connection.rollback();
-            return res.status(404).json({ message: "Không tìm thấy tài khoản." });
+            earlyError = { status: 404, message: "Không tìm thấy tài khoản." };
+            return;
         }
         if (target[0].role !== "collaborator") {
             await connection.rollback();
-            return res.status(400).json({ message: "Không thể xóa tài khoản Admin." });
+            earlyError = { status: 400, message: "Không thể xóa tài khoản Admin." };
+            return;
         }
 
         // Query physical file URLs before deleting the user records from database
@@ -1921,6 +1924,10 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
         return res.status(500).json(formatError("Không thể xóa tài khoản.", error));
     } finally {
         connection.release();
+    }
+
+    if (earlyError) {
+        return res.status(earlyError.status).json({ message: earlyError.message });
     }
 
     // Post-commit physical file deletion:

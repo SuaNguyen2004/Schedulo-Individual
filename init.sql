@@ -203,8 +203,10 @@ DROP TABLE IF EXISTS `file_cleanup_queue`;
 CREATE TABLE `file_cleanup_queue` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint DEFAULT NULL,
-  `file_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_url` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` enum('pending','completed','failed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `attempts` int NOT NULL DEFAULT '0',
+  `last_error` text COLLATE utf8mb4_unicode_ci,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

@@ -18,8 +18,10 @@ CREATE TABLE IF NOT EXISTS `user_weekly_patterns` (
 CREATE TABLE IF NOT EXISTS `file_cleanup_queue` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint DEFAULT NULL,
-  `file_url` varchar(500) NOT NULL,
+  `file_url` varchar(1000) NOT NULL,
   `status` enum('pending','completed','failed') NOT NULL DEFAULT 'pending',
+  `attempts` int NOT NULL DEFAULT '0',
+  `last_error` text,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

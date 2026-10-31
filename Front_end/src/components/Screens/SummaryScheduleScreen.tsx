@@ -42,6 +42,32 @@ const formatShortDate = (date: Date) =>
 
 const formatDateWithYear = (date: Date) => `${formatShortDate(date)}/${date.getFullYear()}`;
 
+const getVietnamNow = (): Date => {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+    });
+    const parts = formatter.formatToParts(new Date());
+    const map: Record<string, number> = {};
+    for (const p of parts) {
+        if (p.type !== "literal") {
+            map[p.type] = parseInt(p.value, 10);
+        }
+    }
+    return new Date(map.year, map.month - 1, map.day, map.hour || 0, map.minute || 0, map.second || 0);
+};
+
+const getVietnamToday = (): Date => {
+    const vn = getVietnamNow();
+    return new Date(vn.getFullYear(), vn.getMonth(), vn.getDate());
+};
+
 const WEEKDAYS = [
     { index: 0, short: "T2", label: "Thứ 2" },
     { index: 1, short: "T3", label: "Thứ 3" },
@@ -57,8 +83,26 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
     onViewAccountDetail,
     onShowToast,
 }) => {
-    const today = useMemo(() => startOfDay(new Date()), []);
+    const [today, setToday] = useState<Date>(() => getVietnamToday());
     const todayISO = toISODate(today);
+
+    // Auto-refresh today when staying open across midnight 00:00 or across Monday
+    React.useEffect(() => {
+        const checkMidnightChange = () => {
+            const currentVn = getVietnamToday();
+            if (toISODate(currentVn) !== toISODate(today)) {
+                setToday(currentVn);
+            }
+        };
+        const interval = setInterval(checkMidnightChange, 15000);
+        window.addEventListener("focus", checkMidnightChange);
+        document.addEventListener("visibilitychange", checkMidnightChange);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener("focus", checkMidnightChange);
+            document.removeEventListener("visibilitychange", checkMidnightChange);
+        };
+    }, [today]);
 
     // View mode: 'week' or 'month'
     const [calendarView, setCalendarView] = useState<CalendarView>("week");
@@ -95,6 +139,13 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
         "Tháng 11",
         "Tháng 12",
     ];
+
+    // Shift selector helpers declared BEFORE totalCTVsInWeek useMemo
+    const getAssignedCTVs = (workDate: string, type: "morning" | "afternoon") =>
+        getAssignedCTVsForDate(shifts, accounts, workDate, type);
+
+    const getHistoryCTVs = (workDate: string, type: "morning" | "afternoon") =>
+        getAssignedCTVsForDate(history, accounts, workDate, type);
 
     // Week navigation handlers
     const currentWeekMonday = useMemo(() => startOfWeek(today), [today]);
@@ -140,7 +191,9 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
     };
 
     const handleTodayWeek = () => {
-        setCurrentWeekDate(today);
+        const freshToday = getVietnamToday();
+        setToday(freshToday);
+        setCurrentWeekDate(freshToday);
     };
 
     // Month navigation handlers
@@ -162,11 +215,6 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
         }
     };
 
-    const getAssignedCTVs = (workDate: string, type: "morning" | "afternoon") =>
-        getAssignedCTVsForDate(shifts, accounts, workDate, type);
-
-    const getHistoryCTVs = (workDate: string, type: "morning" | "afternoon") =>
-        getAssignedCTVsForDate(history, accounts, workDate, type);
 
     // Calculate Month Calendar Weeks & Days (Mon-Fri)
     const calendarWeeks = useMemo(() => {
