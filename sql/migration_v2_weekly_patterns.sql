@@ -1,5 +1,6 @@
--- Migration: Add user_weekly_patterns table for recurring weekly schedule patterns
+-- Migration: Add user_weekly_patterns and file_cleanup_queue tables
 -- Preserves all existing tables and data.
+
 CREATE TABLE IF NOT EXISTS `user_weekly_patterns` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
@@ -14,3 +15,13 @@ CREATE TABLE IF NOT EXISTS `user_weekly_patterns` (
   CONSTRAINT `fk_patterns_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `file_cleanup_queue` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint DEFAULT NULL,
+  `file_url` varchar(500) NOT NULL,
+  `status` enum('pending','completed','failed') NOT NULL DEFAULT 'pending',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_queue_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

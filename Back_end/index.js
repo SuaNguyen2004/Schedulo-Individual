@@ -628,8 +628,8 @@ app.post("/api/auth/login", async (req, res) => {
         return res.status(400).json({ message: "Email không đúng định dạng hợp lệ." });
     }
 
-    if (password.length > 64) {
-        return res.status(400).json({ message: "Mật khẩu không được vượt quá 64 ký tự." });
+    if (password.length > 20) {
+        return res.status(400).json({ message: "Mật khẩu không được vượt quá 20 ký tự." });
     }
 
     try {
@@ -725,8 +725,8 @@ app.post("/api/auth/register", async (req, res) => {
     if (!emailRegex.test(email.trim())) {
         return res.status(400).json({ message: "Email không đúng định dạng hợp lệ." });
     }
-    if (password.length < 6 || password.length > 64) {
-        return res.status(400).json({ message: "Mật khẩu phải từ 6 đến 64 ký tự." });
+    if (password.length < 6 || password.length > 20) {
+        return res.status(400).json({ message: "Mật khẩu phải từ 6 đến 20 ký tự." });
     }
     if (!dobValue || typeof dobValue !== "string" || !dobValue.trim()) {
         return res.status(400).json({ message: "Vui lòng chọn ngày sinh." });
@@ -894,8 +894,8 @@ app.patch("/api/auth/reset-password", requireAdmin, async (req, res) => {
     if (!userId || typeof newPassword !== "string") {
         return res.status(400).json({ message: "Thiếu thông tin cần thiết." });
     }
-    if (newPassword.length < 6 || newPassword.length > 64) {
-        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 64 ký tự." });
+    if (newPassword.length < 6 || newPassword.length > 20) {
+        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 20 ký tự." });
     }
     try {
         const [targetUsers] = await pool.execute("SELECT id, role FROM users WHERE id = ? LIMIT 1", [String(userId)]);
@@ -930,8 +930,8 @@ app.patch("/api/auth/change-password", requireAuth, async (req, res) => {
     if (String(req.user.id) !== String(userId) && req.user.role.toLowerCase() !== "admin") {
         return res.status(403).json({ message: "Bạn không có quyền đổi mật khẩu của tài khoản này." });
     }
-    if (newPassword.length < 6 || newPassword.length > 64) {
-        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 64 ký tự." });
+    if (newPassword.length < 6 || newPassword.length > 20) {
+        return res.status(400).json({ message: "Mật khẩu mới phải từ 6 đến 20 ký tự." });
     }
     try {
         const [rows] = await pool.execute("SELECT id, password_hash FROM users WHERE id = ? LIMIT 1", [String(userId)]);
@@ -1290,6 +1290,22 @@ app.patch("/api/admin/notes", requireAdmin, async (req, res) => {
     }
 });
 
+// User-level mutual exclusion lock to prevent race conditions with maintain12WeekSchedules
+async function withUserLock(connection, userId, callback) {
+    const lockName = `schedulo_user_lock_${userId}`;
+    const [lockRows] = await connection.query("SELECT GET_LOCK(?, 15) as lk", [lockName]);
+    const acquired = lockRows[0]?.lk === 1;
+    if (!acquired) {
+        throw new Error(`Không thể lấy khóa tài nguyên người dùng (${userId}).`);
+    }
+    try {
+        return await callback();
+    } finally {
+        try {
+            await connection.query("SELECT RELEASE_LOCK(?)", [lockName]);
+        } catch (_) {}
+    }
+}
 app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
     const userId = Number(req.params.id);
     const { status } = req.body || {};
@@ -1299,28 +1315,30 @@ app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
 
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        return await withUserLock(connection, userId, async () => {
+            await connection.beginTransaction();
 
-        const [result] = await connection.execute(
-            "UPDATE users SET status = ?, updated_at = NOW() WHERE id = ? AND role = 'collaborator'",
-            [status, userId],
-        );
-        if (result.affectedRows === 0) {
-            await connection.rollback();
-            return res.status(404).json({ message: "Không tìm thấy tài khoản Collaborator." });
-        }
+            const [result] = await connection.execute(
+                "UPDATE users SET status = ?, updated_at = NOW() WHERE id = ? AND role = 'collaborator'",
+                [status, userId],
+            );
+            if (result.affectedRows === 0) {
+                await connection.rollback();
+                return res.status(404).json({ message: "Không tìm thấy tài khoản Collaborator." });
+            }
 
-        if (status === "disabled") {
-            const todayVN = getVietnamToday();
-            await promoteElapsedSchedulesToHistory(connection, userId);
-            // Delete shifts from today onward; past history before today is preserved
-            await connection.execute("DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?", [userId, todayVN]);
-            // Stop recurring weekly pattern so scheduler will not generate new shifts
-            await connection.execute("UPDATE user_weekly_patterns SET status = 'cancelled' WHERE user_id = ?", [userId]);
-        }
+            if (status === "disabled") {
+                const todayVN = getVietnamToday();
+                await promoteElapsedSchedulesToHistory(connection, userId);
+                // Delete shifts from today onward; past history before today is preserved
+                await connection.execute("DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?", [userId, todayVN]);
+                // Stop recurring weekly pattern so scheduler will not generate new shifts
+                await connection.execute("UPDATE user_weekly_patterns SET status = 'cancelled' WHERE user_id = ?", [userId]);
+            }
 
-        await connection.commit();
-        return res.json({ id: String(userId), status });
+            await connection.commit();
+            return res.json({ id: String(userId), status });
+        });
     } catch (error) {
         try {
             await connection.rollback();
@@ -1851,7 +1869,8 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
     const connection = await pool.getConnection();
     let queueEntries = [];
     try {
-        await connection.beginTransaction();
+        await withUserLock(connection, userId, async () => {
+            await connection.beginTransaction();
 
         // Only allow deleting collaborator accounts, never the admin.
         const [target] = await connection.execute("SELECT id, role FROM users WHERE id = ? LIMIT 1", [userId]);
@@ -1887,13 +1906,14 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
             queueEntries.push({ id: qRes.insertId, fileUrl });
         }
 
-        // Explicitly clean up weekly patterns, schedules, history and user
-        await connection.execute("DELETE FROM user_weekly_patterns WHERE user_id = ?", [userId]);
-        await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [userId]);
-        await connection.execute("DELETE FROM work_history WHERE user_id = ?", [userId]);
-        await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
+            // Explicitly clean up weekly patterns, schedules, history and user
+            await connection.execute("DELETE FROM user_weekly_patterns WHERE user_id = ?", [userId]);
+            await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [userId]);
+            await connection.execute("DELETE FROM work_history WHERE user_id = ?", [userId]);
+            await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
 
-        await connection.commit();
+            await connection.commit();
+        });
     } catch (error) {
         try {
             await connection.rollback();
@@ -2010,7 +2030,8 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const connection = await pool.getConnection();
         try {
-            await connection.beginTransaction();
+            return await withUserLock(connection, userId, async () => {
+                await connection.beginTransaction();
 
         const [targetUserRows] = await connection.execute(
             "SELECT id, role, status FROM users WHERE id = ? LIMIT 1",
@@ -2091,13 +2112,14 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
             }
         }
 
-        await connection.commit();
-        return res.json({
-            message: `Đã lưu mẫu lịch làm việc thành công. Áp dụng từ Thứ Hai ngày ${formatDateVn(nextMonday)}. Lịch tuần hiện tại được giữ nguyên.`,
-            effectiveDate: nextMonday,
-            pattern: uniquePattern,
-            registeredCount: inserted,
-        });
+                await connection.commit();
+                return res.json({
+                    message: `Đã lưu mẫu lịch làm việc thành công. Áp dụng từ Thứ Hai ngày ${formatDateVn(nextMonday)}. Lịch tuần hiện tại được giữ nguyên.`,
+                    effectiveDate: nextMonday,
+                    pattern: uniquePattern,
+                    registeredCount: inserted,
+                });
+            });
         } catch (error) {
             try {
                 await connection.rollback();
@@ -2644,72 +2666,90 @@ async function promoteElapsedSchedulesToHistory(runner, userId = null) {
 // Maintains current week + 12 future weeks (13 weeks total) for active collaborators
 // according to active recurring patterns. Idempotent and safe to run on boot or hourly.
 async function maintain12WeekSchedules(runner = pool) {
+    let connection = null;
     try {
+        connection = await pool.getConnection();
         const todayVN = getVietnamToday();
         const currentMonday = getIsoMonday(todayVN);
 
-        const [shiftTypeRows] = await runner.query(
+        const [shiftTypeRows] = await connection.query(
             "SELECT id, code FROM shift_types WHERE code IN ('morning', 'afternoon') AND is_active = 1",
         );
         const shiftTypeIdByCode = new Map(shiftTypeRows.map((r) => [r.code, r.id]));
         if (shiftTypeIdByCode.size === 0) return;
 
-        const [activeUsers] = await runner.query(
+        const [activeUsers] = await connection.query(
             "SELECT id FROM users WHERE role = 'collaborator' AND status = 'active'",
         );
 
         for (const user of activeUsers) {
             const userId = user.id;
-            const [patterns] = await runner.query(
-                "SELECT effective_week_start, pattern_json, status FROM user_weekly_patterns WHERE user_id = ? ORDER BY effective_week_start ASC",
-                [userId],
-            );
-            if (patterns.length === 0) continue;
+            await withUserLock(connection, userId, async () => {
+                // 1. RE-VERIFY user active status under user lock
+                const [uRows] = await connection.query(
+                    "SELECT id, status FROM users WHERE id = ? AND role = 'collaborator' AND status = 'active' LIMIT 1",
+                    [userId],
+                );
+                if (uRows.length === 0) {
+                    // User was disabled or deleted in the meantime! Do NOT generate any shifts!
+                    return;
+                }
 
-            for (let w = 0; w <= 12; w++) {
-                const targetMonday = addWeeksIso(currentMonday, w);
+                // 2. Fetch fresh patterns under user lock
+                const [patterns] = await connection.query(
+                    "SELECT effective_week_start, pattern_json, status FROM user_weekly_patterns WHERE user_id = ? ORDER BY effective_week_start ASC",
+                    [userId],
+                );
+                if (patterns.length === 0) return;
 
-                let effectivePattern = null;
-                for (const p of patterns) {
-                    const pStart = toIsoDate(p.effective_week_start);
-                    if (pStart <= targetMonday) {
-                        effectivePattern = p;
+                // 3. For each week from current week to 12 weeks ahead
+                for (let w = 0; w <= 12; w++) {
+                    const targetMonday = addWeeksIso(currentMonday, w);
+
+                    let effectivePattern = null;
+                    for (const p of patterns) {
+                        const pStart = toIsoDate(p.effective_week_start);
+                        if (pStart <= targetMonday) {
+                            effectivePattern = p;
+                        }
+                    }
+
+                    if (!effectivePattern || effectivePattern.status !== "active") {
+                        continue;
+                    }
+
+                    let slots = [];
+                    try {
+                        slots = typeof effectivePattern.pattern_json === "string"
+                            ? JSON.parse(effectivePattern.pattern_json)
+                            : effectivePattern.pattern_json;
+                    } catch (_) {
+                        continue;
+                    }
+                    if (!Array.isArray(slots) || slots.length === 0) continue;
+
+                    for (const slot of slots) {
+                        const dayOfWeek = Number(slot.dayOfWeek);
+                        if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 4) continue;
+                        const shiftTypeId = shiftTypeIdByCode.get(slot.shiftType);
+                        if (!shiftTypeId) continue;
+
+                        const workDate = addDaysIso(targetMonday, dayOfWeek);
+                        if (w === 0 && workDate < todayVN) continue;
+
+                        await connection.query(
+                            `INSERT IGNORE INTO work_schedules (user_id, shift_type_id, week_start_date, work_date, status)
+                             VALUES (?, ?, ?, ?, 'registered')`,
+                            [userId, shiftTypeId, targetMonday, workDate],
+                        );
                     }
                 }
-
-                if (!effectivePattern || effectivePattern.status !== "active") {
-                    continue;
-                }
-
-                let slots = [];
-                try {
-                    slots = typeof effectivePattern.pattern_json === "string"
-                        ? JSON.parse(effectivePattern.pattern_json)
-                        : effectivePattern.pattern_json;
-                } catch (_) {
-                    continue;
-                }
-                if (!Array.isArray(slots) || slots.length === 0) continue;
-
-                for (const slot of slots) {
-                    const dayOfWeek = Number(slot.dayOfWeek);
-                    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 4) continue;
-                    const shiftTypeId = shiftTypeIdByCode.get(slot.shiftType);
-                    if (!shiftTypeId) continue;
-
-                    const workDate = addDaysIso(targetMonday, dayOfWeek);
-                    if (w === 0 && workDate < todayVN) continue;
-
-                    await runner.query(
-                        `INSERT IGNORE INTO work_schedules (user_id, shift_type_id, week_start_date, work_date, status)
-                         VALUES (?, ?, ?, ?, 'registered')`,
-                        [userId, shiftTypeId, targetMonday, workDate],
-                    );
-                }
-            }
+            });
         }
     } catch (err) {
         console.error("maintain12WeekSchedules error:", err?.message || err);
+    } finally {
+        if (connection) connection.release();
     }
 }
 

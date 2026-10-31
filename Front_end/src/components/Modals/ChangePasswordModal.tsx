@@ -31,8 +31,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
         }
         if (!newPassword.trim()) {
             newErrors.newPassword = "Vui lòng nhập mật khẩu mới!";
-        } else if (newPassword.length < 6 || newPassword.length > 64) {
-            newErrors.newPassword = "Mật khẩu mới phải từ 6 đến 64 ký tự!";
+        } else if (newPassword.length < 6 || newPassword.length > 20) {
+            newErrors.newPassword = "Mật khẩu mới phải từ 6 đến 20 ký tự!";
         }
         if (!confirmPassword.trim()) {
             newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu mới!";
@@ -129,7 +129,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
                                     if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: undefined }));
                                 }}
                                 placeholder="Nhập mật khẩu mới"
-                                maxLength={64}
+                                maxLength={20}
                                 autoComplete="new-password"
                                 className={`w-full pl-3.5 pr-10 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none h-[44px] transition-colors ${
                                     errors.newPassword
@@ -166,7 +166,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
                                         setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                                 }}
                                 placeholder="Nhập lại mật khẩu mới"
-                                maxLength={64}
+                                maxLength={20}
                                 autoComplete="new-password"
                                 className={`w-full pl-3.5 pr-10 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none h-[44px] transition-colors ${
                                     errors.confirmPassword

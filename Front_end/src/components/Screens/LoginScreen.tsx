@@ -271,8 +271,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
         if (!cvFile) errors.cvFile = "Vui lòng tải file CV lên!";
         if (!regPassword) {
             errors.regPassword = "Vui lòng nhập mật khẩu!";
-        } else if (regPassword.length < 6 || regPassword.length > 64) {
-            errors.regPassword = "Mật khẩu phải từ 6 đến 64 ký tự!";
+        } else if (regPassword.length < 6 || regPassword.length > 20) {
+            errors.regPassword = "Mật khẩu phải từ 6 đến 20 ký tự!";
         }
 
         if (!regConfirmPassword) {
@@ -1020,7 +1020,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                 clearRegError("regPassword");
                                             }}
                                             placeholder="Nhập mật khẩu"
-                                            maxLength={64}
+                                            maxLength={20}
                                             className={`w-full pl-3.5 pr-9 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
                                                 regErrors.regPassword
                                                     ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
@@ -1058,7 +1058,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                                                 clearRegError("regConfirmPassword");
                                             }}
                                             placeholder="Nhập lại mật khẩu"
-                                            maxLength={64}
+                                            maxLength={20}
                                             className={`w-full pl-3.5 pr-9 py-2 bg-[#F8FAFC] border rounded-xl text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 h-[44px] transition-colors ${
                                                 regErrors.regConfirmPassword
                                                     ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20"
