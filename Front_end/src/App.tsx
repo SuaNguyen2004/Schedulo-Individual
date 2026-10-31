@@ -221,7 +221,15 @@ export const App: React.FC = () => {
                 }));
             }
         }
-    }, [accounts, isLoggedIn, currentUser.id, currentUser.email, currentUser.isCancelledNextWeek, currentUser.nextPattern, currentUser.currentPattern]);
+    }, [
+        accounts,
+        isLoggedIn,
+        currentUser.id,
+        currentUser.email,
+        currentUser.isCancelledNextWeek,
+        currentUser.nextPattern,
+        currentUser.currentPattern,
+    ]);
 
     // Periodic polling to sync account status live across sessions (optimized interval + pause on background tab)
     useEffect(() => {
@@ -585,7 +593,9 @@ export const App: React.FC = () => {
             const next = { ...prev, ...updated, ...(nextInitials ? { initials: nextInitials } : {}) };
             setAccounts((prevAccounts) =>
                 prevAccounts.map((acc) =>
-                    acc.id === next.id ? { ...acc, ...updated, ...(nextInitials ? { initials: nextInitials } : {}) } : acc,
+                    acc.id === next.id
+                        ? { ...acc, ...updated, ...(nextInitials ? { initials: nextInitials } : {}) }
+                        : acc,
                 ),
             );
             return next;
@@ -603,9 +613,7 @@ export const App: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="w-5 h-5 border-2 border-[#002046] border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm font-semibold text-slate-600">
-                            Đang kết nối và đồng bộ dữ liệu...
-                        </span>
+                        <span className="text-sm font-semibold text-slate-600">Đang kết nối và đồng bộ dữ liệu...</span>
                     </div>
                 </div>
             </div>

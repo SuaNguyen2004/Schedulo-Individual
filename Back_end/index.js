@@ -1330,8 +1330,8 @@ app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
             if (status === "disabled") {
                 const todayVN = getVietnamToday();
                 await promoteElapsedSchedulesToHistory(connection, userId);
-                // Delete shifts from today onward; past history before today is preserved
-                await connection.execute("DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?", [userId, todayVN]);
+                // When account is disabled, remove all its entries from work_schedules (past history is already preserved in work_history)
+                await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [userId]);
                 // Stop recurring weekly pattern so scheduler will not generate new shifts
                 await connection.execute("UPDATE user_weekly_patterns SET status = 'cancelled' WHERE user_id = ?", [userId]);
             }
@@ -2189,6 +2189,10 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
       ORDER BY u.id DESC
     `);
 
+        const todayVN = getVietnamToday();
+        const currentMonday = getIsoMonday(todayVN);
+        const nextMonday = getNextMonday(todayVN);
+
         const [schedules] = await pool.query(`
       SELECT ws.id, ws.user_id, ws.work_date, ws.week_start_date,
              st.code AS shift_code, up.full_name, up.phone, up.avatar_url
@@ -2197,8 +2201,9 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
       JOIN users u ON u.id = ws.user_id
       LEFT JOIN user_profiles up ON up.user_id = u.id
       WHERE ws.status = 'registered' AND u.status = 'active'
+        AND ws.work_date >= ?
       ORDER BY ws.work_date, st.sort_order, ws.id
-    `);
+    `, [currentMonday]);
 
         // History view: Admin can see history for all accounts (including disabled CTVs).
         const [history] = await pool.query(`
@@ -2211,10 +2216,6 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
       WHERE (? = 1 OR u.status = 'active' OR u.id = ?)
       ORDER BY wh.work_date, st.sort_order, wh.id
     `, [isAdmin ? 1 : 0, req.user?.id || 0]);
-
-        const todayVN = getVietnamToday();
-        const currentMonday = getIsoMonday(todayVN);
-        const nextMonday = getNextMonday(todayVN);
 
         const [allPatterns] = await pool.query(
             "SELECT user_id, pattern_json, effective_week_start, status FROM user_weekly_patterns ORDER BY user_id, effective_week_start ASC"

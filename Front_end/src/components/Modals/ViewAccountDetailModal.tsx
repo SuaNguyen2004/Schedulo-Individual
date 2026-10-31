@@ -23,6 +23,20 @@ const WEEKDAYS = [
     { index: 4, dayName: "Thứ 6", shortName: "T6", dateStr: "10/07" },
 ];
 
+const startOfWeek = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const dayOffset = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - dayOffset);
+    return d;
+};
+
+const addDays = (date: Date, amount: number) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + amount);
+    return d;
+};
+
 export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
     account,
     shifts = [],
@@ -95,6 +109,8 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
         }
         return userRegisteredStartDateISO;
     }, [userRegisteredStartDateISO]);
+
+    const currentWeekMonday = useMemo(() => startOfWeek(new Date()), []);
 
     if (!account) return null;
 
@@ -202,25 +218,47 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
 
     const hasExplicitShifts = userShiftsInArray.length > 0;
 
+
     // Helper to get shift status for a specific day and shift type
     const getShiftStatus = (dayIndex: number, shiftType: "morning" | "afternoon") => {
-        if (hasExplicitShifts) {
-            const match = shifts.find(
-                (s) =>
-                    s.dayIndex === dayIndex &&
-                    s.shiftType === shiftType &&
-                    (s.assignedCTVs || []).some((c) => c.id === account.id || c.name === account.name),
+        if (!account) return "off";
+
+        // 1. Check if user has an assigned shift in the current week
+        const targetDate = addDays(currentWeekMonday, dayIndex);
+        const targetDateISO = toISODate(targetDate);
+        const currentWeekShift = shifts.find(
+            (s) =>
+                s.workDate === targetDateISO &&
+                s.shiftType === shiftType &&
+                (s.assignedCTVs || []).some((c) => String(c.id) === String(account.id) || c.name === account.name),
+        );
+        if (currentWeekShift) {
+            const ctvObj = (currentWeekShift.assignedCTVs || []).find(
+                (c) => String(c.id) === String(account.id) || c.name === account.name,
             );
-            if (match) {
-                const ctvObj = (match.assignedCTVs || []).find((c) => c.id === account.id || c.name === account.name);
-                return ctvObj?.status === "Chờ duyệt" ? "pending" : "working";
-            }
-            return "off";
+            return ctvObj?.status === "Chờ duyệt" ? "pending" : "working";
         }
 
-        // No explicitly registered shifts — show empty schedule
+        // 2. If no concrete shift in current week, check user's active currentPattern
+        if (account.currentPattern && account.currentPattern.length > 0) {
+            const hasPattern = account.currentPattern.some(
+                (p) => p.dayOfWeek === dayIndex && p.shiftType === shiftType,
+            );
+            if (hasPattern) return "working";
+        }
+
+        // No shift in current week and no active pattern — off
         return "off";
     };
+
+    const hasAnySchedule = (() => {
+        for (let dayIndex = 0; dayIndex <= 4; dayIndex++) {
+            if (getShiftStatus(dayIndex, "morning") !== "off" || getShiftStatus(dayIndex, "afternoon") !== "off") {
+                return true;
+            }
+        }
+        return false;
+    })();
 
     return (
         <>
@@ -481,6 +519,17 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 </div>
                             ) : (
                                 <>
+                                    {!hasAnySchedule && (
+                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center text-xs text-slate-600 mb-2">
+                                            {account.nextPattern && account.nextPattern.length > 0 ? (
+                                                <span>
+                                                    Lịch mới ({account.nextPattern.length} ca/tuần) đã đăng ký sẽ áp dụng từ Thứ Hai tuần sau. Tuần hiện tại chưa có ca làm việc.
+                                                </span>
+                                            ) : (
+                                                <span>Cộng tác viên chưa có lịch làm việc trong tuần này.</span>
+                                            )}
+                                        </div>
+                                    )}
                                     {/* Mobile View: Grid 5 cột (< md) */}
                                     <div className="md:hidden space-y-2">
                                         {/* Dòng 1: Thứ 2 -> Thứ 6 */}
