@@ -37,15 +37,6 @@ export function getAssignedCTVsForDate(
     const dateObj = parseISODate(workDate);
     if (!dateObj) return [];
 
-    // Only show shifts for dates up to the end of the current week.
-    // Future weeks are not displayed until the CTV re-registers or the
-    // week arrives.
-    const today = startOfDay(new Date());
-    const currentWeekSunday = addDays(startOfWeek(today), 4); // Friday
-    if (dateObj > currentWeekSunday) {
-        return [];
-    }
-
     const uniqueCTVs = new Map<string, AssignedCTV>();
 
     shifts
@@ -53,13 +44,11 @@ export function getAssignedCTVsForDate(
         .forEach((shift) => {
             (shift.assignedCTVs || []).forEach((ctv) => {
                 const account = accounts.find(
-                    (candidate) =>
-                        candidate.id === ctv.id ||
-                        candidate.name.trim().toLowerCase() === ctv.name.trim().toLowerCase(),
+                    (candidate) => String(candidate.id) === String(ctv.id),
                 );
                 if (account?.role === "Admin") return;
 
-                const key = ctv.id || ctv.name.trim().toLowerCase();
+                const key = String(ctv.id);
                 const avatar = account?.avatar || ctv.avatar;
                 const initials = account?.initials || ctv.initials;
                 if (!uniqueCTVs.has(key)) {

@@ -24,6 +24,7 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
     onShowToast,
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"all" | "active" | "disabled">("all");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
@@ -35,14 +36,19 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
     // Filter out Admin accounts strictly (Only display Cộng tác viên accounts)
     const ctvAccounts = accounts.filter((acc) => acc.role !== "Admin");
 
-    // Filter CTV accounts by search term
+    // Filter CTV accounts by status and search term
     const filteredAccounts = ctvAccounts.filter((acc) => {
+        const matchStatus =
+            statusFilter === "all" ||
+            (statusFilter === "active" && acc.status === "Kích hoạt") ||
+            (statusFilter === "disabled" && acc.status === "Vô hiệu hóa");
+
         const matchSearch =
             acc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             acc.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             acc.phone.includes(searchTerm);
 
-        return matchSearch;
+        return matchStatus && matchSearch;
     });
 
     const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage) || 1;
@@ -51,6 +57,7 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
 
     const handleResetFilters = () => {
         setSearchTerm("");
+        setStatusFilter("all");
         setCurrentPage(1);
     };
 
@@ -84,6 +91,22 @@ export const AccountListScreen: React.FC<AccountListScreenProps> = ({
                             placeholder="Tìm theo họ tên, email, sđt..."
                             className="w-full pl-10 pr-4 h-[40px] sm:h-[44px] border border-[#E2E8F0] rounded-xl text-xs sm:text-sm bg-white text-[#1a1b1e] focus:border-[#1b365d] focus:ring-1 focus:ring-[#1b365d] outline-none transition-all"
                         />
+                    </div>
+
+                    {/* Status Filter */}
+                    <div className="shrink-0">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => {
+                                setStatusFilter(e.target.value as "all" | "active" | "disabled");
+                                setCurrentPage(1);
+                            }}
+                            aria-label="Lọc theo trạng thái"
+                            className="h-[40px] sm:h-[44px] px-3 sm:px-4 border border-[#E2E8F0] rounded-xl text-xs sm:text-sm bg-white text-[#1a1b1e] font-medium focus:border-[#1b365d] focus:ring-1 focus:ring-[#1b365d] outline-none cursor-pointer transition-all">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="active">Kích hoạt</option>
+                            <option value="disabled">Vô hiệu hóa</option>
+                        </select>
                     </div>
 
                     {/* Reset Action */}

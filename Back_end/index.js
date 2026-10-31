@@ -718,6 +718,9 @@ app.post("/api/auth/register", async (req, res) => {
     if (name.trim().length > 100) {
         return res.status(400).json({ message: "Họ và tên không được vượt quá 100 ký tự." });
     }
+    if (!/^[0-9]{10}$/.test(phone.trim())) {
+        return res.status(400).json({ message: "Số điện thoại phải đúng 10 chữ số." });
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
         return res.status(400).json({ message: "Email không đúng định dạng hợp lệ." });
@@ -1062,31 +1065,35 @@ app.patch("/api/profile", requireAuth, async (req, res) => {
                 }
             }
             if (cccdFront !== undefined) {
-                if (cccdFront) {
-                    const result = await saveAttachment(
-                        { fileType: "ID_CARD_FRONT", fileName: "cccd-front", filePath: cccdFront },
-                        userName,
-                        String(userId),
-                    );
-                    fileUpdates.id_card_front_url = result.filePath;
-                } else {
-                    fileUpdates.id_card_front_url = "";
+                if (!cccdFront || (typeof cccdFront === "string" && !cccdFront.trim())) {
+                    await connection.rollback();
+                    return res.status(400).json({
+                        message: "Không được phép xóa ảnh CCCD. Bạn chỉ có thể tải lên ảnh mới để thay thế.",
+                    });
                 }
+                const result = await saveAttachment(
+                    { fileType: "ID_CARD_FRONT", fileName: "cccd-front", filePath: cccdFront },
+                    userName,
+                    String(userId),
+                );
+                fileUpdates.id_card_front_url = result.filePath;
                 if (currentProfile.id_card_front_url && currentProfile.id_card_front_url !== fileUpdates.id_card_front_url) {
                     oldFilesToCleanup.push(currentProfile.id_card_front_url);
                 }
             }
             if (cccdBack !== undefined) {
-                if (cccdBack) {
-                    const result = await saveAttachment(
-                        { fileType: "ID_CARD_BACK", fileName: "cccd-back", filePath: cccdBack },
-                        userName,
-                        String(userId),
-                    );
-                    fileUpdates.id_card_back_url = result.filePath;
-                } else {
-                    fileUpdates.id_card_back_url = "";
+                if (!cccdBack || (typeof cccdBack === "string" && !cccdBack.trim())) {
+                    await connection.rollback();
+                    return res.status(400).json({
+                        message: "Không được phép xóa ảnh CCCD. Bạn chỉ có thể tải lên ảnh mới để thay thế.",
+                    });
                 }
+                const result = await saveAttachment(
+                    { fileType: "ID_CARD_BACK", fileName: "cccd-back", filePath: cccdBack },
+                    userName,
+                    String(userId),
+                );
+                fileUpdates.id_card_back_url = result.filePath;
                 if (currentProfile.id_card_back_url && currentProfile.id_card_back_url !== fileUpdates.id_card_back_url) {
                     oldFilesToCleanup.push(currentProfile.id_card_back_url);
                 }
@@ -1304,8 +1311,12 @@ app.patch("/api/users/:id/status", requireAdmin, async (req, res) => {
         }
 
         if (status === "disabled") {
+            const todayVN = getVietnamToday();
             await promoteElapsedSchedulesToHistory(connection, userId);
-            await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [userId]);
+            // Delete shifts from today onward; past history before today is preserved
+            await connection.execute("DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?", [userId, todayVN]);
+            // Stop recurring weekly pattern so scheduler will not generate new shifts
+            await connection.execute("UPDATE user_weekly_patterns SET status = 'cancelled' WHERE user_id = ?", [userId]);
         }
 
         await connection.commit();
@@ -1876,9 +1887,10 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
             queueEntries.push({ id: qRes.insertId, fileUrl });
         }
 
-        // Foreign keys on user_profiles, work_schedules and work_history all use
-        // ON DELETE CASCADE, so removing the users row deletes the profile, the
-        // weekly schedule and the work history together.
+        // Explicitly clean up weekly patterns, schedules, history and user
+        await connection.execute("DELETE FROM user_weekly_patterns WHERE user_id = ?", [userId]);
+        await connection.execute("DELETE FROM work_schedules WHERE user_id = ?", [userId]);
+        await connection.execute("DELETE FROM work_history WHERE user_id = ?", [userId]);
         await connection.execute("DELETE FROM users WHERE id = ?", [userId]);
 
         await connection.commit();
@@ -1954,7 +1966,7 @@ app.delete("/api/users/:id", requireAdmin, async (req, res) => {
 });
 
 app.post("/api/shifts/register", requireAuth, async (req, res) => {
-    let { userId, registrations, workDate, shiftType } = req.body || {};
+    let { userId, registrations } = req.body || {};
     if (!userId && req.user) userId = req.user.id;
     if (!userId) {
         return res.status(400).json({ message: "Dữ liệu không hợp lệ. Cần userId." });
@@ -1963,30 +1975,24 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
         return res.status(403).json({ message: "Bạn không có quyền đăng ký ca cho người dùng khác." });
     }
 
-    // Support single shift registration format: { userId, workDate, shiftType }
-    if (!Array.isArray(registrations) && workDate && shiftType) {
-        const parsed = parseDate(workDate) || parseIsoDateInput(workDate);
-        if (parsed) {
-            const dateObj = typeof parsed === "string" ? new Date(parsed) : parsed;
-            const dayOfWeek = (dateObj.getDay() + 6) % 7;
-            if (dayOfWeek >= 0 && dayOfWeek < 5) {
-                registrations = [{ dayOfWeek, shiftType }];
-            }
-        }
-    }
-
     if (!Array.isArray(registrations)) {
         return res.status(400).json({
-            message: "Dữ liệu không hợp lệ. Cần mảng registrations hoặc workDate và shiftType hợp lệ.",
+            message: "Dữ liệu không hợp lệ. Cần mảng registrations.",
         });
     }
 
-    // Deduplicate weekly pattern entries sent by the frontend.
+    // Deduplicate weekly pattern entries (0 = Mon .. 4 = Fri, morning / afternoon)
     const uniquePattern = [];
     const seen = new Set();
     for (const reg of registrations) {
-        const dayOfWeek = Number(reg?.dayOfWeek); // 0 = Monday .. 4 = Friday
-        const shiftType = typeof reg?.shiftType === "string" ? reg.shiftType : "";
+        let dayOfWeek = reg?.dayOfWeek;
+        if (typeof dayOfWeek === "string") {
+            const map = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, "0": 0, "1": 1, "2": 2, "3": 3, "4": 4 };
+            dayOfWeek = map[dayOfWeek.toLowerCase()];
+        } else {
+            dayOfWeek = Number(dayOfWeek);
+        }
+        const shiftType = String(reg?.shiftType || reg?.session || "").toLowerCase();
         if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 4) continue;
         if (shiftType !== "morning" && shiftType !== "afternoon") continue;
         const key = `${dayOfWeek}:${shiftType}`;
@@ -1995,81 +2001,119 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
         uniquePattern.push({ dayOfWeek, shiftType });
     }
 
-    // The pattern is recurring, so it is materialised whole weeks at a time: the
-    // window is snapped back to the Monday of the week containing startDate.
-    const today = startOfLocalDay(new Date());
-    const rangeStart = startOfIsoWeek(parseIsoDateInput(req.body?.startDate) || today);
-    const horizonDays = Math.max(Number(req.body?.days) || DEFAULT_REGISTRATION_DAYS, 7);
-    const rangeEnd = parseIsoDateInput(req.body?.endDate) || addLocalDays(today, horizonDays);
+    // Effective start date is ALWAYS next Monday in Vietnam timezone.
+    // Current week is strictly immutable for CTV.
+    const todayVN = getVietnamToday();
+    const nextMonday = getNextMonday(todayVN);
 
-    if (rangeEnd < rangeStart) {
-        return res.status(400).json({ message: "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu." });
-    }
+    const maxRetries = 5;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
 
-    if ((rangeEnd - rangeStart) / DAY_MS > MAX_REGISTRATION_DAYS) {
-        return res.status(400).json({ message: `Mỗi lần đăng ký tối đa ${MAX_REGISTRATION_DAYS} ngày.` });
-    }
+        const [targetUserRows] = await connection.execute(
+            "SELECT id, role, status FROM users WHERE id = ? LIMIT 1",
+            [userId]
+        );
+        const targetUser = targetUserRows[0];
+        if (!targetUser || targetUser.status !== "active") {
+            await connection.rollback();
+            return res.status(400).json({
+                message: "Tài khoản không ở trạng thái kích hoạt để đăng ký lịch."
+            });
+        }
 
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-
-        // Freeze every shift that has already elapsed into work_history before the
-        // registration window is rewritten.
+        // Freeze elapsed shifts into work_history
         await promoteElapsedSchedulesToHistory(connection, userId);
 
-        // Replace the registration window.
-        // Only rewrite/cancel schedules from today onward, preserving elapsed days of the current week
-        const effectiveStartDate = rangeStart < today ? today : rangeStart;
-        await connection.execute("DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?", [
-            userId,
-            toIsoDate(effectiveStartDate),
-        ]);
+        if (uniquePattern.length === 0) {
+            // CTV cancels schedule from next week
+            await connection.execute(
+                `INSERT INTO user_weekly_patterns (user_id, pattern_json, effective_week_start, status)
+                 VALUES (?, '[]', ?, 'cancelled')
+                 ON DUPLICATE KEY UPDATE pattern_json = '[]', status = 'cancelled', updated_at = NOW()`,
+                [userId, nextMonday]
+            );
+            await connection.execute(
+                "UPDATE user_weekly_patterns SET status = 'cancelled' WHERE user_id = ? AND effective_week_start > ?",
+                [userId, nextMonday]
+            );
+            // Delete future shifts starting from nextMonday (current week is untouched!)
+            await connection.execute(
+                "DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?",
+                [userId, nextMonday]
+            );
+
+            await connection.commit();
+            return res.json({
+                message: `Đã hủy lịch làm việc từ Thứ Hai ngày ${formatDateVn(nextMonday)}. Lịch tuần hiện tại được giữ nguyên.`,
+                effectiveDate: nextMonday,
+                isCancelled: true,
+                registeredCount: 0,
+            });
+        }
+
+        // Upsert active weekly pattern for nextMonday
+        const patternJson = JSON.stringify(uniquePattern);
+        await connection.execute(
+            `INSERT INTO user_weekly_patterns (user_id, pattern_json, effective_week_start, status)
+             VALUES (?, ?, ?, 'active')
+             ON DUPLICATE KEY UPDATE pattern_json = VALUES(pattern_json), status = 'active', updated_at = NOW()`,
+            [userId, patternJson, nextMonday]
+        );
+
+        // Delete previous shifts starting from nextMonday onward
+        await connection.execute(
+            "DELETE FROM work_schedules WHERE user_id = ? AND work_date >= ?",
+            [userId, nextMonday]
+        );
+
+        // Generate shifts for 12 weeks starting from nextMonday
+        const [shiftTypeRows] = await connection.query(
+            "SELECT id, code FROM shift_types WHERE code IN ('morning', 'afternoon') AND is_active = 1",
+        );
+        const shiftTypeIdByCode = new Map(shiftTypeRows.map((row) => [row.code, row.id]));
 
         let inserted = 0;
-        if (uniquePattern.length > 0) {
-            // Resolve shift_type ids from the shift_types catalog.
-            const [shiftTypeRows] = await connection.query(
-                "SELECT id, code FROM shift_types WHERE code IN ('morning', 'afternoon') AND is_active = 1",
-            );
-            const shiftTypeIdByCode = new Map(shiftTypeRows.map((row) => [row.code, row.id]));
-
-            for (let cursor = new Date(effectiveStartDate); cursor <= rangeEnd; cursor.setDate(cursor.getDate() + 1)) {
-                const jsDay = (cursor.getDay() + 6) % 7; // 0 = Monday
-                if (jsDay > 4) continue; // Only Mon-Fri
-
-                const weekStart = addLocalDays(cursor, -jsDay);
-
-                for (const pattern of uniquePattern) {
-                    if (pattern.dayOfWeek !== jsDay) continue;
-                    const shiftTypeId = shiftTypeIdByCode.get(pattern.shiftType);
-                    if (!shiftTypeId) continue;
-                    await connection.execute(
-                        `INSERT INTO work_schedules (user_id, shift_type_id, week_start_date, work_date, status)
-                         VALUES (?, ?, ?, ?, 'registered')`,
-                        [userId, shiftTypeId, toIsoDate(weekStart), toIsoDate(cursor)],
-                    );
-                    inserted += 1;
-                }
+        for (let w = 0; w < 12; w++) {
+            const weekMonday = addWeeksIso(nextMonday, w);
+            for (const item of uniquePattern) {
+                const shiftTypeId = shiftTypeIdByCode.get(item.shiftType);
+                if (!shiftTypeId) continue;
+                const workDate = addDaysIso(weekMonday, item.dayOfWeek);
+                await connection.execute(
+                    `INSERT INTO work_schedules (user_id, shift_type_id, week_start_date, work_date, status)
+                     VALUES (?, ?, ?, ?, 'registered')`,
+                    [userId, shiftTypeId, weekMonday, workDate]
+                );
+                inserted++;
             }
         }
 
         await connection.commit();
         return res.json({
-            message:
-                uniquePattern.length > 0 ? "Đã lưu lịch làm việc thành công." : "Đã hủy và xóa toàn bộ lịch đăng ký.",
+            message: `Đã lưu mẫu lịch làm việc thành công. Áp dụng từ Thứ Hai ngày ${formatDateVn(nextMonday)}. Lịch tuần hiện tại được giữ nguyên.`,
+            effectiveDate: nextMonday,
+            pattern: uniquePattern,
             registeredCount: inserted,
         });
-    } catch (error) {
-        try {
-            await connection.rollback();
-        } catch (rollbackError) {
-            console.error("Rollback failed:", rollbackError.message);
+        } catch (error) {
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error("Rollback failed:", rollbackError.message);
+            }
+            if ((error.errno === 1213 || error.code === "ER_LOCK_DEADLOCK") && attempt < maxRetries) {
+                console.warn(`[shifts/register] Deadlock on attempt ${attempt}. Retrying in ${attempt * 40}ms...`);
+                await new Promise((r) => setTimeout(r, attempt * 40));
+                continue;
+            }
+            console.error("/api/shifts/register error:", error.message);
+            return res.status(500).json(formatError("Không thể lưu lịch làm việc.", error));
+        } finally {
+            connection.release();
         }
-        console.error("/api/shifts/register error:", error.message);
-        return res.status(500).json(formatError("Không thể lưu lịch làm việc.", error));
-    } finally {
-        connection.release();
     }
 });
 
@@ -2104,11 +2148,9 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
     try {
         const isAdmin = String(req.user?.role || "").toLowerCase() === "admin";
 
-        // Roll any shift that has elapsed since the last call into work_history so the
-        // history view is complete without needing a scheduled job.
+        // Roll any shift that has elapsed into work_history
         await promoteElapsedSchedulesToHistory(pool);
 
-        // Personal info lives in user_profiles (1-1 with users); users keeps auth/admin fields.
         const [users] = await pool.query(`
       SELECT u.id, u.email, u.role, u.status, u.admin_note, u.created_at,
              up.full_name, up.phone, up.date_of_birth, up.avatar_url,
@@ -2118,7 +2160,6 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
       ORDER BY u.id DESC
     `);
 
-        // Load active schedules together with the shift type code and the user display info
         const [schedules] = await pool.query(`
       SELECT ws.id, ws.user_id, ws.work_date, ws.week_start_date,
              st.code AS shift_code, up.full_name, up.phone, up.avatar_url
@@ -2130,9 +2171,7 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
       ORDER BY ws.work_date, st.sort_order, ws.id
     `);
 
-        // Elapsed shifts, frozen at the moment they passed. This is what the
-        // "Lịch sử làm việc" view renders, so re-registering a pattern over a past day
-        // can never rewrite it.
+        // History view: Admin can see history for all accounts (including disabled CTVs).
         const [history] = await pool.query(`
       SELECT wh.id, wh.user_id, wh.work_date, wh.day_of_week,
              st.code AS shift_code, up.full_name, up.phone, up.avatar_url
@@ -2140,9 +2179,23 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
       JOIN shift_types st ON st.id = wh.shift_type_id
       JOIN users u ON u.id = wh.user_id
       LEFT JOIN user_profiles up ON up.user_id = u.id
-      WHERE u.status = 'active'
+      WHERE (? = 1 OR u.status = 'active' OR u.id = ?)
       ORDER BY wh.work_date, st.sort_order, wh.id
-    `);
+    `, [isAdmin ? 1 : 0, req.user?.id || 0]);
+
+        const todayVN = getVietnamToday();
+        const currentMonday = getIsoMonday(todayVN);
+        const nextMonday = getNextMonday(todayVN);
+
+        const [allPatterns] = await pool.query(
+            "SELECT user_id, pattern_json, effective_week_start, status FROM user_weekly_patterns ORDER BY user_id, effective_week_start ASC"
+        );
+        const patternsByUser = new Map();
+        for (const p of allPatterns) {
+            const uid = String(p.user_id);
+            if (!patternsByUser.has(uid)) patternsByUser.set(uid, []);
+            patternsByUser.get(uid).push(p);
+        }
 
         const accounts = users
             .filter((user) => {
@@ -2154,6 +2207,31 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
                 const normalizedRole = String(user.role).toLowerCase();
                 const isSelf = String(user.id) === String(req.user?.id);
                 const canViewSensitive = isAdmin || isSelf;
+
+                const userPatternList = patternsByUser.get(String(user.id)) || [];
+                let curPattern = null;
+                let nxtPattern = null;
+                let isCancelledNext = false;
+                let hasExplicitNext = false;
+
+                for (const p of userPatternList) {
+                    const pStart = toIsoDate(p.effective_week_start);
+                    if (pStart <= currentMonday) {
+                        curPattern = p.status === "active" ? (typeof p.pattern_json === "string" ? JSON.parse(p.pattern_json) : p.pattern_json) : [];
+                    }
+                    if (pStart === nextMonday) {
+                        hasExplicitNext = true;
+                        if (p.status === "cancelled") {
+                            isCancelledNext = true;
+                            nxtPattern = [];
+                        } else {
+                            nxtPattern = typeof p.pattern_json === "string" ? JSON.parse(p.pattern_json) : p.pattern_json;
+                        }
+                    }
+                }
+                if (!hasExplicitNext) {
+                    nxtPattern = curPattern || [];
+                }
 
                 return {
                     ...(user.avatar_url && { avatar: user.avatar_url }),
@@ -2179,7 +2257,12 @@ app.get("/api/bootstrap", requireAuth, async (req, res) => {
                     status: normalizedStatus === "active" ? "Kích hoạt" : "Vô hiệu hóa",
                     registerDate: formatDate(user.created_at),
                     dob: canViewSensitive ? formatDate(user.date_of_birth) : "",
-                    notes: canViewSensitive ? user.admin_note || undefined : undefined,
+                    // SECURITY FIX: Only Admin receives admin_note. CTV never receives admin_note.
+                    notes: isAdmin ? (user.admin_note || undefined) : undefined,
+                    currentPattern: curPattern || [],
+                    nextPattern: nxtPattern || [],
+                    nextEffectiveDate: nextMonday,
+                    isCancelledNextWeek: isCancelledNext,
                 };
             });
 
@@ -2456,8 +2539,6 @@ function formatDateTime(value) {
 }
 
 function toIsoDate(value) {
-    // Build the ISO date from local date parts. Using toISOString() here would
-    // shift the day by one for timezones ahead of UTC (e.g. GMT+7).
     if (value instanceof Date) {
         const year = value.getFullYear();
         const month = String(value.getMonth() + 1).padStart(2, "0");
@@ -2465,6 +2546,59 @@ function toIsoDate(value) {
         return `${year}-${month}-${day}`;
     }
     return String(value).slice(0, 10);
+}
+
+function formatDateVn(isoDateStr) {
+    if (!isoDateStr || typeof isoDateStr !== "string") return "";
+    const [y, m, d] = isoDateStr.slice(0, 10).split("-");
+    return `${d}/${m}/${y}`;
+}
+
+// Deterministic Vietnam timezone date calculations (Asia/Ho_Chi_Minh)
+function getVietnamToday(date = new Date()) {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    });
+    return formatter.format(date); // YYYY-MM-DD
+}
+
+function parseDateUtc(dateStr) {
+    const [y, m, d] = dateStr.slice(0, 10).split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d));
+}
+
+function formatIsoDateUtc(date) {
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(date.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+function getIsoMonday(dateStr) {
+    const d = parseDateUtc(dateStr);
+    const isoDay = (d.getUTCDay() + 6) % 7; // 0 = Mon .. 6 = Sun
+    d.setUTCDate(d.getUTCDate() - isoDay);
+    return formatIsoDateUtc(d);
+}
+
+function getNextMonday(dateStr = getVietnamToday()) {
+    const d = parseDateUtc(dateStr);
+    const isoDay = (d.getUTCDay() + 6) % 7;
+    d.setUTCDate(d.getUTCDate() + (7 - isoDay));
+    return formatIsoDateUtc(d);
+}
+
+function addDaysIso(dateStr, amount) {
+    const d = parseDateUtc(dateStr);
+    d.setUTCDate(d.getUTCDate() + amount);
+    return formatIsoDateUtc(d);
+}
+
+function addWeeksIso(dateStr, weeks) {
+    return addDaysIso(dateStr, weeks * 7);
 }
 
 function startOfLocalDay(value) {
@@ -2491,29 +2625,92 @@ function parseIsoDateInput(value) {
     return Number.isNaN(date.getTime()) ? null : date;
 }
 
-// Copy elapsed registrations into work_history, which is the immutable record behind
-// the "Lịch sử làm việc" view.
-//
-// `DATE(created_at) <= work_date` is what keeps the two views independent: a row the
-// CTV registers *today* for a day that has already passed (registering Tuesday on
-// Wednesday) was created after the day it applies to, so it shows up in "Lịch tuần"
-// but is never promoted into history. Rows registered while the day was still ahead
-// are promoted. INSERT IGNORE against uq_history_user_date_shift makes this idempotent,
-// so an existing history entry is never rewritten.
-//
-// `runner` is a pool or a transaction connection; pass a userId to limit the sweep.
 async function promoteElapsedSchedulesToHistory(runner, userId = null) {
     const scopedUserId = userId === null || userId === undefined ? null : userId;
+    const todayVN = getVietnamToday();
     await runner.query(
         `INSERT IGNORE INTO work_history (user_id, schedule_id, shift_type_id, work_date, day_of_week)
          SELECT ws.user_id, ws.id, ws.shift_type_id, ws.work_date, WEEKDAY(ws.work_date)
          FROM work_schedules ws
          WHERE ws.status = 'registered'
-           AND ws.work_date < CURDATE()
+           AND ws.work_date < ?
            AND DATE(ws.created_at) <= ws.work_date
            AND (? IS NULL OR ws.user_id = ?)`,
-        [scopedUserId, scopedUserId],
+        [todayVN, scopedUserId, scopedUserId],
     );
+}
+
+// Autonomous 12-week schedule maintainer:
+// Maintains current week + 12 future weeks (13 weeks total) for active collaborators
+// according to active recurring patterns. Idempotent and safe to run on boot or hourly.
+async function maintain12WeekSchedules(runner = pool) {
+    try {
+        const todayVN = getVietnamToday();
+        const currentMonday = getIsoMonday(todayVN);
+
+        const [shiftTypeRows] = await runner.query(
+            "SELECT id, code FROM shift_types WHERE code IN ('morning', 'afternoon') AND is_active = 1",
+        );
+        const shiftTypeIdByCode = new Map(shiftTypeRows.map((r) => [r.code, r.id]));
+        if (shiftTypeIdByCode.size === 0) return;
+
+        const [activeUsers] = await runner.query(
+            "SELECT id FROM users WHERE role = 'collaborator' AND status = 'active'",
+        );
+
+        for (const user of activeUsers) {
+            const userId = user.id;
+            const [patterns] = await runner.query(
+                "SELECT effective_week_start, pattern_json, status FROM user_weekly_patterns WHERE user_id = ? ORDER BY effective_week_start ASC",
+                [userId],
+            );
+            if (patterns.length === 0) continue;
+
+            for (let w = 0; w <= 12; w++) {
+                const targetMonday = addWeeksIso(currentMonday, w);
+
+                let effectivePattern = null;
+                for (const p of patterns) {
+                    const pStart = toIsoDate(p.effective_week_start);
+                    if (pStart <= targetMonday) {
+                        effectivePattern = p;
+                    }
+                }
+
+                if (!effectivePattern || effectivePattern.status !== "active") {
+                    continue;
+                }
+
+                let slots = [];
+                try {
+                    slots = typeof effectivePattern.pattern_json === "string"
+                        ? JSON.parse(effectivePattern.pattern_json)
+                        : effectivePattern.pattern_json;
+                } catch (_) {
+                    continue;
+                }
+                if (!Array.isArray(slots) || slots.length === 0) continue;
+
+                for (const slot of slots) {
+                    const dayOfWeek = Number(slot.dayOfWeek);
+                    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 4) continue;
+                    const shiftTypeId = shiftTypeIdByCode.get(slot.shiftType);
+                    if (!shiftTypeId) continue;
+
+                    const workDate = addDaysIso(targetMonday, dayOfWeek);
+                    if (w === 0 && workDate < todayVN) continue;
+
+                    await runner.query(
+                        `INSERT IGNORE INTO work_schedules (user_id, shift_type_id, week_start_date, work_date, status)
+                         VALUES (?, ?, ?, ?, 'registered')`,
+                        [userId, shiftTypeId, targetMonday, workDate],
+                    );
+                }
+            }
+        }
+    } catch (err) {
+        console.error("maintain12WeekSchedules error:", err?.message || err);
+    }
 }
 
 app.use((req, res) => {
@@ -2535,4 +2732,11 @@ app.use((err, _req, res, _next) => {
 
 app.listen(port, () => {
     console.log(`Schedulo API listening on http://localhost:${port}`);
+    // Run 12-week schedule maintainer on startup and recurring every 1 hour
+    maintain12WeekSchedules(pool)
+        .then(() => console.log("Initial 12-week schedule maintenance completed."))
+        .catch((err) => console.error("Initial schedule maintenance error:", err?.message));
+    setInterval(() => {
+        maintain12WeekSchedules(pool).catch((err) => console.error("Periodic schedule maintenance error:", err?.message));
+    }, 60 * 60 * 1000);
 });

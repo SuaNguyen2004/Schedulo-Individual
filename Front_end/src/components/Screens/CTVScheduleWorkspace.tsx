@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AssignedCTV, ShiftSlot, UserAccount } from "../../types";
-import { saveShiftRegistrations } from "../../utils/api";
+import { saveShiftRegistrations, fetchBootstrapData } from "../../utils/api";
 
 interface CTVScheduleWorkspaceProps {
     /** Registered plan. Drives "Lịch tuần", including days of the current week that already passed. */
@@ -17,7 +17,6 @@ type ShiftType = "morning" | "afternoon";
 type WeeklyPattern = Record<number, ShiftType[]>;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_REGISTRATION_DAYS = 60;
 
 const WEEKDAYS = [
     { index: 0, short: "T2", label: "Thứ 2" },
@@ -118,6 +117,12 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 }) => {
     const today = useMemo(() => startOfDay(new Date()), []);
     const todayISO = toISODate(today);
+
+    const nextMondayDate = useMemo(() => {
+        const mondayOffset = (startOfDay(today).getDay() + 6) % 7;
+        return addDays(startOfDay(today), 7 - mondayOffset);
+    }, [today]);
+
     const legacyWeekStart = useMemo(() => startOfWeek(today), [today]);
 
     const [calendarView, setCalendarView] = useState<CalendarView>("week");
@@ -126,8 +131,6 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     const [editingRegistrationId, setEditingRegistrationId] = useState<string | null>(null);
     const [selectedShift, setSelectedShift] = useState<ShiftSlot | null>(null);
 
-    const [startDate, setStartDate] = useState(todayISO);
-    const [endDate, setEndDate] = useState(toISODate(addDays(today, DEFAULT_REGISTRATION_DAYS)));
     // The weekly pattern is only the state of the registration dialog. It must never
     // be persisted, otherwise a stale pattern from a previous session/user would be
     // rendered as shifts that do not exist in the database.
@@ -161,7 +164,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         shift.workDate || toISODate(addDays(legacyWeekStart, shift.dayIndex));
 
     const isAssignedToCurrentUser = (shift: ShiftSlot) =>
-        (shift.assignedCTVs || []).some((ctv) => ctv.id === currentUser.id || ctv.name === currentUser.name);
+        (shift.assignedCTVs || []).some((ctv) => String(ctv.id) === String(currentUser.id));
 
     const myShifts = useMemo(
         () =>
@@ -174,7 +177,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         isAssignedToCurrentUser(shift),
                 )
                 .sort((a, b) => resolveShiftDate(a).localeCompare(resolveShiftDate(b))),
-        [shifts, currentUser.id, currentUser.name, legacyWeekStart],
+        [shifts, currentUser.id, legacyWeekStart],
     );
 
     const getMyShift = (date: Date, shiftType: ShiftType) => {
@@ -193,7 +196,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                     (shift.shiftType === "morning" || shift.shiftType === "afternoon") &&
                     isAssignedToCurrentUser(shift),
             ),
-        [history, currentUser.id, currentUser.name],
+        [history, currentUser.id],
     );
 
     const getHistoryShift = (date: Date, shiftType: ShiftType) => {
@@ -235,44 +238,36 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     const todayShifts = myShifts.filter((shift) => shift.workDate === todayISO);
 
     const openRegistration = () => {
-        // Derive the dialog state from the shifts that really exist in the database
-        // (including the current active week).
-        const currentWeekMonday = startOfWeek(today);
-        const currentWeekMondayISO = toISODate(currentWeekMonday);
-        const activeShifts = myShifts.filter((shift) => shift.workDate && shift.workDate >= currentWeekMondayISO);
-
         const restoredPattern = createEmptyPattern();
-        for (const shift of activeShifts) {
-            if (!shift.workDate) continue;
-            const dayIndex = getDayIndex(parseISODate(shift.workDate));
-            const shiftType = shift.shiftType as ShiftType;
-            if (dayIndex < 0 || dayIndex > 4) continue;
-            if (shiftType !== "morning" && shiftType !== "afternoon") continue;
-            if (!restoredPattern[dayIndex].includes(shiftType)) {
-                restoredPattern[dayIndex].push(shiftType);
-            }
-        }
+        const sourcePattern =
+            (currentUser.nextPattern && currentUser.nextPattern.length > 0)
+                ? currentUser.nextPattern
+                : (currentUser.currentPattern && currentUser.currentPattern.length > 0)
+                ? currentUser.currentPattern
+                : null;
 
-        const registrationIds = Array.from(
-            new Set(activeShifts.map((shift) => shift.registrationId).filter(Boolean) as string[]),
-        ).sort();
-        setEditingRegistrationId(registrationIds[registrationIds.length - 1] || null);
-
-        if (activeShifts.length > 0) {
-            const workDates = activeShifts.map((shift) => shift.workDate as string).sort();
-            setStartDate(todayISO);
-            setEndDate(workDates[workDates.length - 1]);
-            setCalendarDate(today);
-            setWorkContent(
-                activeShifts[0].workContent ||
-                    activeShifts[0].title ||
-                    "Hỗ trợ điều phối lịch, kiểm tra dữ liệu và cập nhật tiến độ công việc trong ca.",
-            );
+        if (sourcePattern && sourcePattern.length > 0) {
+            sourcePattern.forEach((item) => {
+                if (item.dayOfWeek >= 0 && item.dayOfWeek <= 4) {
+                    if (!restoredPattern[item.dayOfWeek].includes(item.shiftType)) {
+                        restoredPattern[item.dayOfWeek].push(item.shiftType);
+                    }
+                }
+            });
         } else {
-            setStartDate(todayISO);
-            setEndDate(toISODate(addDays(today, DEFAULT_REGISTRATION_DAYS)));
-            setCalendarDate(today);
-            setWorkContent("Hỗ trợ điều phối lịch, kiểm tra dữ liệu và cập nhật tiến độ công việc trong ca.");
+            const currentWeekMonday = startOfWeek(today);
+            const currentWeekMondayISO = toISODate(currentWeekMonday);
+            const activeShifts = myShifts.filter((shift) => shift.workDate && shift.workDate >= currentWeekMondayISO);
+            for (const shift of activeShifts) {
+                if (!shift.workDate) continue;
+                const dayIndex = getDayIndex(parseISODate(shift.workDate));
+                const shiftType = shift.shiftType as ShiftType;
+                if (dayIndex >= 0 && dayIndex <= 4 && (shiftType === "morning" || shiftType === "afternoon")) {
+                    if (!restoredPattern[dayIndex].includes(shiftType)) {
+                        restoredPattern[dayIndex].push(shiftType);
+                    }
+                }
+            }
         }
 
         setWeeklyPattern(restoredPattern);
@@ -301,211 +296,66 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     };
 
     const closeRegistrationModal = () => {
-        // Discard temporary selections when closing without saving
         setIsRegistrationOpen(false);
         setTempWeeklyPattern(createEmptyPattern());
     };
 
-    const getFirstRegistrationDate = (dayIndex: number) => {
-        if (!startDate || !endDate) return undefined;
-        const rangeStart = parseISODate(startDate);
-        const rangeEnd = parseISODate(endDate);
-        if (rangeEnd < rangeStart) return undefined;
-
-        const offset = (dayIndex - getDayIndex(rangeStart) + 7) % 7;
-        const firstDate = addDays(rangeStart, offset);
-        return firstDate <= rangeEnd ? firstDate : undefined;
-    };
-
-    const createCTVRecord = (): AssignedCTV => ({
-        id: currentUser.id,
-        name: currentUser.name,
-        avatar: currentUser.avatar,
-        initials: currentUser.initials || currentUser.name.slice(0, 2).toUpperCase(),
-        phone: currentUser.phone,
-        cctvCode: currentUser.cctvCode,
-        status: "Đã duyệt",
-    });
-
-    const handleRegisterSchedule = (event: React.FormEvent) => {
+    const handleRegisterSchedule = async (event: React.FormEvent) => {
         event.preventDefault();
-        const rangeStart = parseISODate(startDate);
-        const rangeEnd = parseISODate(endDate);
 
-        if (rangeEnd < rangeStart) {
-            onShowToast("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
-            return;
-        }
-
-        // Mirror the backend, which snaps the window back to the Monday of the week
-        // containing startDate. Without this the optimistic update below skipped the
-        // already-elapsed days of the current week (register on Wednesday → Mon/Tue were
-        // written server-side but only showed up in the week grid after a page reload).
-        const materializeStart = startOfWeek(rangeStart);
-
-        if ((rangeEnd.getTime() - materializeStart.getTime()) / DAY_MS > 180) {
-            onShowToast("Mỗi lần đăng ký tối đa 180 ngày.");
-            return;
-        }
-
-        const selectedOccurrences: Array<{
-            date: Date;
-            dayIndex: number;
-            workDate: string;
-            shiftType: ShiftType;
-        }> = [];
-
-        for (let cursor = materializeStart; cursor <= rangeEnd; cursor = addDays(cursor, 1)) {
-            const dayIndex = getDayIndex(cursor);
-            const selectedShiftTypes = tempWeeklyPattern[dayIndex] || [];
-
-            selectedShiftTypes.forEach((shiftType) => {
-                selectedOccurrences.push({
-                    date: cursor,
-                    dayIndex,
-                    workDate: toISODate(cursor),
-                    shiftType,
-                });
+        const flatRegistrations: Array<{ dayOfWeek: number; shiftType: "morning" | "afternoon" }> = [];
+        for (let dayIndex = 0; dayIndex <= 4; dayIndex++) {
+            const shiftTypes = tempWeeklyPattern[dayIndex] || [];
+            shiftTypes.forEach((shiftType) => {
+                flatRegistrations.push({ dayOfWeek: dayIndex, shiftType });
             });
         }
 
-        const windowStartISO = toISODate(materializeStart);
+        const nextMondayLabel = formatShortDate(nextMondayDate);
 
-        if (selectedOccurrences.length === 0) {
-            const updatedShifts = shifts.map((shift) => {
-                if (!shift.workDate || shift.workDate < windowStartISO || !isAssignedToCurrentUser(shift)) {
-                    return shift;
-                }
-
-                return removeCurrentUserFromShift(shift);
-            });
-
-            saveShiftRegistrations({
-                userId: currentUser.id,
-                startDate: windowStartISO,
-                endDate,
-                registrations: [],
-            })
-                .then(() => {
-                    onUpdateShifts(updatedShifts);
-                    setWeeklyPattern(createEmptyPattern());
-                    setTempWeeklyPattern(createEmptyPattern());
-                    setEditingRegistrationId(null);
-                    setIsRegistrationOpen(false);
-                    onShowToast("Đã hủy và xóa toàn bộ lịch đăng ký.");
-                })
-                .catch((error: unknown) => {
-                    const message = error instanceof Error ? error.message : "Không thể hủy lịch làm việc.";
-                    onShowToast(message);
-                });
-            return;
-        }
-
-        const registrationId = editingRegistrationId || `registration-${Date.now()}`;
-        const ctvRecord = createCTVRecord();
-        const desiredShiftKeys = new Set(
-            selectedOccurrences.map(({ workDate, shiftType }) => `${workDate}:${shiftType}`),
-        );
-        // Same rule as the backend's "DELETE ... WHERE user_id = ? AND work_date >= ?":
-        // every shift of this CTV from the window start onwards that the new pattern no
-        // longer contains is dropped.
-        const updatedShifts = shifts.map((shift) => {
-            if (
-                !shift.workDate ||
-                shift.workDate < windowStartISO ||
-                !isAssignedToCurrentUser(shift) ||
-                desiredShiftKeys.has(`${shift.workDate}:${shift.shiftType}`)
-            ) {
-                return shift;
-            }
-
-            return removeCurrentUserFromShift(shift);
-        });
-
-        for (const { date, dayIndex, workDate, shiftType } of selectedOccurrences) {
-            let existingIndex = updatedShifts.findIndex(
-                (shift) =>
-                    shift.workDate === workDate &&
-                    shift.shiftType === shiftType &&
-                    (shift.registrationId === registrationId || isAssignedToCurrentUser(shift)),
+        if (flatRegistrations.length === 0) {
+            const confirmed = window.confirm(
+                `Xác nhận hủy đăng ký lịch từ Thứ Hai ngày ${nextMondayLabel}? Lịch tuần hiện tại sẽ được giữ nguyên.`
             );
+            if (!confirmed) return;
 
-            if (existingIndex < 0) {
-                existingIndex = updatedShifts.findIndex(
-                    (shift) => resolveShiftDate(shift) === workDate && shift.shiftType === shiftType,
-                );
-            }
-
-            if (existingIndex >= 0) {
-                const existing = updatedShifts[existingIndex];
-                const alreadyRegistered = (existing.assignedCTVs || []).some(
-                    (ctv) => ctv.id === currentUser.id || ctv.name === currentUser.name,
-                );
-
-                updatedShifts[existingIndex] = {
-                    ...existing,
-                    workDate,
-                    dateStr: formatShortDate(date),
-                    workContent: workContent.trim(),
-                    registrationId,
-                    registrationStartDate: startDate,
-                    registrationEndDate: endDate,
-                    status: "Đã đăng ký",
-                    allowRegister: true,
-                    assignedCTVs: alreadyRegistered
-                        ? existing.assignedCTVs
-                        : [...(existing.assignedCTVs || []), ctvRecord],
-                };
-            } else {
-                const weekday = WEEKDAYS[dayIndex];
-                updatedShifts.push({
-                    id: `${registrationId}-${workDate}-${shiftType}`,
-                    dayIndex,
-                    dayName: weekday.label,
-                    dateStr: formatShortDate(date),
-                    workDate,
-                    shiftType,
-                    shiftTimeLabel: shiftType === "morning" ? "Ca sáng" : "Ca chiều",
-                    title: workContent.trim(),
-                    workContent: workContent.trim(),
-                    registrationId,
-                    registrationStartDate: startDate,
-                    registrationEndDate: endDate,
-                    status: "Đã đăng ký",
-                    allowRegister: true,
-                    assignedCTVs: [ctvRecord],
+            try {
+                const res = await saveShiftRegistrations({
+                    userId: currentUser.id,
+                    registrations: [],
                 });
+                const fresh = await fetchBootstrapData();
+                if (fresh?.shifts) onUpdateShifts(fresh.shifts);
+                setWeeklyPattern(createEmptyPattern());
+                setTempWeeklyPattern(createEmptyPattern());
+                setIsRegistrationOpen(false);
+                onShowToast(res.message || `Đã hủy lịch làm việc từ Thứ Hai ngày ${nextMondayLabel}.`);
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : "Không thể hủy lịch làm việc.";
+                onShowToast(message);
             }
+            return;
         }
 
-        saveShiftRegistrations({
-            userId: currentUser.id,
-            startDate,
-            endDate,
-            registrations: selectedOccurrences.map(({ dayIndex, shiftType }) => ({
-                dayOfWeek: dayIndex,
-                shiftType,
-            })),
-        })
-            .then(() => {
-                onUpdateShifts(updatedShifts);
-                // Commit temp pattern to actual pattern after successful registration
-                setWeeklyPattern(clonePattern(tempWeeklyPattern));
-                setEditingRegistrationId(registrationId);
-                setCalendarDate(selectedOccurrences[0]?.date || rangeStart);
-                setCalendarView("week");
-                setIsRegistrationOpen(false);
-                onShowToast("Bạn đã đăng ký ca làm việc thành công.");
-            })
-            .catch((error: unknown) => {
-                const message = error instanceof Error ? error.message : "Không thể lưu lịch làm việc.";
-                onShowToast(message);
+        try {
+            const res = await saveShiftRegistrations({
+                userId: currentUser.id,
+                registrations: flatRegistrations,
             });
+            const fresh = await fetchBootstrapData();
+            if (fresh?.shifts) onUpdateShifts(fresh.shifts);
+            setWeeklyPattern(clonePattern(tempWeeklyPattern));
+            setIsRegistrationOpen(false);
+            onShowToast(res.message || `Đã lưu mẫu lịch làm việc thành công. Áp dụng từ Thứ Hai ngày ${nextMondayLabel}.`);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Không thể lưu lịch làm việc.";
+            onShowToast(message);
+        }
     };
 
     const removeCurrentUserFromShift = (shift: ShiftSlot) => {
         const assignedCTVs = (shift.assignedCTVs || []).filter(
-            (ctv) => ctv.id !== currentUser.id && ctv.name !== currentUser.name,
+            (ctv) => String(ctv.id) !== String(currentUser.id),
         );
 
         return {
@@ -515,167 +365,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         };
     };
 
-    const handleCancelShift = () => {
-        if (!selectedShift) return;
 
-        const selectedShiftDate = resolveShiftDate(selectedShift);
-
-        if (selectedShiftDate < todayISO) {
-            onShowToast("Ca làm việc đã qua nên không thể hủy.");
-            return;
-        }
-
-        let cancelled = false;
-        const resultShifts = shifts.map((shift) => {
-            if (shift.id !== selectedShift.id || !isAssignedToCurrentUser(shift)) {
-                return shift;
-            }
-            cancelled = true;
-            return removeCurrentUserFromShift(shift);
-        });
-
-        const dayIdx = selectedShift.dayIndex;
-        const sType = selectedShift.shiftType as ShiftType;
-        setWeeklyPattern((prev) => ({
-            ...prev,
-            [dayIdx]: (prev[dayIdx] || []).filter((st) => st !== sType),
-        }));
-
-        onUpdateShifts(resultShifts);
-        setSelectedShift(null);
-        onShowToast(
-            cancelled || true
-                ? `Đã hủy ${getShiftMeta(selectedShift.shiftType as ShiftType).label.toLowerCase()} ngày ${formatShortDate(parseISODate(selectedShiftDate))}.`
-                : "Không tìm thấy ca cần hủy.",
-        );
-    };
-
-    const handleCancelRecurringShift = () => {
-        if (!selectedShift) return;
-
-        const selectedShiftDate = resolveShiftDate(selectedShift);
-
-        if (selectedShiftDate < todayISO) {
-            onShowToast("Ca làm việc đã qua nên không thể hủy.");
-            return;
-        }
-
-        let cancelCount = 0;
-        const resultShifts = shifts.map((shift) => {
-            const shiftDate = resolveShiftDate(shift);
-            const isSameDayOfWeek = shift.dayIndex === selectedShift.dayIndex;
-            const isSameShiftType = shift.shiftType === selectedShift.shiftType;
-            const isCurrentOrFuture = shiftDate >= selectedShiftDate;
-
-            if (isSameDayOfWeek && isSameShiftType && isCurrentOrFuture && isAssignedToCurrentUser(shift)) {
-                cancelCount += 1;
-                return removeCurrentUserFromShift(shift);
-            }
-
-            return shift;
-        });
-
-        const dayIdx = selectedShift.dayIndex;
-        const sType = selectedShift.shiftType as ShiftType;
-        setWeeklyPattern((prev) => ({
-            ...prev,
-            [dayIdx]: (prev[dayIdx] || []).filter((st) => st !== sType),
-        }));
-
-        onUpdateShifts(resultShifts);
-        setSelectedShift(null);
-        onShowToast(
-            `Đã hủy ca ${getShiftMeta(selectedShift.shiftType as ShiftType).label.toLowerCase()} định kỳ (${selectedShift.dayName || WEEKDAYS[selectedShift.dayIndex]?.label || "thứ"}) từ ngày ${formatShortDate(parseISODate(selectedShiftDate))} trở đi.`,
-        );
-    };
-
-    const handleRoomChange = (nextRoom: string) => {
-        if (!selectedShift || nextRoom === (selectedShift.room || "Buồng 1")) return;
-
-        const selectedShiftDate = resolveShiftDate(selectedShift);
-        if (selectedShiftDate < todayISO) {
-            onShowToast("Không thể thay đổi buồng làm việc của ca trong quá khứ.");
-            return;
-        }
-
-        const updatedShifts = [...shifts];
-
-        const isMatchingPattern = (shift: ShiftSlot) => {
-            if (selectedShift.registrationId) {
-                return (
-                    shift.registrationId === selectedShift.registrationId &&
-                    shift.dayIndex === selectedShift.dayIndex &&
-                    shift.shiftType === selectedShift.shiftType
-                );
-            }
-            return (
-                shift.id === selectedShift.id ||
-                (!shift.registrationId &&
-                    shift.dayIndex === selectedShift.dayIndex &&
-                    shift.shiftType === selectedShift.shiftType)
-            );
-        };
-
-        const templateShifts = updatedShifts.filter(
-            (s) => isMatchingPattern(s) && !s.workDate && isAssignedToCurrentUser(s),
-        );
-
-        if (templateShifts.length > 0) {
-            const startDateToCheck = addDays(parseISODate(selectedShiftDate), -90);
-            const cutoffDate = parseISODate(selectedShiftDate);
-
-            for (let cur = startDateToCheck; cur < cutoffDate; cur = addDays(cur, 1)) {
-                if (getDayIndex(cur) === selectedShift.dayIndex) {
-                    const pastDateISO = toISODate(cur);
-                    const existingShift = updatedShifts.find(
-                        (s) => resolveShiftDate(s) === pastDateISO && s.shiftType === selectedShift.shiftType,
-                    );
-
-                    if (!existingShift) {
-                        templateShifts.forEach((tmpl) => {
-                            updatedShifts.push({
-                                ...tmpl,
-                                id: `past-${tmpl.id}-${pastDateISO}`,
-                                workDate: pastDateISO,
-                                dateStr: formatShortDate(cur),
-                            });
-                        });
-                    }
-                }
-            }
-        }
-
-        let updatedCount = 0;
-
-        const resultShifts = updatedShifts.map((shift) => {
-            const matched = isMatchingPattern(shift);
-            if (!matched || !isAssignedToCurrentUser(shift)) {
-                return shift;
-            }
-
-            if (shift.workDate) {
-                if (shift.workDate >= selectedShiftDate) {
-                    updatedCount += 1;
-                    return { ...shift, room: nextRoom };
-                }
-                return shift;
-            }
-
-            updatedCount += 1;
-            return { ...shift, room: nextRoom };
-        });
-
-        onUpdateShifts(resultShifts);
-        setSelectedShift({ ...selectedShift, room: nextRoom });
-        onShowToast(
-            updatedCount > 0
-                ? `Đã đổi sang ${nextRoom} cho ca từ ngày ${formatShortDate(parseISODate(selectedShiftDate))} trở đi.`
-                : "Không có ca phù hợp để đổi buồng.",
-        );
-    };
-
-    const selectedShiftDate = selectedShift ? resolveShiftDate(selectedShift) : "";
-    const canCancelSelectedShift = Boolean(selectedShift) && selectedShiftDate >= todayISO;
 
     const renderShiftCard = (shift: ShiftSlot, _compact = false, _showShiftLabel = false) => {
         const meta = getShiftMeta(shift.shiftType as ShiftType);
@@ -713,7 +403,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                 </div>
             )}
 
-            <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/70 p-3 sm:p-4 shadow-sm">
+            <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/70 p-3 sm:p-4 shadow-sm space-y-3">
                 <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-[0.16em] text-blue-700 shrink-0">
                         <span className="material-symbols-outlined text-[16px] sm:text-[18px]" aria-hidden="true">
@@ -744,6 +434,29 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                         </button>
                     )}
                 </div>
+
+                {currentUser.isCancelledNextWeek ? (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 sm:p-3 text-amber-900 text-xs flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px] text-amber-600">event_busy</span>
+                        <span>
+                            Bạn đã hủy lịch làm việc từ Thứ Hai ngày <strong>{formatShortDate(nextMondayDate)}</strong>. Lịch tuần hiện tại được giữ nguyên.
+                        </span>
+                    </div>
+                ) : currentUser.nextPattern && currentUser.nextPattern.length > 0 && JSON.stringify(currentUser.nextPattern) !== JSON.stringify(currentUser.currentPattern) ? (
+                    <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-2.5 sm:p-3 text-blue-950 text-xs flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px] text-blue-700">update</span>
+                        <span>
+                            Mẫu lịch mới ({currentUser.nextPattern.length} ca/tuần) đã lưu và sẽ áp dụng từ Thứ Hai ngày <strong>{formatShortDate(nextMondayDate)}</strong>. Lịch tuần hiện tại được giữ nguyên.
+                        </span>
+                    </div>
+                ) : currentUser.currentPattern && currentUser.currentPattern.length > 0 ? (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3 text-slate-700 text-xs flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px] text-slate-500">repeat</span>
+                        <span>
+                            Mẫu lịch lặp hiện tại: <strong>{currentUser.currentPattern.length} ca/tuần</strong> (tự động duy trì hàng tuần).
+                        </span>
+                    </div>
+                ) : null}
             </section>
 
             <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -774,14 +487,62 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
                 {calendarView === "week" ? (
                     <div className="space-y-4 p-4 sm:p-5">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                            <span
-                                className="material-symbols-outlined text-[22px] text-blue-700"
-                                aria-hidden="true">
-                                calendar_view_week
-                            </span>
-                            <h3 className="text-base font-bold text-slate-900">Lịch tuần</h3>
+                        <div className="flex flex-col gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className="material-symbols-outlined text-[22px] text-blue-700"
+                                    aria-hidden="true">
+                                    calendar_view_week
+                                </span>
+                                <h3 className="text-base font-bold text-slate-900">Lịch tuần</h3>
+                            </div>
+                            <div
+                                className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm"
+                                role="group"
+                                aria-label="Điều hướng tuần">
+                                <button
+                                    type="button"
+                                    onClick={() => changeWeek(-1)}
+                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                                    aria-label="Tuần trước">
+                                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                                        chevron_left
+                                    </span>
+                                </button>
+                                <span
+                                    className="min-w-[140px] sm:min-w-[170px] px-2 text-center text-xs font-bold text-slate-900"
+                                    aria-live="polite">
+                                    {weekRangeLabel}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => changeWeek(1)}
+                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                                    aria-label="Tuần sau">
+                                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                                        chevron_right
+                                    </span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCalendarDate(today)}
+                                    className="ml-1 px-2.5 py-1 text-xs font-bold rounded-lg text-blue-700 hover:bg-white transition-colors cursor-pointer"
+                                    title="Về tuần hiện tại">
+                                    Hiện tại
+                                </button>
+                            </div>
                         </div>
+
+                        {!weekDays.some((d) => Boolean(getVisibleShift(d, "morning") || getVisibleShift(d, "afternoon"))) && (
+                            <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-center">
+                                <p className="text-sm font-semibold text-slate-700">
+                                    Bạn chưa có ca làm việc nào trong tuần này ({weekRangeLabel}).
+                                </p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Nhấn nút <strong>Đăng ký lịch làm việc</strong> ở trên để đăng ký mẫu ca lặp lại bắt đầu từ Thứ Hai tuần sau.
+                                </p>
+                            </div>
+                        )}
 
                         {/* Mobile View: Grid 5 cột (< md) */}
                         <div className="md:hidden space-y-2">
@@ -830,8 +591,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                             <div className="space-y-1">
                                                 {morningShift ? (
                                                     <div
-                                                        className="flex w-full items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors"
-                                                        title="Ca Sáng">
+                                                        className="flex w-full items-center justify-center rounded-lg border border-amber-200/90 bg-amber-50 h-[28px] text-amber-700 shadow-2xs select-none cursor-pointer hover:opacity-90 transition-colors"
+                                                        title="Ca Sáng" onClick={() => morningShift && setSelectedShift(morningShift)}>
                                                         <span className="material-symbols-outlined text-[18px] leading-none">
                                                             wb_sunny
                                                         </span>
@@ -842,8 +603,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
                                                 {afternoonShift ? (
                                                     <div
-                                                        className="flex w-full items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors"
-                                                        title="Ca Chiều">
+                                                        className="flex w-full items-center justify-center rounded-lg border border-purple-200/90 bg-purple-50 h-[28px] text-purple-700 shadow-2xs select-none cursor-pointer hover:opacity-90 transition-colors"
+                                                        title="Ca Chiều" onClick={() => afternoonShift && setSelectedShift(afternoonShift)}>
                                                         <span className="material-symbols-outlined text-[18px] leading-none">
                                                             wb_twilight
                                                         </span>
@@ -904,8 +665,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                 <div className="space-y-2">
                                                     {morningShift ? (
                                                         <div
-                                                            className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[38px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors"
-                                                            title="Ca Sáng">
+                                                            className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[38px] text-amber-700 shadow-2xs select-none cursor-pointer hover:opacity-90 transition-colors"
+                                                            title="Ca Sáng" onClick={() => morningShift && setSelectedShift(morningShift)}>
                                                             <span
                                                                 className="material-symbols-outlined text-[20px] leading-none"
                                                                 aria-hidden="true">
@@ -918,8 +679,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
 
                                                     {afternoonShift ? (
                                                         <div
-                                                            className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[38px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors"
-                                                            title="Ca Chiều">
+                                                            className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[38px] text-purple-700 shadow-2xs select-none cursor-pointer hover:opacity-90 transition-colors"
+                                                            title="Ca Chiều" onClick={() => afternoonShift && setSelectedShift(afternoonShift)}>
                                                             <span
                                                                 className="material-symbols-outlined text-[20px] leading-none"
                                                                 aria-hidden="true">
@@ -1034,7 +795,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                             {morningShift ? (
                                                                 <div
                                                                     key={`${dateISO}-morning`}
-                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none pointer-events-none transition-colors"
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-amber-200/90 bg-amber-50 h-[28px] sm:h-[32px] text-amber-700 shadow-2xs select-none cursor-pointer hover:opacity-90 transition-colors"
                                                                     title={`Ca Sáng, ${formatShortDate(date)}`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
@@ -1052,7 +813,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                             {afternoonShift ? (
                                                                 <div
                                                                     key={`${dateISO}-afternoon`}
-                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none pointer-events-none transition-colors"
+                                                                    className="flex w-full items-center justify-center rounded-xl border border-purple-200/90 bg-purple-50 h-[28px] sm:h-[32px] text-purple-700 shadow-2xs select-none cursor-pointer hover:opacity-90 transition-colors"
                                                                     title={`Ca Chiều, ${formatShortDate(date)}`}>
                                                                     <span
                                                                         className="material-symbols-outlined text-[18px] sm:text-[20px] leading-none"
@@ -1110,6 +871,19 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                             </div>
 
                             <div className="space-y-5 p-5">
+                                <div className="rounded-xl border border-blue-200 bg-blue-50/90 p-3.5 text-blue-900 text-xs sm:text-sm flex items-start gap-2.5">
+                                    <span className="material-symbols-outlined text-[20px] text-blue-700 shrink-0 mt-0.5">
+                                        info
+                                    </span>
+                                    <div>
+                                        <p className="font-semibold text-blue-950">
+                                            Thay đổi áp dụng từ Thứ Hai ngày {formatShortDate(nextMondayDate)}/{nextMondayDate.getFullYear()}; lịch tuần hiện tại được giữ nguyên.
+                                        </p>
+                                        <p className="text-xs text-blue-800 mt-0.5">
+                                            Mẫu lịch được tự động duy trì hàng tuần. Bạn không cần phải đăng ký lại định kỳ.
+                                        </p>
+                                    </div>
+                                </div>
                                 <fieldset>
                                     <div className="flex items-center justify-between gap-2 mb-3">
                                         <legend className="text-sm font-bold text-slate-900">
@@ -1184,39 +958,24 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                                         )}
                                                     </div>
                                                     {WEEKDAYS.map((day) => {
-                                                        const firstDate = getFirstRegistrationDate(day.index);
-                                                        const selected =
-                                                            Boolean(firstDate) &&
-                                                            (tempWeeklyPattern[day.index] || []).includes(
-                                                                shiftOption.type,
-                                                            );
+                                                        const targetDayDate = addDays(nextMondayDate, day.index);
+                                                        const selected = (tempWeeklyPattern[day.index] || []).includes(
+                                                            shiftOption.type,
+                                                        );
                                                         return (
                                                             <div
                                                                 key={day.index}
-                                                                onClick={() => {
-                                                                    if (firstDate) {
-                                                                        togglePattern(day.index, shiftOption.type);
-                                                                    }
-                                                                }}
-                                                                className={`flex items-center justify-center border-r border-slate-200 p-1.5 last:border-r-0 transition-colors ${
-                                                                    firstDate
-                                                                        ? "cursor-pointer hover:bg-blue-50/50"
-                                                                        : ""
-                                                                }`}>
+                                                                onClick={() => togglePattern(day.index, shiftOption.type)}
+                                                                className="flex items-center justify-center border-r border-slate-200 p-1.5 last:border-r-0 transition-colors cursor-pointer hover:bg-blue-50/50">
                                                                 <button
                                                                     type="button"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        if (firstDate) {
-                                                                            togglePattern(day.index, shiftOption.type);
-                                                                        }
+                                                                        togglePattern(day.index, shiftOption.type);
                                                                     }}
-                                                                    disabled={!firstDate}
                                                                     aria-pressed={selected}
-                                                                    aria-label={`${selected ? "Bỏ chọn" : "Chọn"} ${shiftOption.label} ${day.label}${firstDate ? `, ngày đầu tiên ${formatCalendarDate(firstDate)}` : ", ngoài khoảng đăng ký"}`}
-                                                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 ${
-                                                                        firstDate ? "cursor-pointer" : ""
-                                                                    } ${
+                                                                    aria-label={`${selected ? "Bỏ chọn" : "Chọn"} ${shiftOption.label} ${day.label}, ngày ${formatCalendarDate(targetDayDate)}`}
+                                                                    className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer ${
                                                                         selected
                                                                             ? "border-blue-700 bg-blue-700 text-white shadow-xs hover:bg-blue-800"
                                                                             : "border-slate-200 bg-white text-slate-400 hover:border-blue-300 hover:text-blue-700"
@@ -1332,10 +1091,10 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                             <p className="text-xs font-bold text-slate-700">CTV làm cùng ca</p>
                             <div className="mt-2 flex flex-wrap gap-2">
                                 {(selectedShift.assignedCTVs || []).filter(
-                                    (ctv) => ctv.id !== currentUser.id && ctv.name !== currentUser.name,
+                                    (ctv) => String(ctv.id) !== String(currentUser.id),
                                 ).length > 0 ? (
                                     (selectedShift.assignedCTVs || [])
-                                        .filter((ctv) => ctv.id !== currentUser.id && ctv.name !== currentUser.name)
+                                        .filter((ctv) => String(ctv.id) !== String(currentUser.id))
                                         .map((ctv) => (
                                             <div
                                                 key={ctv.id}
@@ -1364,36 +1123,13 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                             </div>
                         </div>
 
-                        <div className="mt-5 grid grid-cols-2 gap-2 border-t border-slate-200 pt-4">
-                            {canCancelSelectedShift ? (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={handleCancelShift}
-                                        className="min-h-11 rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs sm:text-sm font-bold text-rose-700 transition-colors hover:bg-rose-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600">
-                                        Chỉ hủy ca này
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleCancelRecurringShift}
-                                        className="min-h-11 rounded-xl border border-rose-300 bg-rose-100/70 px-3 text-xs sm:text-sm font-bold text-rose-800 transition-colors hover:bg-rose-200/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600">
-                                        Hủy ca định kỳ
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <p className="col-span-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
-                                        Ca làm việc đã qua nên không thể hủy.
-                                    </p>
-                                    <button
-                                        type="button"
-                                        onClick={() => setSelectedShift(null)}
-                                        className="col-span-2 min-h-11 rounded-xl px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
-                                        Đóng
-                                    </button>
-                                </>
-                            )}
-                        </div>
+                        <div className="mt-5 flex justify-end border-t border-slate-200 pt-4">
+                            <button
+                                type="button"
+                                onClick={() => setSelectedShift(null)}
+                                className="w-full sm:w-auto min-h-10 px-6 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold transition-colors cursor-pointer">
+                                Đóng
+                            </button></div>
                     </div>
                 </div>
             )}

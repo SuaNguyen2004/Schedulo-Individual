@@ -93,12 +93,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         e.target.value = "";
     };
 
-    const handleDeleteCccdFront = () => {
-        if (onUpdateCccdFront) {
-            onUpdateCccdFront("");
-        }
-    };
-
     const handleCccdBackSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -116,12 +110,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             reader.readAsDataURL(file);
         }
         e.target.value = "";
-    };
-
-    const handleDeleteCccdBack = () => {
-        if (onUpdateCccdBack) {
-            onUpdateCccdBack("");
-        }
     };
 
     const handleCvFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -618,24 +606,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 <span>Thay đổi</span>
                             </button>
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const side = previewModal.side;
-                                    setPreviewModal(null);
-                                    if (side === "avatar") {
+                            {previewModal.side === "avatar" && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setPreviewModal(null);
                                         handleDeleteAvatar();
-                                    } else if (side === "front") {
-                                        handleDeleteCccdFront();
-                                    } else {
-                                        handleDeleteCccdBack();
-                                    }
-                                }}
-                                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                                title="Xóa ảnh">
-                                <span className="material-symbols-outlined text-[16px]">delete</span>
-                                <span>Xóa</span>
-                            </button>
+                                    }}
+                                    className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                                    title="Xóa ảnh">
+                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                    <span>Xóa</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

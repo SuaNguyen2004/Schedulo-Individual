@@ -36,6 +36,10 @@ export interface UserAccount {
     skills?: string[];
     notes?: string;
     adminNote?: string;
+    currentPattern?: Array<{ dayOfWeek: number; shiftType: "morning" | "afternoon" }>;
+    nextPattern?: Array<{ dayOfWeek: number; shiftType: "morning" | "afternoon" }>;
+    nextEffectiveDate?: string;
+    isCancelledNextWeek?: boolean;
 }
 
 export interface RegistrationRequest {

@@ -118,7 +118,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                 data-lpignore="true"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                maxLength={20}
+                maxLength={64}
                 className="w-full text-sm font-mono font-bold tracking-wider pl-3.5 pr-20 py-2.5 border border-slate-300 rounded-xl bg-white text-slate-800 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
                 required
               />

@@ -164,7 +164,12 @@ export interface ShiftRegistrationPayload {
     }>;
 }
 
-export async function saveShiftRegistrations(payload: ShiftRegistrationPayload): Promise<void> {
+export async function saveShiftRegistrations(payload: ShiftRegistrationPayload): Promise<{
+    message: string;
+    effectiveDate?: string;
+    isCancelled?: boolean;
+    registeredCount?: number;
+}> {
     const response = await fetch("/api/shifts/register", {
         method: "POST",
         headers: authHeaders(),
@@ -174,6 +179,7 @@ export async function saveShiftRegistrations(payload: ShiftRegistrationPayload):
         const data = (await response.json().catch(() => null)) as { message?: string } | null;
         throw new Error(data?.message || "Không thể lưu lịch làm việc.");
     }
+    return response.json();
 }
 
 async function reviewRegistrationRequest(id: string, adminId: string, action: "approve" | "reject"): Promise<void> {
