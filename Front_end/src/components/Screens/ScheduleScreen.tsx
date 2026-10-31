@@ -8,6 +8,7 @@ interface ScheduleScreenProps {
     history?: ShiftSlot[];
     accounts: UserAccount[];
     onUpdateShifts: (updatedShifts: ShiftSlot[]) => void;
+    onUpdateAccounts?: (updatedAccounts: UserAccount[]) => void;
     onShowToast: (msg: string) => void;
     onViewAccountDetail?: (account: UserAccount) => void;
     currentUser?: UserAccount;
@@ -19,6 +20,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
     history = [],
     accounts,
     onUpdateShifts,
+    onUpdateAccounts,
     onShowToast,
     onViewAccountDetail,
     currentUser,
@@ -43,6 +45,7 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                 history={history}
                 currentUser={ctvUser}
                 onUpdateShifts={onUpdateShifts}
+                onUpdateAccounts={onUpdateAccounts}
                 onShowToast={onShowToast}
             />
         );

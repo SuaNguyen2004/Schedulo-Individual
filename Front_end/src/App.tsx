@@ -207,10 +207,21 @@ export const App: React.FC = () => {
         const freshAccount = accounts.find(
             (acc) => (currentUser.id && acc.id === currentUser.id) || acc.email === currentUser.email,
         );
-        if (freshAccount && freshAccount.status !== "Kích hoạt") {
-            clearAuthState("Tài khoản của bạn đã bị vô hiệu hoá. Vui lòng liên hệ Admin!");
+        if (freshAccount) {
+            if (freshAccount.status !== "Kích hoạt") {
+                clearAuthState("Tài khoản của bạn đã bị vô hiệu hoá. Vui lòng liên hệ Admin!");
+            } else if (
+                freshAccount.isCancelledNextWeek !== currentUser.isCancelledNextWeek ||
+                JSON.stringify(freshAccount.nextPattern) !== JSON.stringify(currentUser.nextPattern) ||
+                JSON.stringify(freshAccount.currentPattern) !== JSON.stringify(currentUser.currentPattern)
+            ) {
+                setCurrentUser((prev) => ({
+                    ...prev,
+                    ...freshAccount,
+                }));
+            }
         }
-    }, [accounts, isLoggedIn, currentUser.id, currentUser.email]);
+    }, [accounts, isLoggedIn, currentUser.id, currentUser.email, currentUser.isCancelledNextWeek, currentUser.nextPattern, currentUser.currentPattern]);
 
     // Periodic polling to sync account status live across sessions (optimized interval + pause on background tab)
     useEffect(() => {
@@ -747,6 +758,7 @@ export const App: React.FC = () => {
                                 history={history}
                                 accounts={accounts}
                                 onUpdateShifts={setShifts}
+                                onUpdateAccounts={setAccounts}
                                 onShowToast={showToast}
                                 onViewAccountDetail={(acc) => setSelectedAccountDetail(acc)}
                                 currentUser={currentUser}

@@ -2121,7 +2121,7 @@ app.post("/api/shifts/register", requireAuth, async (req, res) => {
 
                 await connection.commit();
                 return res.json({
-                    message: `Đã lưu mẫu lịch làm việc thành công. Áp dụng từ Thứ Hai ngày ${formatDateVn(nextMonday)}. Lịch tuần hiện tại được giữ nguyên.`,
+                    message: `Lịch mới sẽ được áp dụng từ Thứ Hai ngày ${formatDateVn(nextMonday)}. Lịch tuần hiện tại được giữ nguyên.`,
                     effectiveDate: nextMonday,
                     pattern: uniquePattern,
                     registeredCount: inserted,
