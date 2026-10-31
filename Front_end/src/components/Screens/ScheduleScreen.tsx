@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ShiftSlot, UserAccount, AssignedCTV } from "../../types";
 import { CTVScheduleWorkspace } from "./CTVScheduleWorkspace";
+import { SummaryScheduleScreen } from "./SummaryScheduleScreen";
 
 interface ScheduleScreenProps {
     shifts: ShiftSlot[];
@@ -423,6 +424,18 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
             />
         );
     }
+
+    return (
+        <SummaryScheduleScreen
+            shifts={shifts}
+            history={history}
+            accounts={accounts}
+            onViewAccountDetail={onViewAccountDetail}
+            onShowToast={onShowToast}
+            currentUser={currentUser}
+            userRole={userRole}
+        />
+    );
 
     return (
         <div className="space-y-4 pb-8">

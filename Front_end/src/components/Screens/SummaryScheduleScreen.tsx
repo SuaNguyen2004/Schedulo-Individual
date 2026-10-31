@@ -97,19 +97,46 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
     ];
 
     // Week navigation handlers
+    const currentWeekMonday = useMemo(() => startOfWeek(today), [today]);
+    const maxAllowedWeekMonday = useMemo(() => addDays(currentWeekMonday, 12 * 7), [currentWeekMonday]);
     const currentWeekStart = useMemo(() => startOfWeek(currentWeekDate), [currentWeekDate]);
+    const isAtMaxFutureWeek = currentWeekStart.getTime() >= maxAllowedWeekMonday.getTime();
+    const isPastWeek = currentWeekStart.getTime() < currentWeekMonday.getTime();
+
     const weekDays = useMemo(
         () => Array.from({ length: 5 }, (_, index) => addDays(currentWeekStart, index)),
         [currentWeekStart],
     );
-    const weekRangeLabel = `Tuần ${formatShortDate(weekDays[0])} - ${formatDateWithYear(weekDays[4])}`;
+
+    const weekRangeLabel = useMemo(() => {
+        const start = weekDays[0];
+        const end = weekDays[4];
+        if (start.getFullYear() !== end.getFullYear()) {
+            return `Tuần ${formatShortDate(start)}/${start.getFullYear()} - ${formatShortDate(end)}/${end.getFullYear()}`;
+        }
+        return `Tuần ${formatShortDate(start)} - ${formatDateWithYear(end)}`;
+    }, [weekDays]);
+
+    const totalCTVsInWeek = useMemo(() => {
+        return weekDays.reduce((acc, date) => {
+            const dateISO = toISODate(date);
+            return acc + getAssignedCTVs(dateISO, "morning").length + getAssignedCTVs(dateISO, "afternoon").length;
+        }, 0);
+    }, [weekDays, shifts, accounts]);
 
     const handlePrevWeek = () => {
         setCurrentWeekDate((prev) => addDays(prev, -7));
     };
 
     const handleNextWeek = () => {
-        setCurrentWeekDate((prev) => addDays(prev, 7));
+        if (isAtMaxFutureWeek) return;
+        setCurrentWeekDate((prev) => {
+            const next = addDays(prev, 7);
+            if (startOfWeek(next).getTime() > maxAllowedWeekMonday.getTime()) {
+                return prev;
+            }
+            return next;
+        });
     };
 
     const handleTodayWeek = () => {
@@ -434,6 +461,55 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                     </div>
 
                     {/* Controls for Active View */}
+                    {calendarView === "week" && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <div
+                                className="inline-flex min-h-10 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-2xs"
+                                role="group"
+                                aria-label="Điều hướng tuần">
+                                <button
+                                    type="button"
+                                    onClick={handlePrevWeek}
+                                    className="flex min-h-8 min-w-8 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                                    aria-label="Tuần trước">
+                                    <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                                </button>
+                                <span className="min-w-[150px] sm:min-w-[180px] px-2 text-center text-xs font-bold text-slate-900">
+                                    {weekRangeLabel}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handleNextWeek}
+                                    disabled={isAtMaxFutureWeek}
+                                    className={`flex min-h-8 min-w-8 items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                                        isAtMaxFutureWeek
+                                            ? "text-slate-300 cursor-not-allowed"
+                                            : "text-slate-700 hover:bg-white cursor-pointer"
+                                    }`}
+                                    aria-label="Tuần sau"
+                                    title={
+                                        isAtMaxFutureWeek
+                                            ? "Chỉ hiển thị tối đa 12 tuần trong tương lai. Lịch vẫn tiếp tục tự động duy trì theo mẫu đăng ký."
+                                            : "Tuần sau"
+                                    }>
+                                    <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleTodayWeek}
+                                    className="ml-1 px-2.5 py-1 text-xs font-bold rounded-lg text-blue-700 hover:bg-white transition-colors cursor-pointer"
+                                    title="Về tuần hiện tại">
+                                    Hiện tại
+                                </button>
+                            </div>
+                            {isAtMaxFutureWeek && (
+                                <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-medium self-center sm:self-auto">
+                                    Tối đa 12 tuần tới (lịch vẫn duy trì tự động)
+                                </span>
+                            )}
+                        </div>
+                    )}
+
                     {calendarView === "month" && (
                         <div className="flex items-center gap-2">
                             <div
@@ -473,6 +549,31 @@ export const SummaryScheduleScreen: React.FC<SummaryScheduleScreenProps> = ({
                             </span>
                             <h3 className="text-base font-bold text-slate-900">Lịch tuần</h3>
                         </div>
+
+                        {/* Ghi chú duy trì tự động theo mẫu */}
+                        <div className="flex items-center gap-2 rounded-xl bg-blue-50/80 border border-blue-200/90 px-3.5 py-2.5 text-xs text-blue-900 shadow-2xs">
+                            <span className="material-symbols-outlined text-[18px] text-blue-700 shrink-0" aria-hidden="true">info</span>
+                            <span>Lịch được hệ thống duy trì tự động theo mẫu đăng ký. Bạn không cần đăng ký lại sau 12 tuần.</span>
+                        </div>
+
+                        {totalCTVsInWeek === 0 && (
+                            isPastWeek ? (
+                                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-center">
+                                    <p className="text-sm font-semibold text-slate-700">
+                                        Không có dữ liệu lịch cho tuần này ({weekRangeLabel}).
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-center">
+                                    <p className="text-sm font-semibold text-slate-700">
+                                        Chưa có CTV nào được xếp lịch làm việc trong tuần này ({weekRangeLabel}).
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Hệ thống tự động đồng bộ lịch làm việc theo mẫu đăng ký của các CTV còn hoạt động.
+                                    </p>
+                                </div>
+                            )
+                        )}
 
                         {/* Mobile View: Grid 5 cột (< md) */}
                         <div className="md:hidden space-y-2">

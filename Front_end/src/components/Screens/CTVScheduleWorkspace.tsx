@@ -123,6 +123,8 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         return addDays(startOfDay(today), 7 - mondayOffset);
     }, [today]);
 
+    const currentWeekMonday = useMemo(() => startOfWeek(today), [today]);
+    const maxAllowedWeekMonday = useMemo(() => addDays(currentWeekMonday, 12 * 7), [currentWeekMonday]);
     const legacyWeekStart = useMemo(() => startOfWeek(today), [today]);
 
     const [calendarView, setCalendarView] = useState<CalendarView>("week");
@@ -212,9 +214,25 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
         return existing && isAssignedToCurrentUser(existing) ? existing : null;
     };
 
-    const weekStart = startOfWeek(calendarDate);
-    const weekDays = Array.from({ length: 5 }, (_, index) => addDays(weekStart, index));
-    const weekRangeLabel = `${formatShortDate(weekDays[0])} - ${formatDateWithYear(weekDays[4])}`;
+    const weekStart = useMemo(() => startOfWeek(calendarDate), [calendarDate]);
+    const weekDays = useMemo(() => Array.from({ length: 5 }, (_, index) => addDays(weekStart, index)), [weekStart]);
+    const isAtMaxFutureWeek = weekStart.getTime() >= maxAllowedWeekMonday.getTime();
+    const isPastWeek = weekStart.getTime() < currentWeekMonday.getTime();
+    const isCurrentWeek = weekStart.getTime() === currentWeekMonday.getTime();
+
+    const weekRangeLabel = useMemo(() => {
+        const start = weekDays[0];
+        const end = weekDays[4];
+        if (start.getFullYear() !== end.getFullYear()) {
+            return `Tuần ${formatShortDate(start)}/${start.getFullYear()} - ${formatShortDate(end)}/${end.getFullYear()}`;
+        }
+        return `Tuần ${formatShortDate(start)} - ${formatDateWithYear(end)}`;
+    }, [weekDays]);
+
+    const hasShiftsInWeek = useMemo(
+        () => weekDays.some((d) => Boolean(getVisibleShift(d, "morning") || getVisibleShift(d, "afternoon"))),
+        [weekDays, myShifts],
+    );
 
     const monthStart = startOfMonth(calendarDate);
     const monthWeeks: Array<Array<Date | null>> = [];
@@ -280,7 +298,14 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
     };
 
     const changeWeek = (amount: number) => {
-        setCalendarDate((current) => addDays(current, amount * 7));
+        setCalendarDate((current) => {
+            const next = addDays(current, amount * 7);
+            const nextMon = startOfWeek(next);
+            if (amount > 0 && nextMon.getTime() > maxAllowedWeekMonday.getTime()) {
+                return current;
+            }
+            return next;
+        });
     };
 
     const togglePattern = (dayIndex: number, shiftType: ShiftType) => {
@@ -496,52 +521,108 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                 </span>
                                 <h3 className="text-base font-bold text-slate-900">Lịch tuần</h3>
                             </div>
-                            <div
-                                className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm"
-                                role="group"
-                                aria-label="Điều hướng tuần">
-                                <button
-                                    type="button"
-                                    onClick={() => changeWeek(-1)}
-                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
-                                    aria-label="Tuần trước">
-                                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
-                                        chevron_left
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                <div
+                                    className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm"
+                                    role="group"
+                                    aria-label="Điều hướng tuần">
+                                    <button
+                                        type="button"
+                                        onClick={() => changeWeek(-1)}
+                                        className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                                        aria-label="Tuần trước">
+                                        <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                                            chevron_left
+                                        </span>
+                                    </button>
+                                    <span
+                                        className="min-w-[140px] sm:min-w-[170px] px-2 text-center text-xs font-bold text-slate-900"
+                                        aria-live="polite">
+                                        {weekRangeLabel}
                                     </span>
-                                </button>
-                                <span
-                                    className="min-w-[140px] sm:min-w-[170px] px-2 text-center text-xs font-bold text-slate-900"
-                                    aria-live="polite">
-                                    {weekRangeLabel}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => changeWeek(1)}
-                                    className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
-                                    aria-label="Tuần sau">
-                                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
-                                        chevron_right
+                                    <button
+                                        type="button"
+                                        onClick={() => changeWeek(1)}
+                                        disabled={isAtMaxFutureWeek}
+                                        className={`flex min-h-9 min-w-9 items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                                            isAtMaxFutureWeek
+                                                ? "text-slate-300 cursor-not-allowed"
+                                                : "text-slate-700 hover:bg-white cursor-pointer"
+                                        }`}
+                                        aria-label="Tuần sau"
+                                        title={
+                                            isAtMaxFutureWeek
+                                                ? "Chỉ hiển thị tối đa 12 tuần trong tương lai. Lịch vẫn tiếp tục tự động duy trì theo mẫu đăng ký."
+                                                : "Tuần sau"
+                                        }>
+                                        <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                                            chevron_right
+                                        </span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCalendarDate(today)}
+                                        className="ml-1 px-2.5 py-1 text-xs font-bold rounded-lg text-blue-700 hover:bg-white transition-colors cursor-pointer"
+                                        title="Về tuần hiện tại">
+                                        Hiện tại
+                                    </button>
+                                </div>
+                                {isAtMaxFutureWeek && (
+                                    <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg font-medium self-center sm:self-auto">
+                                        Tối đa 12 tuần tới (lịch vẫn duy trì tự động)
                                     </span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setCalendarDate(today)}
-                                    className="ml-1 px-2.5 py-1 text-xs font-bold rounded-lg text-blue-700 hover:bg-white transition-colors cursor-pointer"
-                                    title="Về tuần hiện tại">
-                                    Hiện tại
-                                </button>
+                                )}
                             </div>
                         </div>
 
-                        {!weekDays.some((d) => Boolean(getVisibleShift(d, "morning") || getVisibleShift(d, "afternoon"))) && (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-center">
-                                <p className="text-sm font-semibold text-slate-700">
-                                    Bạn chưa có ca làm việc nào trong tuần này ({weekRangeLabel}).
-                                </p>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    Nhấn nút <strong>Đăng ký lịch làm việc</strong> ở trên để đăng ký mẫu ca lặp lại bắt đầu từ Thứ Hai tuần sau.
-                                </p>
-                            </div>
+                        {/* Ghi chú rõ ràng về cơ chế duy trì tự động theo mẫu */}
+                        <div className="flex items-center gap-2 rounded-xl bg-blue-50/80 border border-blue-200/90 px-3.5 py-2.5 text-xs text-blue-900 shadow-2xs">
+                            <span className="material-symbols-outlined text-[18px] text-blue-700 shrink-0" aria-hidden="true">info</span>
+                            <span>Lịch được hệ thống duy trì tự động theo mẫu đăng ký. Bạn không cần đăng ký lại sau 12 tuần.</span>
+                        </div>
+
+                        {!hasShiftsInWeek && (
+                            isPastWeek ? (
+                                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-center">
+                                    <p className="text-sm font-semibold text-slate-700">
+                                        Không có dữ liệu lịch cho tuần này ({weekRangeLabel}).
+                                    </p>
+                                </div>
+                            ) : currentUser.isCancelledNextWeek && !isCurrentWeek ? (
+                                <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-center">
+                                    <p className="text-sm font-semibold text-amber-900">
+                                        Bạn đã hủy mẫu lịch làm việc định kỳ từ Thứ Hai ngày <strong>{formatShortDate(nextMondayDate)}</strong>.
+                                    </p>
+                                    <p className="text-xs text-amber-800 mt-1">
+                                        Nhấn nút <strong>Đăng ký lịch làm việc</strong> ở trên nếu bạn muốn thiết lập lại mẫu ca làm việc mới.
+                                    </p>
+                                </div>
+                            ) : ((currentUser.currentPattern && currentUser.currentPattern.length > 0) ||
+                                 (currentUser.nextPattern && currentUser.nextPattern.length > 0)) ? (
+                                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-center">
+                                    <p className="text-sm font-semibold text-slate-700">
+                                        {isCurrentWeek
+                                            ? currentUser.nextPattern && currentUser.nextPattern.length > 0 && (!currentUser.currentPattern || currentUser.currentPattern.length === 0)
+                                                ? `Bạn chưa có ca làm việc nào trong tuần này (${weekRangeLabel}).`
+                                                : `Không có ca làm việc trong tuần này (${weekRangeLabel}).`
+                                            : `Không có ca làm việc trong tuần này (${weekRangeLabel}).`}
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {isCurrentWeek && currentUser.nextPattern && currentUser.nextPattern.length > 0 && (!currentUser.currentPattern || currentUser.currentPattern.length === 0)
+                                            ? `Mẫu lịch mới đã lưu sẽ bắt đầu áp dụng từ Thứ Hai ngày ${formatShortDate(nextMondayDate)}.`
+                                            : `Lịch làm việc đang được hệ thống tự động duy trì theo mẫu đăng ký. Bạn không cần đăng ký lại.`}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-center">
+                                    <p className="text-sm font-semibold text-slate-700">
+                                        Bạn chưa thiết lập mẫu lịch làm việc định kỳ ({weekRangeLabel}).
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Nhấn nút <strong>Đăng ký lịch làm việc</strong> ở trên để đăng ký mẫu ca lặp lại bắt đầu từ Thứ Hai tuần sau.
+                                    </p>
+                                </div>
+                            )
                         )}
 
                         {/* Mobile View: Grid 5 cột (< md) */}
@@ -880,7 +961,7 @@ export const CTVScheduleWorkspace: React.FC<CTVScheduleWorkspaceProps> = ({
                                             Thay đổi áp dụng từ Thứ Hai ngày {formatShortDate(nextMondayDate)}/{nextMondayDate.getFullYear()}; lịch tuần hiện tại được giữ nguyên.
                                         </p>
                                         <p className="text-xs text-blue-800 mt-0.5">
-                                            Mẫu lịch được tự động duy trì hàng tuần. Bạn không cần phải đăng ký lại định kỳ.
+                                            Lịch được hệ thống duy trì tự động theo mẫu đăng ký. Bạn không cần đăng ký lại sau 12 tuần.
                                         </p>
                                     </div>
                                 </div>
