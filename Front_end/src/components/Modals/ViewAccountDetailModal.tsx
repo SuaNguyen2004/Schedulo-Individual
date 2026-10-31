@@ -251,14 +251,6 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
         return "off";
     };
 
-    const hasAnySchedule = (() => {
-        for (let dayIndex = 0; dayIndex <= 4; dayIndex++) {
-            if (getShiftStatus(dayIndex, "morning") !== "off" || getShiftStatus(dayIndex, "afternoon") !== "off") {
-                return true;
-            }
-        }
-        return false;
-    })();
 
     return (
         <>
@@ -519,17 +511,6 @@ export const ViewAccountDetailModal: React.FC<ViewAccountDetailModalProps> = ({
                                 </div>
                             ) : (
                                 <>
-                                    {!hasAnySchedule && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center text-xs text-slate-600 mb-2">
-                                            {account.nextPattern && account.nextPattern.length > 0 ? (
-                                                <span>
-                                                    Lịch mới ({account.nextPattern.length} ca/tuần) đã đăng ký sẽ áp dụng từ Thứ Hai tuần sau. Tuần hiện tại chưa có ca làm việc.
-                                                </span>
-                                            ) : (
-                                                <span>Cộng tác viên chưa có lịch làm việc trong tuần này.</span>
-                                            )}
-                                        </div>
-                                    )}
                                     {/* Mobile View: Grid 5 cột (< md) */}
                                     <div className="md:hidden space-y-2">
                                         {/* Dòng 1: Thứ 2 -> Thứ 6 */}
