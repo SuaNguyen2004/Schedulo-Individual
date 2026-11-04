@@ -114,7 +114,7 @@ export const App: React.FC = () => {
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
     // Store bootstrap promise so handleLoginSuccess can await it
-    const bootstrapRef = useRef<Promise<import("./utils/api").BootstrapData> | null>(null);
+    const bootstrapRef = useRef<Promise<import("./utils/api").BootstrapData | null> | null>(null);
 
     // Toast feedback state
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -181,7 +181,7 @@ export const App: React.FC = () => {
                 return data;
             })
             .catch((error: unknown) => {
-                if (error instanceof DOMException && error.name === "AbortError") return;
+                if (error instanceof DOMException && error.name === "AbortError") return null;
                 console.warn("Không thể tải dữ liệu từ Backend, sử dụng dữ liệu cục bộ.", error);
 
                 // If there's an active session but bootstrap failed (e.g. session expired or database offline),
